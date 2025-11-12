@@ -256,6 +256,50 @@ const VendorDetail = () => {
               </div>
             </div>
 
+            {/* Due Diligence Status */}
+            {vendor.dd_required && (
+              <div className={`rounded-xl shadow-md p-6 ${
+                vendor.dd_completed && vendor.dd_approved_by ? 'bg-green-50 border-2 border-green-300' :
+                vendor.dd_completed ? 'bg-blue-50 border-2 border-blue-300' :
+                'bg-red-50 border-2 border-red-300'
+              }`}>
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <span>📋</span>
+                  Due Diligence Status
+                </h2>
+                <div className="space-y-3">
+                  {vendor.dd_completed && vendor.dd_approved_by ? (
+                    <div className="text-center py-3">
+                      <span className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-lg">
+                        ✓ APPROVED
+                      </span>
+                      <p className="text-sm text-gray-600 mt-2">
+                        Approved on {new Date(vendor.dd_approved_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ) : vendor.dd_completed ? (
+                    <div className="text-center py-3">
+                      <span className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg font-bold">
+                        PENDING APPROVAL
+                      </span>
+                      <p className="text-sm text-gray-600 mt-2">
+                        Completed on {new Date(vendor.dd_completed_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center py-3">
+                      <span className="inline-block px-4 py-2 bg-red-600 text-white rounded-lg font-bold">
+                        ⚠️ REQUIRED
+                      </span>
+                      <p className="text-sm text-gray-700 mt-2">
+                        Due diligence questionnaire must be completed
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Risk Assessment Details</h2>
               <div className="space-y-3">
