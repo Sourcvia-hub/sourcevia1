@@ -639,42 +639,114 @@ async def get_tender_proposals(tender_id: str, request: Request):
     
     return proposals
 
+class ProposalEvaluationRequest(BaseModel):
+    proposal_id: str
+    vendor_reliability_stability: float = Field(ge=1, le=5)
+    delivery_warranty_backup: float = Field(ge=1, le=5)
+    technical_experience: float = Field(ge=1, le=5)
+    cost_score: float = Field(ge=1, le=5)
+
+@api_router.post("/tenders/{tender_id}/proposals/{proposal_id}/evaluate")
+async def evaluate_proposal(tender_id: str, proposal_id: str, evaluation: ProposalEvaluationRequest, request: Request):
+    """Evaluate a single proposal with detailed criteria"""
+    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER])
+    
+    # Find proposal
+    proposal = await db.proposals.find_one({"id": proposal_id, "tender_id": tender_id})
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+    
+    # Calculate weighted scores (weights: 20%, 20%, 10%, 10% = 60% total)
+    # Remaining 40% could be for other criteria or reserved
+    vendor_reliability_weighted = evaluation.vendor_reliability_stability * 0.20
+    delivery_warranty_weighted = evaluation.delivery_warranty_backup * 0.20
+    technical_experience_weighted = evaluation.technical_experience * 0.10
+    cost_weighted = evaluation.cost_score * 0.10
+    
+    total_score = (
+        vendor_reliability_weighted + 
+        delivery_warranty_weighted + 
+        technical_experience_weighted + 
+        cost_weighted
+    )
+    
+    # Create evaluation object
+    evaluation_data = {
+        "vendor_reliability_stability": evaluation.vendor_reliability_stability,
+        "delivery_warranty_backup": evaluation.delivery_warranty_backup,
+        "technical_experience": evaluation.technical_experience,
+        "cost_score": evaluation.cost_score,
+        "vendor_reliability_weighted": vendor_reliability_weighted,
+        "delivery_warranty_weighted": delivery_warranty_weighted,
+        "technical_experience_weighted": technical_experience_weighted,
+        "cost_weighted": cost_weighted,
+        "total_score": total_score
+    }
+    
+    # Update proposal with evaluation
+    await db.proposals.update_one(
+        {"id": proposal_id},
+        {
+            "$set": {
+                "evaluation": evaluation_data,
+                "evaluated_by": user.id,
+                "evaluated_at": datetime.now(timezone.utc).isoformat(),
+                "final_score": total_score
+            }
+        }
+    )
+    
+    return {
+        "message": "Proposal evaluated successfully",
+        "evaluation": evaluation_data,
+        "total_score": total_score
+    }
+
 @api_router.post("/tenders/{tender_id}/evaluate")
-async def evaluate_proposals(tender_id: str, request: Request):
-    """Calculate weighted scores for all proposals"""
-    await require_role(request, [UserRole.PROCUREMENT_OFFICER])
+async def evaluate_all_proposals(tender_id: str, request: Request):
+    """Get evaluation summary for all proposals in a tender"""
+    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER])
     
     proposals = await db.proposals.find({"tender_id": tender_id}).to_list(1000)
     
     if not proposals:
-        return {"message": "No proposals to evaluate"}
+        return {"message": "No proposals to evaluate", "proposals": []}
     
-    # Simple scoring logic
-    # Technical: 0-100, Financial: lowest price gets 100, others scaled
-    min_price = min(p["financial_proposal"] for p in proposals)
+    # Calculate cost scores automatically based on lowest price
+    min_price = min(p["financial_proposal"] for p in proposals if p.get("financial_proposal"))
     
+    evaluated_proposals = []
     for proposal in proposals:
-        # Technical score (simplified - in reality would be manual)
-        technical_score = 75.0  # Default score
+        # Auto-calculate cost score (lowest price gets 5, others scaled)
+        if min_price > 0:
+            cost_score = (min_price / proposal["financial_proposal"]) * 5
+        else:
+            cost_score = 3.0  # Default if no prices
         
-        # Financial score (lower price = higher score)
-        financial_score = (min_price / proposal["financial_proposal"]) * 100
+        # Get vendor name
+        vendor = await db.vendors.find_one({"id": proposal["vendor_id"]})
+        vendor_name = vendor.get("name_english", vendor.get("company_name", "Unknown")) if vendor else "Unknown"
         
-        # Final weighted score (70% technical, 30% financial)
-        final_score = (technical_score * 0.7) + (financial_score * 0.3)
-        
-        await db.proposals.update_one(
-            {"id": proposal["id"]},
-            {
-                "$set": {
-                    "technical_score": technical_score,
-                    "financial_score": financial_score,
-                    "final_score": final_score
-                }
-            }
-        )
+        evaluated_proposals.append({
+            "proposal_id": proposal["id"],
+            "vendor_id": proposal["vendor_id"],
+            "vendor_name": vendor_name,
+            "financial_proposal": proposal["financial_proposal"],
+            "suggested_cost_score": round(cost_score, 2),
+            "evaluation": proposal.get("evaluation"),
+            "final_score": proposal.get("final_score", 0.0),
+            "evaluated": proposal.get("evaluation") is not None
+        })
     
-    return {"message": "Proposals evaluated"}
+    # Sort by final score descending
+    evaluated_proposals.sort(key=lambda x: x["final_score"], reverse=True)
+    
+    return {
+        "tender_id": tender_id,
+        "total_proposals": len(proposals),
+        "evaluated_count": sum(1 for p in proposals if p.get("evaluation")),
+        "proposals": evaluated_proposals
+    }
 
 @api_router.post("/tenders/{tender_id}/award")
 async def award_tender(tender_id: str, vendor_id: str, request: Request):
