@@ -11,9 +11,13 @@ const Contracts = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [vendors, setVendors] = useState([]);
+  const [tenders, setTenders] = useState([]);
+  const [selectedTender, setSelectedTender] = useState(null);
+  const [selectedVendor, setSelectedVendor] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
+    tender_id: '',
     vendor_id: '',
-    contract_number: '',
     title: '',
     sow: '',
     sla: '',
