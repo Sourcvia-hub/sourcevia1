@@ -88,19 +88,65 @@ class Vendor(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    company_name: str
-    cr_number: str
+    
+    # Company Information
+    name_english: str
+    commercial_name: str
+    entity_type: str
     vat_number: str
-    address: str
-    contact_person: str
-    contact_email: EmailStr
-    contact_phone: str
-    bank_name: Optional[str] = None
-    bank_account: Optional[str] = None
+    unified_number: Optional[str] = None  # For Saudi entities
+    cr_number: str
+    cr_expiry_date: datetime
+    cr_country_city: str
+    license_number: Optional[str] = None
+    license_expiry_date: Optional[datetime] = None
+    activity_description: str
+    number_of_employees: int
+    
+    # Address and Contact
+    street: str
+    building_no: str
+    city: str
+    district: str
+    country: str
+    mobile: str
+    landline: Optional[str] = None
+    fax: Optional[str] = None
+    email: EmailStr
+    
+    # Representative Information
+    representative_name: str
+    representative_designation: str
+    representative_id_type: str
+    representative_id_number: str
+    representative_nationality: str
+    representative_mobile: str
+    representative_residence_tel: Optional[str] = None
+    representative_phone_area_code: Optional[str] = None
+    representative_email: EmailStr
+    
+    # Bank Account Information
+    bank_account_name: str
+    bank_name: str
+    bank_branch: str
+    bank_country: str
+    iban: str
+    currency: str
+    swift_code: str
+    
+    # Owners/Partners/Managers (stored as JSON)
+    owners_managers: List[Dict[str, Any]] = []
+    
+    # Authorization
+    authorized_persons: List[Dict[str, Any]] = []
+    
+    # Documents
+    documents: List[str] = []
+    
+    # System fields
     risk_score: float = 0.0
     risk_category: RiskCategory = RiskCategory.LOW
     status: VendorStatus = VendorStatus.PENDING
-    documents: List[str] = []
     evaluation_notes: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
