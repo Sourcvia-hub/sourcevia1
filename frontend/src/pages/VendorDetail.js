@@ -136,12 +136,24 @@ const VendorDetail = () => {
               </p>
             )}
           </div>
-          <button
-            onClick={handleEdit}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            Edit Vendor
-          </button>
+          <div className="flex gap-3">
+            {/* Due Diligence Button - Only show if required and not completed */}
+            {vendor.dd_required && !vendor.dd_completed && user?.role === 'procurement_officer' && (
+              <button
+                onClick={() => setShowDueDiligenceModal(true)}
+                className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center gap-2"
+              >
+                <span>📋</span>
+                Complete Due Diligence
+              </button>
+            )}
+            <button
+              onClick={handleEdit}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              Edit Vendor
+            </button>
+          </div>
         </div>
 
         {/* Main Content */}
