@@ -20,12 +20,15 @@ export const useAuth = () => {
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const checkAuth = async () => {
     try {
       const response = await axios.get(`${API}/auth/me`, { withCredentials: true });
       setUser(response.data);
+      setError(null);
     } catch (error) {
+      console.log('Not authenticated:', error.message);
       setUser(null);
     } finally {
       setLoading(false);
@@ -33,9 +36,15 @@ const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const response = await axios.post(`${API}/auth/login`, { email, password }, { withCredentials: true });
-    setUser(response.data.user);
-    return response.data;
+    try {
+      const response = await axios.post(`${API}/auth/login`, { email, password }, { withCredentials: true });
+      setUser(response.data.user);
+      setError(null);
+      return response.data;
+    } catch (err) {
+      console.error('Login error:', err);
+      throw err;
+    }
   };
 
   const logout = async () => {
@@ -50,6 +59,17 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkAuth();
   }, []);
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-900 mb-2">Error</h1>
+          <p className="text-red-700">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ user, setUser, loading, login, logout, checkAuth }}>
