@@ -724,7 +724,7 @@ async def create_tender(tender: Tender, request: Request):
 @api_router.get("/tenders")
 async def get_tenders(request: Request, status: Optional[TenderStatus] = None):
     """Get all tenders"""
-    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER, UserRole.SYSTEM_ADMIN])
+    user = await require_auth(request)
     
     query = {}
     if status:
@@ -732,15 +732,22 @@ async def get_tenders(request: Request, status: Optional[TenderStatus] = None):
     
     tenders = await db.tenders.find(query).to_list(1000)
     
+    result = []
     for tender in tenders:
+        # Remove MongoDB _id
+        if '_id' in tender:
+            del tender['_id']
+        
         if isinstance(tender.get('deadline'), str):
             tender['deadline'] = datetime.fromisoformat(tender['deadline'])
         if isinstance(tender.get('created_at'), str):
             tender['created_at'] = datetime.fromisoformat(tender['created_at'])
         if isinstance(tender.get('updated_at'), str):
             tender['updated_at'] = datetime.fromisoformat(tender['updated_at'])
+        
+        result.append(tender)
     
-    return tenders
+    return result
 
 @api_router.get("/tenders/{tender_id}")
 async def get_tender(tender_id: str, request: Request):
