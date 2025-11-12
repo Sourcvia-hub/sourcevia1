@@ -1230,7 +1230,12 @@ async def get_invoices(request: Request, status: Optional[InvoiceStatus] = None,
     
     invoices = await db.invoices.find(query).to_list(1000)
     
+    result = []
     for invoice in invoices:
+        # Remove MongoDB _id
+        if '_id' in invoice:
+            del invoice['_id']
+        
         if isinstance(invoice.get('submitted_at'), str):
             invoice['submitted_at'] = datetime.fromisoformat(invoice['submitted_at'])
         if invoice.get('verified_at') and isinstance(invoice['verified_at'], str):
@@ -1239,8 +1244,10 @@ async def get_invoices(request: Request, status: Optional[InvoiceStatus] = None,
             invoice['approved_at'] = datetime.fromisoformat(invoice['approved_at'])
         if invoice.get('paid_at') and isinstance(invoice['paid_at'], str):
             invoice['paid_at'] = datetime.fromisoformat(invoice['paid_at'])
+        
+        result.append(invoice)
     
-    return invoices
+    return result
 
 @api_router.get("/invoices/{invoice_id}")
 async def get_invoice(invoice_id: str, request: Request):
