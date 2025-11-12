@@ -74,7 +74,32 @@ const VendorDetail = () => {
     }
   };
 
-  // Approval removed - all vendors are auto-approved
+  const handleDueDiligenceSubmit = async (ddData) => {
+    try {
+      await axios.put(`${API}/vendors/${id}/due-diligence`, ddData, { withCredentials: true });
+      setShowDueDiligenceModal(false);
+      fetchVendor();
+      alert('Due Diligence questionnaire submitted successfully!');
+    } catch (error) {
+      console.error('Error submitting due diligence:', error);
+      alert('Failed to submit due diligence: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleApproveDueDiligence = async () => {
+    if (!window.confirm('Are you sure you want to approve this vendor\'s Due Diligence? This will also approve all pending contracts.')) {
+      return;
+    }
+    
+    try {
+      await axios.post(`${API}/vendors/${id}/due-diligence/approve`, {}, { withCredentials: true });
+      fetchVendor();
+      alert('Due Diligence approved successfully! Vendor and contracts are now approved.');
+    } catch (error) {
+      console.error('Error approving due diligence:', error);
+      alert('Failed to approve due diligence: ' + (error.response?.data?.detail || error.message));
+    }
+  };
 
   const getRiskBadgeColor = (category) => {
     const colors = {
