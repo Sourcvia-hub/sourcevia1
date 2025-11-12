@@ -290,8 +290,8 @@ class ProcurementTester:
             "sow": "Develop custom software solution as per tender requirements",
             "sla": "99.9% uptime, 24/7 support, monthly reporting",
             "value": 450000.0,
-            "start_date": datetime.now().isoformat(),
-            "end_date": (datetime.now() + timedelta(days=180)).isoformat(),
+            "start_date": datetime.now(timezone.utc).isoformat(),
+            "end_date": (datetime.now(timezone.utc) + timedelta(days=180)).isoformat(),
             "is_outsourcing": False,
             "milestones": [
                 {"name": "Phase 1", "amount": 150000.0, "due_date": (datetime.now() + timedelta(days=60)).isoformat()},
