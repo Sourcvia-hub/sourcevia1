@@ -181,7 +181,7 @@ import ContractDetail from './pages/ContractDetail';
 import Invoices from './pages/Invoices';
 
 // ==================== MAIN APP ====================
-function App() {
+const AppRoutes = () => {
   const { user, loading } = useAuth();
 
   // Redirect authenticated users from login page to dashboard
@@ -193,75 +193,83 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LoginWrapper />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/vendors"
-          element={
-            <ProtectedRoute>
-              <Vendors />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/vendors/:id"
-          element={
-            <ProtectedRoute>
-              <VendorDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/tenders"
-          element={
-            <ProtectedRoute>
-              <Tenders />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/tenders/:id"
-          element={
-            <ProtectedRoute>
-              <TenderDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/contracts"
-          element={
-            <ProtectedRoute>
-              <Contracts />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/contracts/:id"
-          element={
-            <ProtectedRoute>
-              <ContractDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/invoices"
-          element={
-            <ProtectedRoute>
-              <Invoices />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<LoginWrapper />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendors"
+        element={
+          <ProtectedRoute>
+            <Vendors />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendors/:id"
+        element={
+          <ProtectedRoute>
+            <VendorDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tenders"
+        element={
+          <ProtectedRoute>
+            <Tenders />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tenders/:id"
+        element={
+          <ProtectedRoute>
+            <TenderDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/contracts"
+        element={
+          <ProtectedRoute>
+            <Contracts />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/contracts/:id"
+        element={
+          <ProtectedRoute>
+            <ContractDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/invoices"
+        element={
+          <ProtectedRoute>
+            <Invoices />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
