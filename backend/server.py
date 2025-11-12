@@ -934,11 +934,18 @@ async def get_tender_proposals(tender_id: str, request: Request):
     
     proposals = await db.proposals.find({"tender_id": tender_id}).to_list(1000)
     
+    result = []
     for proposal in proposals:
+        # Remove MongoDB _id
+        if '_id' in proposal:
+            del proposal['_id']
+        
         if isinstance(proposal.get('submitted_at'), str):
             proposal['submitted_at'] = datetime.fromisoformat(proposal['submitted_at'])
+        
+        result.append(proposal)
     
-    return proposals
+    return result
 
 class ProposalEvaluationRequest(BaseModel):
     proposal_id: str
