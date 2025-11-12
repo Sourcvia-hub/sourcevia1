@@ -381,6 +381,28 @@ const TenderEvaluation = () => {
                 </p>
               </div>
 
+              {/* Meets Requirements */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Meets Requirements (Weight: 40%) *
+                </label>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="range"
+                    min="1"
+                    max="5"
+                    step="0.5"
+                    value={evaluationForm.meets_requirements}
+                    onChange={(e) => setEvaluationForm({ ...evaluationForm, meets_requirements: parseFloat(e.target.value) })}
+                    className="flex-1"
+                  />
+                  <span className="text-2xl font-bold text-red-600 w-16 text-center">
+                    {evaluationForm.meets_requirements}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Evaluate how well the proposal meets the tender requirements and specifications</p>
+              </div>
+
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-700">
                   <strong>Estimated Total Score:</strong> {' '}
@@ -389,10 +411,11 @@ const TenderEvaluation = () => {
                       evaluationForm.vendor_reliability_stability * 0.20 +
                       evaluationForm.delivery_warranty_backup * 0.20 +
                       evaluationForm.technical_experience * 0.10 +
-                      evaluationForm.cost_score * 0.10
+                      evaluationForm.cost_score * 0.10 +
+                      evaluationForm.meets_requirements * 0.40
                     ).toFixed(2)}
                   </span>
-                  <span className="text-gray-500"> / 3.0</span>
+                  <span className="text-gray-500"> / 5.0</span>
                 </p>
               </div>
 
