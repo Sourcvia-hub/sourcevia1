@@ -202,34 +202,75 @@ const Contracts = () => {
           <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Contract</h2>
             <form onSubmit={handleCreateContract} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Vendor *</label>
-                  <select
-                    value={formData.vendor_id}
-                    onChange={(e) => setFormData({ ...formData, vendor_id: e.target.value })}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Select a vendor</option>
-                    {vendors.map((vendor) => (
-                      <option key={vendor.id} value={vendor.id}>
-                        {vendor.name_english || vendor.commercial_name || vendor.company_name || 'Unknown Vendor'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Contract Number *</label>
-                  <input
-                    type="text"
-                    value={formData.contract_number}
-                    onChange={(e) => setFormData({ ...formData, contract_number: e.target.value })}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+              {/* Tender Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select Approved Tender *</label>
+                <select
+                  value={formData.tender_id}
+                  onChange={(e) => handleTenderSelect(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select a tender</option>
+                  {tenders.map((tender) => (
+                    <option key={tender.id} value={tender.id}>
+                      {tender.tender_number} - {tender.title}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              {/* Tender RFP Guidelines */}
+              {selectedTender && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="font-semibold text-blue-900 mb-2">📋 Tender RFP Guidelines</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><strong>Project:</strong> {selectedTender.project_name}</div>
+                    <div><strong>Budget:</strong> ${selectedTender.budget?.toLocaleString()}</div>
+                    <div><strong>Requirements:</strong> {selectedTender.requirements}</div>
+                  </div>
+                  <p className="text-xs text-blue-700 mt-2 italic">Contract should follow the same scope as outlined in the RFP</p>
+                </div>
+              )}
+
+              {/* Vendor Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select Vendor *</label>
+                <select
+                  value={formData.vendor_id}
+                  onChange={(e) => handleVendorSelect(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select a vendor</option>
+                  {vendors.map((vendor) => (
+                    <option key={vendor.id} value={vendor.id}>
+                      {vendor.vendor_number ? `${vendor.vendor_number} - ` : ''}{vendor.name_english || vendor.commercial_name || 'Unknown Vendor'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Vendor Risk Assessment */}
+              {selectedVendor && (
+                <div className={`p-4 rounded-lg border ${
+                  selectedVendor.risk_category === 'low' ? 'bg-green-50 border-green-200' :
+                  selectedVendor.risk_category === 'medium' ? 'bg-yellow-50 border-yellow-200' :
+                  'bg-red-50 border-red-200'
+                }`}>
+                  <h3 className="font-semibold text-gray-900 mb-2">⚠️ Vendor Risk Assessment</h3>
+                  <div className="text-sm">
+                    <strong>Risk Score:</strong> {selectedVendor.risk_score} / 100 - 
+                    <span className={`ml-2 font-bold ${
+                      selectedVendor.risk_category === 'low' ? 'text-green-700' :
+                      selectedVendor.risk_category === 'medium' ? 'text-yellow-700' :
+                      'text-red-700'
+                    }`}>
+                      {selectedVendor.risk_category.toUpperCase()} RISK
+                    </span>
+                  </div>
+                </div>
+              )}
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
