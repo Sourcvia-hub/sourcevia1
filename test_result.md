@@ -101,3 +101,162 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Implement auto-numbering system for all entities (Vendor, Tender, Contract, Invoice) with format Type-YY-NNNN (e.g., Vendor-25-0001).
+  All entities should be auto-approved and get numbers immediately on creation.
+  Contract creation must require tender selection and display tender RFP details as guidelines.
+  Show vendor risk score during contract creation.
+  Add search functionality to all list pages (by number, title, or name).
+
+backend:
+  - task: "Auto-number generation for Vendors"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added vendor_number field to Vendor model and generate_number() helper function. Updated create_vendor endpoint to generate Vendor-YY-NNNN format numbers. Uses MongoDB counters collection for atomic incrementing."
+  
+  - task: "Auto-number generation for Tenders"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added tender_number field to Tender model. Updated create_tender endpoint to generate Tender-YY-NNNN format numbers and auto-approve (status=PUBLISHED)."
+  
+  - task: "Auto-number generation for Contracts"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Made contract_number optional (auto-generated). Made tender_id required. Added tender and vendor validation. Generate Contract-YY-NNNN format numbers and auto-approve (status=APPROVED)."
+  
+  - task: "Auto-number generation for Invoices"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Made invoice_number optional (auto-generated). Added contract validation. Generate Invoice-YY-NNNN format numbers and auto-approve (status=APPROVED). Fixed notification code."
+  
+  - task: "Search functionality for all entities"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added search parameter to GET endpoints for vendors (by vendor_number/name/commercial_name), tenders (by tender_number/title/project_name), contracts (by contract_number/title), and invoices (by invoice_number/description)."
+  
+  - task: "Approved tenders list endpoint"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added GET /api/tenders/approved/list endpoint to return published tenders with essential fields for contract creation dropdown."
+
+frontend:
+  - task: "Contract creation with tender selection"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Contracts.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added tender selection dropdown showing tender_number. Display selected tender's RFP details (project, budget, requirements) as guidelines. Show vendor risk assessment score with color-coded display. Removed contract_number input field (auto-generated)."
+  
+  - task: "Search functionality on Contracts page"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Contracts.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added search input with debounce that searches contracts by contract_number or title."
+  
+  - task: "Search functionality on Tenders page"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Tenders.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added search input with debounce that searches tenders by tender_number, title, or project_name. Display tender_number on tender cards."
+  
+  - task: "Search functionality on Vendors page"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/Vendors.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added search input with debounce that searches vendors by vendor_number, name_english, or commercial_name. Display vendor_number on vendor cards."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Auto-number generation for all entities"
+    - "Contract creation with tender selection and validation"
+    - "Search functionality on all pages"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: |
+        Implemented complete auto-numbering system with format Type-YY-NNNN for all entities.
+        All entities are now auto-approved on creation.
+        Contract creation now requires tender selection and shows RFP guidelines and vendor risk score.
+        Added search functionality to all list pages.
+        Backend is running but needs comprehensive testing.
+        Please test all create endpoints (vendors, tenders, contracts, invoices) to verify:
+        1. Auto-numbering works correctly with sequential increments
+        2. Numbers are in correct format (e.g., Vendor-25-0001)
+        3. Search functionality works on all list endpoints
+        4. Contract creation validates tender_id and vendor_id
+        5. Tender list endpoint for approved tenders works
