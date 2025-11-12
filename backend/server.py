@@ -1280,6 +1280,7 @@ async def create_contract(contract: Contract, request: Request):
     # Check if Due Diligence is required
     vendor_risk = vendor.get('risk_category', 'low')
     classification = contract.outsourcing_classification
+    vendor_dd_completed = vendor.get('dd_completed', False)
     
     requires_due_diligence = (
         vendor_risk == 'high' or 
@@ -1287,27 +1288,20 @@ async def create_contract(contract: Contract, request: Request):
         classification == 'cloud_computing'
     )
     
-    if requires_due_diligence:
+    if requires_due_diligence and not vendor_dd_completed:
         # Set contract and vendor to pending_due_diligence status
         contract.status = ContractStatus.PENDING_DUE_DILIGENCE
         
-        # Update vendor status to pending_due_diligence
+        # Update vendor to require and pending due diligence
         await db.vendors.update_one(
             {"id": contract.vendor_id},
-            {"$set": {"status": VendorStatus.PENDING_DUE_DILIGENCE.value}}
+            {"$set": {
+                "status": VendorStatus.PENDING_DUE_DILIGENCE.value,
+                "dd_required": True
+            }}
         )
-        
-        # Create Due Diligence Questionnaire record
-        dd_quest = DueDiligenceQuestionnaire(
-            contract_id=contract.id,
-            vendor_id=contract.vendor_id
-        )
-        dd_doc = dd_quest.model_dump()
-        dd_doc["created_at"] = dd_doc["created_at"].isoformat()
-        dd_doc["updated_at"] = dd_doc["updated_at"].isoformat()
-        await db.due_diligence.insert_one(dd_doc)
     else:
-        # Auto-approve if no due diligence required
+        # Auto-approve if no due diligence required or already completed
         contract.status = ContractStatus.APPROVED
     contract_doc["start_date"] = contract_doc["start_date"].isoformat()
     contract_doc["end_date"] = contract_doc["end_date"].isoformat()
