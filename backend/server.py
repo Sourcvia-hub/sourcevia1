@@ -505,45 +505,7 @@ async def get_vendor(vendor_id: str, request: Request):
     
     return vendor
 
-@api_router.put("/vendors/{vendor_id}/approve")
-async def approve_vendor(vendor_id: str, request: Request):
-    """Approve vendor"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
-    
-    result = await db.vendors.update_one(
-        {"id": vendor_id},
-        {
-            "$set": {
-                "status": VendorStatus.APPROVED.value,
-                "updated_at": datetime.now(timezone.utc).isoformat()
-            }
-        }
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Vendor not found")
-    
-    return {"message": "Vendor approved"}
-
-@api_router.put("/vendors/{vendor_id}/reject")
-async def reject_vendor(vendor_id: str, request: Request):
-    """Reject vendor"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
-    
-    result = await db.vendors.update_one(
-        {"id": vendor_id},
-        {
-            "$set": {
-                "status": VendorStatus.REJECTED.value,
-                "updated_at": datetime.now(timezone.utc).isoformat()
-            }
-        }
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Vendor not found")
-    
-    return {"message": "Vendor rejected"}
+# Vendor approval/rejection removed - all vendors are auto-approved
 
 # ==================== TENDER ENDPOINTS ====================
 @api_router.post("/tenders")
