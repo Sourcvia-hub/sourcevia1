@@ -10,7 +10,6 @@ const API = `${BACKEND_URL}/api`;
 const Vendors = () => {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [formData, setFormData] = useState({
     // Company Information
