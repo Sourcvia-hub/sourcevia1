@@ -30,7 +30,6 @@ const Layout = ({ children }) => {
       procurement_officer: 'bg-blue-100 text-blue-800',
       project_manager: 'bg-green-100 text-green-800',
       system_admin: 'bg-purple-100 text-purple-800',
-      vendor: 'bg-orange-100 text-orange-800',
     };
     return colors[role] || 'bg-gray-100 text-gray-800';
   };
@@ -40,7 +39,6 @@ const Layout = ({ children }) => {
       procurement_officer: 'Procurement Officer',
       project_manager: 'Project Manager',
       system_admin: 'System Admin',
-      vendor: 'Vendor',
     };
     return labels[role] || role;
   };
