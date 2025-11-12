@@ -189,20 +189,14 @@ class Notification(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 # ==================== AUTH HELPERS ====================
-async def get_session_data(session_id: str) -> Optional[Dict[str, Any]]:
-    """Exchange session_id for user data from Emergent Auth"""
-    url = "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data"
-    headers = {"X-Session-ID": session_id}
-    
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(url, headers=headers) as response:
-                if response.status == 200:
-                    return await response.json()
-                return None
-        except Exception as e:
-            logging.error(f"Error fetching session data: {e}")
-            return None
+def hash_password(password: str) -> str:
+    """Simple password hashing (in production, use bcrypt or passlib)"""
+    import hashlib
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify password against hash"""
+    return hash_password(plain_password) == hashed_password
 
 async def get_current_user(request: Request) -> Optional[User]:
     """Get current user from session token"""
