@@ -116,7 +116,7 @@ const TenderEvaluation = () => {
         {/* Evaluation Criteria Info */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Evaluation Criteria & Weights</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-white p-4 rounded-lg">
               <p className="text-sm text-gray-600">Vendor Reliability & Stability</p>
               <p className="text-2xl font-bold text-blue-600">20%</p>
@@ -137,9 +137,14 @@ const TenderEvaluation = () => {
               <p className="text-2xl font-bold text-orange-600">10%</p>
               <p className="text-xs text-gray-500 mt-1">Score: 1-5 (auto-calculated)</p>
             </div>
+            <div className="bg-white p-4 rounded-lg border-2 border-red-300">
+              <p className="text-sm text-gray-600">Meets Requirements</p>
+              <p className="text-2xl font-bold text-red-600">40%</p>
+              <p className="text-xs text-gray-500 mt-1">Score: 1-5</p>
+            </div>
           </div>
           <p className="text-xs text-gray-600 mt-4">
-            * Total weight shown: 60%. Remaining 40% may be allocated to additional criteria or reserved for committee decision.
+            * Total weight: 100% (20% + 20% + 10% + 10% + 40%)
           </p>
         </div>
 
