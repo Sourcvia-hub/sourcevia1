@@ -955,6 +955,7 @@ class ProposalEvaluationRequest(BaseModel):
     delivery_warranty_backup: float = Field(ge=1, le=5)
     technical_experience: float = Field(ge=1, le=5)
     cost_score: float = Field(ge=1, le=5)
+    meets_requirements: float = Field(ge=1, le=5)
 
 @api_router.post("/tenders/{tender_id}/proposals/{proposal_id}/evaluate")
 async def evaluate_proposal(tender_id: str, proposal_id: str, evaluation: ProposalEvaluationRequest, request: Request):
