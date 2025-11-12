@@ -73,13 +73,53 @@ const Contracts = () => {
   const handleTenderSelect = async (tenderId) => {
     const tender = tenders.find(t => t.id === tenderId);
     setSelectedTender(tender);
-    setFormData({
-      ...formData,
-      tender_id: tenderId,
-      title: tender ? `Contract for ${tender.title}` : '',
-      sow: tender ? tender.requirements : '',
-      value: tender ? tender.budget : ''
-    });
+    
+    // Fetch tender evaluation to get #1 ranked vendor
+    try {
+      const evalResponse = await axios.post(`${API}/tenders/${tenderId}/evaluate`, {}, { withCredentials: true });
+      
+      // Find the proposal with highest score (rank 1)
+      const topProposal = evalResponse.data.proposals
+        .filter(p => p.evaluated)
+        .sort((a, b) => b.final_score - a.final_score)[0];
+      
+      if (topProposal) {
+        // Auto-select the winning vendor
+        const winningVendor = vendors.find(v => v.id === topProposal.vendor_id);
+        setSelectedVendor(winningVendor);
+        
+        setFormData({
+          ...formData,
+          tender_id: tenderId,
+          vendor_id: topProposal.vendor_id,
+          title: tender ? `Contract for ${tender.title}` : '',
+          sow: tender ? tender.requirements : '',
+          value: tender ? tender.budget : ''
+        });
+      } else {
+        // No evaluated proposals yet
+        setFormData({
+          ...formData,
+          tender_id: tenderId,
+          vendor_id: '',
+          title: tender ? `Contract for ${tender.title}` : '',
+          sow: tender ? tender.requirements : '',
+          value: tender ? tender.budget : ''
+        });
+        setSelectedVendor(null);
+        alert('No evaluated proposals found for this tender. Please evaluate proposals first.');
+      }
+    } catch (error) {
+      console.error('Error fetching tender evaluation:', error);
+      setFormData({
+        ...formData,
+        tender_id: tenderId,
+        vendor_id: '',
+        title: tender ? `Contract for ${tender.title}` : '',
+        sow: tender ? tender.requirements : '',
+        value: tender ? tender.budget : ''
+      });
+    }
   };
 
   const handleVendorSelect = async (vendorId) => {
