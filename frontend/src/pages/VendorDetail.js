@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import VendorForm from '../components/VendorForm';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
+import DueDiligenceQuestionnaire from '../components/DueDiligenceQuestionnaire';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
