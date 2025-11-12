@@ -1122,8 +1122,17 @@ async def get_expiring_contracts(request: Request, days: int = 30):
 # ==================== INVOICE ENDPOINTS ====================
 @api_router.post("/invoices")
 async def submit_invoice(invoice: Invoice, request: Request):
-    """Submit invoice (Procurement Officer can submit on behalf of vendor)"""
+    """Submit invoice - Auto-approved with generated number"""
     await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
+    
+    # Verify contract exists
+    contract = await db.contracts.find_one({"id": invoice.contract_id})
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    
+    # Auto-approve and generate invoice number
+    invoice.status = InvoiceStatus.APPROVED
+    invoice.invoice_number = await generate_number("Invoice")
     
     # vendor_id should be provided in the invoice object
     invoice_doc = invoice.model_dump()
