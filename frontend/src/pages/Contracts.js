@@ -30,6 +30,7 @@ const Contracts = () => {
   useEffect(() => {
     fetchContracts();
     fetchVendors();
+    fetchTenders();
   }, []);
 
   const fetchContracts = async () => {
