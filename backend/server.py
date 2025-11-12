@@ -168,6 +168,21 @@ class Tender(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class EvaluationCriteria(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    vendor_reliability_stability: float = 0.0  # Score 1-5
+    delivery_warranty_backup: float = 0.0  # Score 1-5
+    technical_experience: float = 0.0  # Score 1-5
+    cost_score: float = 0.0  # Score 1-5
+    
+    # Calculated fields
+    vendor_reliability_weighted: float = 0.0  # 20% weight
+    delivery_warranty_weighted: float = 0.0  # 20% weight
+    technical_experience_weighted: float = 0.0  # 10% weight
+    cost_weighted: float = 0.0  # 10% weight
+    total_score: float = 0.0  # Sum of weighted scores
+    
 class Proposal(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
@@ -176,9 +191,17 @@ class Proposal(BaseModel):
     vendor_id: str
     technical_proposal: str
     financial_proposal: float
+    
+    # Evaluation scores
+    evaluation: Optional[EvaluationCriteria] = None
+    evaluated_by: Optional[str] = None  # User ID who evaluated
+    evaluated_at: Optional[datetime] = None
+    
+    # Legacy fields (kept for compatibility)
     technical_score: float = 0.0
     financial_score: float = 0.0
     final_score: float = 0.0
+    
     documents: List[str] = []
     submitted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
