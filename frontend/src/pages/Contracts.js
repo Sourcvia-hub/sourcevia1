@@ -426,6 +426,11 @@ const Contracts = () => {
                 </label>
               </div>
 
+              {/* Outsourcing Assessment Questionnaire */}
+              <div className="border-t pt-6 mt-6">
+                <OutsourcingQuestionnaire formData={formData} setFormData={setFormData} />
+              </div>
+
               <div className="flex space-x-4 pt-4">
                 <button
                   type="button"
