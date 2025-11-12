@@ -12,6 +12,7 @@ const Invoices = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [contracts, setContracts] = useState([]);
+  const [vendors, setVendors] = useState([]);
 
   const [formData, setFormData] = useState({
     invoice_number: '',
