@@ -223,7 +223,7 @@ class Contract(BaseModel):
     end_date: datetime
     is_outsourcing: bool = False
     status: ContractStatus = ContractStatus.DRAFT
-    created_by: str  # user ID
+    created_by: Optional[str] = None  # user ID who created
     approved_by: Optional[str] = None  # user ID
     documents: List[str] = []
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
