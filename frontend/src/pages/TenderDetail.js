@@ -165,12 +165,20 @@ const TenderDetail = () => {
           </button>
           <div className="flex gap-3">
             {user?.role === 'procurement_officer' && tender?.status === 'published' && (
-              <button
-                onClick={() => navigate(`/tenders/${id}/evaluate`)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Go to Evaluation
-              </button>
+              <>
+                <button
+                  onClick={() => setShowProposalModal(true)}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  Submit Proposal
+                </button>
+                <button
+                  onClick={() => navigate(`/tenders/${id}/evaluate`)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Go to Evaluation
+                </button>
+              </>
             )}
             {user?.role === 'procurement_officer' && (
               <button
