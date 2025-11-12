@@ -1038,13 +1038,20 @@ async def create_contract(contract: Contract, request: Request):
     return result
 
 @api_router.get("/contracts")
-async def get_contracts(request: Request, status: Optional[ContractStatus] = None):
-    """Get all contracts"""
+async def get_contracts(request: Request, status: Optional[ContractStatus] = None, search: Optional[str] = None):
+    """Get all contracts with optional search by contract_number or title"""
     await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER, UserRole.SYSTEM_ADMIN])
     
     query = {}
     if status:
         query["status"] = status.value
+    
+    # Add search functionality
+    if search:
+        query["$or"] = [
+            {"contract_number": {"$regex": search, "$options": "i"}},
+            {"title": {"$regex": search, "$options": "i"}}
+        ]
     
     contracts = await db.contracts.find(query).to_list(1000)
     
