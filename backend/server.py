@@ -365,9 +365,11 @@ async def update_user_role(user_id: str, role: UserRole, request: Request):
     return {"message": "Role updated"}
 
 # ==================== VENDOR ENDPOINTS ====================
-@api_router.post("/vendors/register")
-async def register_vendor(vendor: Vendor):
-    """Public endpoint for vendor registration"""
+@api_router.post("/vendors")
+async def create_vendor(vendor: Vendor, request: Request):
+    """Create a new vendor (Procurement Officer only)"""
+    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
+    
     # Calculate risk score (simple example)
     risk_score = 0.0
     if not vendor.documents:
@@ -388,19 +390,6 @@ async def register_vendor(vendor: Vendor):
     vendor_doc["updated_at"] = vendor_doc["updated_at"].isoformat()
     
     await db.vendors.insert_one(vendor_doc)
-    
-    # Create notification for procurement officers
-    procurement_users = await db.users.find({"role": UserRole.PROCUREMENT_OFFICER.value}).to_list(100)
-    for user in procurement_users:
-        notif = Notification(
-            user_id=user["id"],
-            title="New Vendor Registration",
-            message=f"New vendor {vendor.company_name} has registered",
-            type="info"
-        )
-        notif_doc = notif.model_dump()
-        notif_doc["created_at"] = notif_doc["created_at"].isoformat()
-        await db.notifications.insert_one(notif_doc)
     
     return vendor.model_dump()
 
