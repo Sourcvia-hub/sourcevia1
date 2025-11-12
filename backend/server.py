@@ -553,6 +553,9 @@ async def create_vendor(vendor: Vendor, request: Request):
     vendor.status = VendorStatus.APPROVED
     vendor.created_by = user.id
     
+    # Generate vendor number
+    vendor.vendor_number = await generate_number("Vendor")
+    
     vendor_doc = vendor.model_dump()
     vendor_doc["created_at"] = vendor_doc["created_at"].isoformat()
     vendor_doc["updated_at"] = vendor_doc["updated_at"].isoformat()
