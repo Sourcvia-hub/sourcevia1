@@ -6,7 +6,7 @@ Tests auto-numbering system and search functionality
 
 import requests
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import sys
 
 # Configuration
