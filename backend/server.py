@@ -967,7 +967,7 @@ async def create_contract(contract: Contract, request: Request):
 @api_router.get("/contracts")
 async def get_contracts(request: Request, status: Optional[ContractStatus] = None):
     """Get all contracts"""
-    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER, UserRole.SYSTEM_ADMIN])
+    user = await require_auth(request)
     
     query = {}
     if status:
@@ -975,7 +975,12 @@ async def get_contracts(request: Request, status: Optional[ContractStatus] = Non
     
     contracts = await db.contracts.find(query).to_list(1000)
     
+    result = []
     for contract in contracts:
+        # Remove MongoDB _id
+        if '_id' in contract:
+            del contract['_id']
+        
         if isinstance(contract.get('start_date'), str):
             contract['start_date'] = datetime.fromisoformat(contract['start_date'])
         if isinstance(contract.get('end_date'), str):
@@ -984,8 +989,10 @@ async def get_contracts(request: Request, status: Optional[ContractStatus] = Non
             contract['created_at'] = datetime.fromisoformat(contract['created_at'])
         if isinstance(contract.get('updated_at'), str):
             contract['updated_at'] = datetime.fromisoformat(contract['updated_at'])
+        
+        result.append(contract)
     
-    return contracts
+    return result
 
 @api_router.get("/contracts/{contract_id}")
 async def get_contract(contract_id: str, request: Request):
