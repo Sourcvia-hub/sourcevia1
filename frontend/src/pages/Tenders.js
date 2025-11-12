@@ -127,9 +127,8 @@ const Tenders = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {tenders.map((tender) => (
-              <Link
+              <div
                 key={tender.id}
-                to={`/tenders/${tender.id}`}
                 className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex justify-between items-start mb-4">
