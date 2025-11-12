@@ -211,6 +211,9 @@ const Vendors = () => {
               >
                 <div className="mb-4">
                   <h3 className="text-xl font-bold text-gray-900">{vendor.name_english || vendor.company_name}</h3>
+                  {vendor.vendor_number && (
+                    <p className="text-xs text-blue-600 font-medium mt-1">#{vendor.vendor_number}</p>
+                  )}
                   <p className="text-sm text-gray-600 mt-1">{vendor.commercial_name || vendor.company_name}</p>
                   <p className="text-sm text-gray-600">{vendor.email || vendor.contact_email}</p>
                 </div>
