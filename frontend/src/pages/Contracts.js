@@ -148,6 +148,17 @@ const Contracts = () => {
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="bg-white rounded-xl shadow-md p-4">
+          <input
+            type="text"
+            placeholder="Search by contract number or title..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
