@@ -141,9 +141,7 @@ const Invoices = () => {
           <div className="bg-white rounded-xl shadow-md p-12 text-center">
             <span className="text-6xl mb-4 block">💰</span>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No invoices found</h3>
-            <p className="text-gray-600">
-              {user?.role === 'vendor' ? 'Submit your first invoice to get started.' : 'No invoices have been submitted yet.'}
-            </p>
+            <p className="text-gray-600">No invoices have been submitted yet.</p>
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
