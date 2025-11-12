@@ -850,6 +850,39 @@ async def get_approved_tenders(request: Request):
     
     return result
 
+@api_router.put("/tenders/{tender_id}")
+async def update_tender(tender_id: str, tender: Tender, request: Request):
+    """Update tender"""
+    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER])
+    
+    # Check if tender exists
+    existing_tender = await db.tenders.find_one({"id": tender_id})
+    if not existing_tender:
+        raise HTTPException(status_code=404, detail="Tender not found")
+    
+    # Prepare update data
+    update_data = {
+        "title": tender.title,
+        "description": tender.description,
+        "project_name": tender.project_name,
+        "requirements": tender.requirements,
+        "budget": tender.budget,
+        "deadline": tender.deadline.isoformat(),
+        "invited_vendors": tender.invited_vendors,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Update tender
+    result = await db.tenders.update_one(
+        {"id": tender_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Tender not found")
+    
+    return {"message": "Tender updated successfully"}
+
 @api_router.put("/tenders/{tender_id}/publish")
 async def publish_tender(tender_id: str, request: Request):
     """Publish tender"""
