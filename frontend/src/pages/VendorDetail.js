@@ -13,6 +13,10 @@ const VendorDetail = () => {
   const { user } = useAuth();
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [auditLog, setAuditLog] = useState([]);
+  const [createdByUser, setCreatedByUser] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState(null);
 
   useEffect(() => {
     fetchVendor();
