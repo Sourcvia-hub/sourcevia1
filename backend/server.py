@@ -582,13 +582,21 @@ async def create_vendor(vendor: Vendor, request: Request):
     return vendor.model_dump()
 
 @api_router.get("/vendors")
-async def get_vendors(request: Request, status: Optional[VendorStatus] = None):
-    """Get all vendors"""
+async def get_vendors(request: Request, status: Optional[VendorStatus] = None, search: Optional[str] = None):
+    """Get all vendors with optional search by vendor_number or name"""
     await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
     
     query = {}
     if status:
         query["status"] = status.value
+    
+    # Add search functionality
+    if search:
+        query["$or"] = [
+            {"vendor_number": {"$regex": search, "$options": "i"}},
+            {"name_english": {"$regex": search, "$options": "i"}},
+            {"commercial_name": {"$regex": search, "$options": "i"}}
+        ]
     
     vendors = await db.vendors.find(query).to_list(1000)
     
