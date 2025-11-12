@@ -96,9 +96,18 @@ const Contracts = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Contract Management</h1>
-          <p className="text-gray-600 mt-1">Manage service agreements and contracts</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Contract Management</h1>
+            <p className="text-gray-600 mt-1">Manage service agreements and contracts</p>
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            data-testid="create-contract-btn"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            Create Contract
+          </button>
         </div>
 
         {loading ? (
