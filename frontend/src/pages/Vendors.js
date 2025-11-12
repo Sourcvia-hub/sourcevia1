@@ -10,6 +10,18 @@ const Vendors = () => {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [formData, setFormData] = useState({
+    company_name: '',
+    cr_number: '',
+    vat_number: '',
+    address: '',
+    contact_person: '',
+    contact_email: '',
+    contact_phone: '',
+    bank_name: '',
+    bank_account: '',
+  });
 
   useEffect(() => {
     fetchVendors();
