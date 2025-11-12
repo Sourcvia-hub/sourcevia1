@@ -170,52 +170,6 @@ const Vendors = () => {
           </button>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-xl shadow-md p-4">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              All Vendors
-            </button>
-            <button
-              onClick={() => setFilter('pending')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === 'pending'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Pending
-            </button>
-            <button
-              onClick={() => setFilter('approved')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === 'approved'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Approved
-            </button>
-            <button
-              onClick={() => setFilter('rejected')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === 'rejected'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Rejected
-            </button>
-          </div>
-        </div>
-
         {/* Vendors List */}
         {loading ? (
           <div className="flex items-center justify-center h-64">
