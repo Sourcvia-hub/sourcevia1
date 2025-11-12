@@ -346,13 +346,18 @@ const TenderDetail = () => {
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="">Select a vendor</option>
-                  {vendors.map((vendor) => (
-                    <option key={vendor.id} value={vendor.id}>
-                      {vendor.vendor_number ? `${vendor.vendor_number} - ` : ''}{vendor.name_english || vendor.commercial_name}
-                    </option>
-                  ))}
+                  <option value="">Select an invited vendor</option>
+                  {vendors
+                    .filter(vendor => tender?.invited_vendors?.includes(vendor.id))
+                    .map((vendor) => (
+                      <option key={vendor.id} value={vendor.id}>
+                        {vendor.vendor_number ? `${vendor.vendor_number} - ` : ''}{vendor.name_english || vendor.commercial_name}
+                      </option>
+                    ))}
                 </select>
+                {vendors.filter(vendor => tender?.invited_vendors?.includes(vendor.id)).length === 0 && (
+                  <p className="text-sm text-red-600 mt-1">No vendors have been invited to this tender yet.</p>
+                )}
               </div>
 
               <div>
