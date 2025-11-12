@@ -1195,12 +1195,15 @@ async def submit_invoice(invoice: Invoice, request: Request):
     await db.invoices.insert_one(invoice_doc)
     
     # Notify procurement officers
+    vendor = await db.vendors.find_one({"id": invoice.vendor_id})
+    vendor_name = vendor.get("name_english", "Unknown") if vendor else "Unknown"
+    
     procurement_users = await db.users.find({"role": UserRole.PROCUREMENT_OFFICER.value}).to_list(100)
     for po_user in procurement_users:
         notif = Notification(
             user_id=po_user["id"],
             title="New Invoice Submitted",
-            message=f"Invoice {invoice.invoice_number} submitted by {vendor['company_name']}",
+            message=f"Invoice {invoice.invoice_number} submitted for vendor {vendor_name}",
             type="approval"
         )
         notif_doc = notif.model_dump()
