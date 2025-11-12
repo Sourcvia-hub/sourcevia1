@@ -580,7 +580,107 @@ async def get_vendor(vendor_id: str, request: Request):
     
     return vendor
 
-# Vendor approval/rejection removed - all vendors are auto-approved
+@api_router.put("/vendors/{vendor_id}")
+async def update_vendor(vendor_id: str, vendor_update: Vendor, request: Request):
+    """Update vendor information"""
+    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
+    
+    # Get existing vendor
+    existing_vendor = await db.vendors.find_one({"id": vendor_id})
+    if not existing_vendor:
+        raise HTTPException(status_code=404, detail="Vendor not found")
+    
+    # Recalculate risk assessment
+    risk_details = {}
+    risk_score = 0.0
+    
+    if not vendor_update.documents or len(vendor_update.documents) == 0:
+        risk_score += 30
+        risk_details["missing_documents"] = {"score": 30, "reason": "No documents uploaded"}
+    
+    if not vendor_update.bank_name or not vendor_update.iban:
+        risk_score += 20
+        risk_details["incomplete_banking"] = {"score": 20, "reason": "Missing bank information"}
+    
+    if vendor_update.cr_expiry_date:
+        days_to_expiry = (vendor_update.cr_expiry_date - datetime.now(timezone.utc)).days
+        if days_to_expiry < 90:
+            risk_score += 15
+            risk_details["cr_expiring_soon"] = {"score": 15, "reason": f"CR expires in {days_to_expiry} days"}
+    
+    if not vendor_update.license_number:
+        risk_score += 10
+        risk_details["missing_license"] = {"score": 10, "reason": "No license number provided"}
+    
+    if vendor_update.number_of_employees < 5:
+        risk_score += 10
+        risk_details["small_team"] = {"score": 10, "reason": f"Only {vendor_update.number_of_employees} employees"}
+    
+    vendor_update.risk_score = risk_score
+    vendor_update.risk_assessment_details = risk_details
+    
+    if risk_score >= 50:
+        vendor_update.risk_category = RiskCategory.HIGH
+    elif risk_score >= 25:
+        vendor_update.risk_category = RiskCategory.MEDIUM
+    else:
+        vendor_update.risk_category = RiskCategory.LOW
+    
+    vendor_update.updated_at = datetime.now(timezone.utc)
+    vendor_update.id = vendor_id  # Preserve ID
+    vendor_update.created_by = existing_vendor.get("created_by")  # Preserve creator
+    vendor_update.created_at = datetime.fromisoformat(existing_vendor["created_at"]) if isinstance(existing_vendor.get("created_at"), str) else existing_vendor.get("created_at")
+    
+    # Track changes
+    changes = {}
+    for field in ["name_english", "vat_number", "cr_number", "mobile", "email"]:
+        old_value = existing_vendor.get(field)
+        new_value = getattr(vendor_update, field)
+        if old_value != new_value:
+            changes[field] = {"old": old_value, "new": new_value}
+    
+    vendor_doc = vendor_update.model_dump()
+    vendor_doc["created_at"] = vendor_doc["created_at"].isoformat()
+    vendor_doc["updated_at"] = vendor_doc["updated_at"].isoformat()
+    if vendor_doc.get("cr_expiry_date"):
+        vendor_doc["cr_expiry_date"] = vendor_doc["cr_expiry_date"].isoformat()
+    if vendor_doc.get("license_expiry_date"):
+        vendor_doc["license_expiry_date"] = vendor_doc["license_expiry_date"].isoformat()
+    
+    await db.vendors.update_one({"id": vendor_id}, {"$set": vendor_doc})
+    
+    # Create audit log
+    audit_log = AuditLog(
+        entity_type="vendor",
+        entity_id=vendor_id,
+        action="updated",
+        user_id=user.id,
+        user_name=user.name,
+        changes=changes
+    )
+    audit_doc = audit_log.model_dump()
+    audit_doc["timestamp"] = audit_doc["timestamp"].isoformat()
+    await db.audit_logs.insert_one(audit_doc)
+    
+    return vendor_update.model_dump()
+
+@api_router.get("/vendors/{vendor_id}/audit-log")
+async def get_vendor_audit_log(vendor_id: str, request: Request):
+    """Get audit log for a vendor"""
+    await require_auth(request)
+    
+    logs = await db.audit_logs.find({"entity_type": "vendor", "entity_id": vendor_id}).sort("timestamp", -1).to_list(100)
+    
+    # Remove _id and convert timestamps
+    result = []
+    for log in logs:
+        if '_id' in log:
+            del log['_id']
+        if isinstance(log.get('timestamp'), str):
+            log['timestamp'] = datetime.fromisoformat(log['timestamp'])
+        result.append(log)
+    
+    return result
 
 # ==================== TENDER ENDPOINTS ====================
 @api_router.post("/tenders")
