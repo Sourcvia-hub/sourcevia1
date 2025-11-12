@@ -436,7 +436,7 @@ async def update_user_role(user_id: str, role: UserRole, request: Request):
 # ==================== VENDOR ENDPOINTS ====================
 @api_router.post("/vendors")
 async def create_vendor(vendor: Vendor, request: Request):
-    """Create a new vendor (Procurement Officer only)"""
+    """Create a new vendor (Procurement Officer only) - Auto-approved"""
     await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
     
     # Calculate risk score (simple example)
@@ -454,9 +454,16 @@ async def create_vendor(vendor: Vendor, request: Request):
     else:
         vendor.risk_category = RiskCategory.LOW
     
+    # Auto-approve vendor
+    vendor.status = VendorStatus.APPROVED
+    
     vendor_doc = vendor.model_dump()
     vendor_doc["created_at"] = vendor_doc["created_at"].isoformat()
     vendor_doc["updated_at"] = vendor_doc["updated_at"].isoformat()
+    if vendor_doc.get("cr_expiry_date"):
+        vendor_doc["cr_expiry_date"] = vendor_doc["cr_expiry_date"].isoformat()
+    if vendor_doc.get("license_expiry_date"):
+        vendor_doc["license_expiry_date"] = vendor_doc["license_expiry_date"].isoformat()
     
     await db.vendors.insert_one(vendor_doc)
     
