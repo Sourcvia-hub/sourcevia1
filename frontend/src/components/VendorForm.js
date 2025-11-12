@@ -1,6 +1,6 @@
 import React from 'react';
 
-const VendorForm = ({ formData, setFormData, onSubmit, onCancel }) => {
+const VendorForm = ({ formData, setFormData, onSubmit, onCancel, isEdit = false }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
