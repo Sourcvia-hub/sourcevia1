@@ -152,7 +152,7 @@ const VendorDetail = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-600">Company Name</p>
-                  <p className="text-gray-900 font-medium mt-1">{vendor.company_name}</p>
+                  <p className="text-gray-900 font-medium mt-1">{vendor.name_english || vendor.commercial_name || vendor.company_name}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">CR Number</p>
