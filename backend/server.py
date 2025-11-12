@@ -487,20 +487,11 @@ async def create_tender(tender: Tender, request: Request):
 @api_router.get("/tenders")
 async def get_tenders(request: Request, status: Optional[TenderStatus] = None):
     """Get all tenders"""
-    user = await require_auth(request)
+    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER, UserRole.SYSTEM_ADMIN])
     
     query = {}
     if status:
         query["status"] = status.value
-    
-    # Vendors can only see tenders they're invited to
-    if user.role == UserRole.VENDOR:
-        # Find vendor ID for this user
-        vendor = await db.vendors.find_one({"contact_email": user.email})
-        if vendor:
-            query["invited_vendors"] = vendor["id"]
-        else:
-            return []
     
     tenders = await db.tenders.find(query).to_list(1000)
     
