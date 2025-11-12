@@ -1166,7 +1166,10 @@ async def create_contract(contract: Contract, request: Request):
     contract.status = ContractStatus.APPROVED
     contract.contract_number = await generate_number("Contract")
     
+    # Calculate outsourcing classification based on questionnaire
     contract_doc = contract.model_dump()
+    contract.outsourcing_classification = determine_outsourcing_classification(contract_doc)
+    contract_doc["outsourcing_classification"] = contract.outsourcing_classification
     contract_doc["start_date"] = contract_doc["start_date"].isoformat()
     contract_doc["end_date"] = contract_doc["end_date"].isoformat()
     contract_doc["created_at"] = contract_doc["created_at"].isoformat()
