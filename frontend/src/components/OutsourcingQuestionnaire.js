@@ -210,6 +210,35 @@ const OutsourcingQuestionnaire = ({ formData, setFormData }) => {
               </label>
             </div>
           </div>
+
+          {/* A5 */}
+          <div className="bg-white p-3 rounded-lg">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              A5. Is the provided service hosted in the cloud?
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="a5"
+                  checked={formData.a5_cloud_hosted === true}
+                  onChange={() => handleCheckboxChange('a5_cloud_hosted', true)}
+                  className="mr-2"
+                />
+                Yes
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="a5"
+                  checked={formData.a5_cloud_hosted === false}
+                  onChange={() => handleCheckboxChange('a5_cloud_hosted', false)}
+                  className="mr-2"
+                />
+                No
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
