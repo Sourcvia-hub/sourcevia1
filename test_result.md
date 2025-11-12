@@ -187,15 +187,18 @@ backend:
   
   - task: "Approved tenders list endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Added GET /api/tenders/approved/list endpoint to return published tenders with essential fields for contract creation dropdown."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Approved tenders endpoint works perfectly. Returns published tenders with all essential fields (id, tender_number, title, project_name, requirements, budget) required for contract creation dropdown."
 
 frontend:
   - task: "Contract creation with tender selection"
