@@ -17,6 +17,12 @@ const TenderDetail = () => {
   const [proposals, setProposals] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFormData, setEditFormData] = useState(null);
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [proposalForm, setProposalForm] = useState({
+    vendor_id: '',
+    technical_proposal: '',
+    financial_proposal: ''
+  });
 
   useEffect(() => {
     fetchTender();
