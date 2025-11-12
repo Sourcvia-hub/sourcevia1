@@ -179,13 +179,15 @@ class EvaluationCriteria(BaseModel):
     delivery_warranty_backup: float = 0.0  # Score 1-5
     technical_experience: float = 0.0  # Score 1-5
     cost_score: float = 0.0  # Score 1-5
+    meets_requirements: float = 0.0  # Score 1-5 (NEW)
     
     # Calculated fields
     vendor_reliability_weighted: float = 0.0  # 20% weight
     delivery_warranty_weighted: float = 0.0  # 20% weight
     technical_experience_weighted: float = 0.0  # 10% weight
     cost_weighted: float = 0.0  # 10% weight
-    total_score: float = 0.0  # Sum of weighted scores
+    meets_requirements_weighted: float = 0.0  # 40% weight (NEW)
+    total_score: float = 0.0  # Sum of weighted scores (100% total)
     
 class ProposalStatus(str, Enum):
     SUBMITTED = "submitted"
