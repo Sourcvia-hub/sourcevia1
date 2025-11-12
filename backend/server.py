@@ -816,6 +816,10 @@ async def get_tender(tender_id: str, request: Request):
     if not tender:
         raise HTTPException(status_code=404, detail="Tender not found")
     
+    # Remove MongoDB _id
+    if '_id' in tender:
+        del tender['_id']
+    
     if isinstance(tender.get('deadline'), str):
         tender['deadline'] = datetime.fromisoformat(tender['deadline'])
     if isinstance(tender.get('created_at'), str):
