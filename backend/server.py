@@ -248,6 +248,10 @@ class Contract(BaseModel):
     a4_clearing_settlement: Optional[bool] = None
     a4_correspondent_banking: Optional[bool] = None
     a4_utilities: Optional[bool] = None
+    a5_cloud_hosted: Optional[bool] = None
+    
+    # Calculated classification based on Section A
+    outsourcing_classification: Optional[str] = None  # "not_outsourcing", "outsourcing", "insourcing", "exempted", "cloud_computing"
     
     # Section B: Materiality Determination
     b1_material_impact_if_disrupted: Optional[bool] = None
