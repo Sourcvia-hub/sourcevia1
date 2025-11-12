@@ -76,6 +76,8 @@ const Tenders = () => {
       fetchTenders();
     } catch (error) {
       console.error('Error creating tender:', error);
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || error.message || 'Unknown error occurred';
+      alert('Failed to create tender: ' + errorMsg);
     }
   };
 
