@@ -142,15 +142,18 @@ backend:
   
   - task: "Auto-number generation for Contracts"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Made contract_number optional (auto-generated). Made tender_id required. Added tender and vendor validation. Generate Contract-YY-NNNN format numbers and auto-approve (status=APPROVED)."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Contract auto-numbering works perfectly. Creates contracts with Contract-25-NNNN format (e.g., Contract-25-0001). Auto-approved status working. Validation properly rejects invalid tender_id and vendor_id with 404 errors."
   
   - task: "Auto-number generation for Invoices"
     implemented: true
