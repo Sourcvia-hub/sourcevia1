@@ -65,8 +65,8 @@ const Dashboard = () => {
                 <div>
                   <p className="text-sm text-gray-600">Total Vendors</p>
                   <p className="text-3xl font-bold text-gray-900 mt-1">{stats.vendors.total}</p>
-                  <p className="text-sm text-green-600 mt-1">
-                    {stats.vendors.approved} approved
+                  <p className="text-sm text-gray-500 mt-1">
+                    All vendors active
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
