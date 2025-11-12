@@ -157,6 +157,7 @@ class Tender(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tender_number: Optional[str] = None  # Auto-generated (e.g., TND-2025-0001)
     title: str
     description: str
     project_name: str
