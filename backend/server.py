@@ -648,19 +648,11 @@ async def create_contract(contract: Contract, request: Request):
 @api_router.get("/contracts")
 async def get_contracts(request: Request, status: Optional[ContractStatus] = None):
     """Get all contracts"""
-    user = await require_auth(request)
+    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER, UserRole.SYSTEM_ADMIN])
     
     query = {}
     if status:
         query["status"] = status.value
-    
-    # Vendors can only see their own contracts
-    if user.role == UserRole.VENDOR:
-        vendor = await db.vendors.find_one({"contact_email": user.email})
-        if vendor:
-            query["vendor_id"] = vendor["id"]
-        else:
-            return []
     
     contracts = await db.contracts.find(query).to_list(1000)
     
