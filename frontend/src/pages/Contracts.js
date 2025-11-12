@@ -414,18 +414,6 @@ const Contracts = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_outsourcing}
-                    onChange={(e) => setFormData({ ...formData, is_outsourcing: e.target.checked })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">This is an outsourcing contract</span>
-                </label>
-              </div>
-
               {/* Outsourcing Assessment Questionnaire */}
               <div className="border-t pt-6 mt-6">
                 <OutsourcingQuestionnaire formData={formData} setFormData={setFormData} />
