@@ -1141,6 +1141,10 @@ async def get_contract(contract_id: str, request: Request):
     if not contract:
         raise HTTPException(status_code=404, detail="Contract not found")
     
+    # Remove MongoDB _id
+    if '_id' in contract:
+        del contract['_id']
+    
     if isinstance(contract.get('start_date'), str):
         contract['start_date'] = datetime.fromisoformat(contract['start_date'])
     if isinstance(contract.get('end_date'), str):
