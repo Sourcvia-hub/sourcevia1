@@ -189,26 +189,6 @@ const VendorDetail = () => {
               </div>
             </div>
 
-            {vendor.status === 'pending' && (user?.role === 'procurement_officer' || user?.role === 'system_admin') && (
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Actions</h2>
-                <div className="space-y-3">
-                  <button
-                    onClick={handleApprove}
-                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
-                  >
-                    Approve Vendor
-                  </button>
-                  <button
-                    onClick={handleReject}
-                    className="w-full px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-                  >
-                    Reject Vendor
-                  </button>
-                </div>
-              </div>
-            )}
-
             <div className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Registration Date</h2>
               <p className="text-gray-700">{new Date(vendor.created_at).toLocaleDateString()}</p>
