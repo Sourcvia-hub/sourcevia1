@@ -342,8 +342,8 @@ class ProcurementTester:
             "sow": "Test SOW",
             "sla": "Test SLA",
             "value": 100000.0,
-            "start_date": datetime.now().isoformat(),
-            "end_date": (datetime.now() + timedelta(days=90)).isoformat()
+            "start_date": datetime.now(timezone.utc).isoformat(),
+            "end_date": (datetime.now(timezone.utc) + timedelta(days=90)).isoformat()
         }
         
         try:
