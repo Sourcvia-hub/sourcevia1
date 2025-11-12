@@ -62,6 +62,27 @@ const Contracts = () => {
     }
   };
 
+  const handleTenderSelect = async (tenderId) => {
+    const tender = tenders.find(t => t.id === tenderId);
+    setSelectedTender(tender);
+    setFormData({
+      ...formData,
+      tender_id: tenderId,
+      title: tender ? `Contract for ${tender.title}` : '',
+      sow: tender ? tender.requirements : '',
+      value: tender ? tender.budget : ''
+    });
+  };
+
+  const handleVendorSelect = async (vendorId) => {
+    const vendor = vendors.find(v => v.id === vendorId);
+    setSelectedVendor(vendor);
+    setFormData({
+      ...formData,
+      vendor_id: vendorId
+    });
+  };
+
   const handleCreateContract = async (e) => {
     e.preventDefault();
     try {
@@ -79,8 +100,8 @@ const Contracts = () => {
       );
       setShowCreateModal(false);
       setFormData({
+        tender_id: '',
         vendor_id: '',
-        contract_number: '',
         title: '',
         sow: '',
         sla: '',
@@ -89,6 +110,8 @@ const Contracts = () => {
         end_date: '',
         is_outsourcing: false,
       });
+      setSelectedTender(null);
+      setSelectedVendor(null);
       fetchContracts();
     } catch (error) {
       console.error('Error creating contract:', error);
