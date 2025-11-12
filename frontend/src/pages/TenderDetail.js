@@ -93,6 +93,29 @@ const TenderDetail = () => {
     }
   };
 
+  const handleSubmitProposal = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        `${API}/tenders/${id}/proposals`,
+        {
+          vendor_id: proposalForm.vendor_id,
+          technical_proposal: proposalForm.technical_proposal,
+          financial_proposal: parseFloat(proposalForm.financial_proposal),
+          documents: []
+        },
+        { withCredentials: true }
+      );
+      setShowProposalModal(false);
+      setProposalForm({ vendor_id: '', technical_proposal: '', financial_proposal: '' });
+      fetchProposals();
+      alert('Proposal submitted successfully!');
+    } catch (error) {
+      console.error('Error submitting proposal:', error);
+      alert('Failed to submit proposal: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const getStatusBadgeColor = (status) => {
     const colors = {
       draft: 'bg-gray-100 text-gray-800',
