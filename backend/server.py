@@ -272,6 +272,9 @@ async def create_session(request: Request, response: Response):
     existing_user = await db.users.find_one({"email": user_data["email"]})
     
     if existing_user:
+        # Convert datetime strings back to datetime objects
+        if isinstance(existing_user.get('created_at'), str):
+            existing_user['created_at'] = datetime.fromisoformat(existing_user['created_at'])
         user = User(**existing_user)
     else:
         # Create new user with default vendor role
