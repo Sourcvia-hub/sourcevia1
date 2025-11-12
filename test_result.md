@@ -127,15 +127,18 @@ backend:
   
   - task: "Auto-number generation for Tenders"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Added tender_number field to Tender model. Updated create_tender endpoint to generate Tender-YY-NNNN format numbers and auto-approve (status=PUBLISHED)."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Tender auto-numbering works perfectly. Creates tenders with Tender-25-NNNN format (e.g., Tender-25-0003, Tender-25-0004). Sequential numbering confirmed. Auto-published status working correctly."
   
   - task: "Auto-number generation for Contracts"
     implemented: true
