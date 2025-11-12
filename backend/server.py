@@ -743,10 +743,15 @@ async def get_vendor_audit_log(vendor_id: str, request: Request):
 # ==================== TENDER ENDPOINTS ====================
 @api_router.post("/tenders")
 async def create_tender(tender: Tender, request: Request):
-    """Create new tender"""
+    """Create new tender - Auto-approved with generated number"""
     user = await require_role(request, [UserRole.PROCUREMENT_OFFICER])
     
     tender.created_by = user.id
+    
+    # Auto-approve and generate tender number
+    tender.status = TenderStatus.PUBLISHED
+    tender.tender_number = await generate_number("Tender")
+    
     tender_doc = tender.model_dump()
     tender_doc["deadline"] = tender_doc["deadline"].isoformat()
     tender_doc["created_at"] = tender_doc["created_at"].isoformat()
