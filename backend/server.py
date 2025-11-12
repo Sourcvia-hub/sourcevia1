@@ -772,19 +772,11 @@ async def submit_invoice(invoice: Invoice, request: Request):
 @api_router.get("/invoices")
 async def get_invoices(request: Request, status: Optional[InvoiceStatus] = None):
     """Get all invoices"""
-    user = await require_auth(request)
+    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER, UserRole.SYSTEM_ADMIN])
     
     query = {}
     if status:
         query["status"] = status.value
-    
-    # Vendors can only see their own invoices
-    if user.role == UserRole.VENDOR:
-        vendor = await db.vendors.find_one({"contact_email": user.email})
-        if vendor:
-            query["vendor_id"] = vendor["id"]
-        else:
-            return []
     
     invoices = await db.invoices.find(query).to_list(1000)
     
