@@ -49,6 +49,7 @@ const TenderEvaluation = () => {
       delivery_warranty_backup: 3,
       technical_experience: 3,
       cost_score: proposal.suggested_cost_score || 3,
+      meets_requirements: 3,
     });
     setShowEvaluateModal(true);
   };
