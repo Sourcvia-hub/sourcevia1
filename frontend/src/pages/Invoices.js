@@ -52,6 +52,15 @@ const Invoices = () => {
 
   const fetchVendors = async () => {
     try {
+      const response = await axios.get(`${API}/vendors?status=approved`, { withCredentials: true });
+      setVendors(response.data);
+    } catch (error) {
+      console.error('Error fetching vendors:', error);
+    }
+  };
+
+  const fetchVendors = async () => {
+    try {
       const response = await axios.get(`${API}/vendors`, { withCredentials: true });
       setVendors(response.data);
     } catch (error) {
