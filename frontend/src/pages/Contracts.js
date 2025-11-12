@@ -78,7 +78,8 @@ const Contracts = () => {
       fetchContracts();
     } catch (error) {
       console.error('Error creating contract:', error);
-      alert('Failed to create contract: ' + (error.response?.data?.detail || error.message));
+      const errorMsg = error.response?.data?.detail || error.response?.data?.message || error.message || 'Unknown error occurred';
+      alert('Failed to create contract: ' + errorMsg);
     }
   };
 
