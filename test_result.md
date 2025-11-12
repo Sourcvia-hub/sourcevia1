@@ -112,15 +112,18 @@ user_problem_statement: |
 backend:
   - task: "Auto-number generation for Vendors"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Added vendor_number field to Vendor model and generate_number() helper function. Updated create_vendor endpoint to generate Vendor-YY-NNNN format numbers. Uses MongoDB counters collection for atomic incrementing."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Vendor auto-numbering works perfectly. Creates vendors with Vendor-25-NNNN format (e.g., Vendor-25-0001, Vendor-25-0002). Sequential numbering confirmed. Auto-approved status working. Fixed timezone issue in datetime handling."
   
   - task: "Auto-number generation for Tenders"
     implemented: true
