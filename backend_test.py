@@ -294,8 +294,8 @@ class ProcurementTester:
             "end_date": (datetime.now(timezone.utc) + timedelta(days=180)).isoformat(),
             "is_outsourcing": False,
             "milestones": [
-                {"name": "Phase 1", "amount": 150000.0, "due_date": (datetime.now() + timedelta(days=60)).isoformat()},
-                {"name": "Phase 2", "amount": 300000.0, "due_date": (datetime.now() + timedelta(days=120)).isoformat()}
+                {"name": "Phase 1", "amount": 150000.0, "due_date": (datetime.now(timezone.utc) + timedelta(days=60)).isoformat()},
+                {"name": "Phase 2", "amount": 300000.0, "due_date": (datetime.now(timezone.utc) + timedelta(days=120)).isoformat()}
             ]
         }
         
