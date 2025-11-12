@@ -54,6 +54,7 @@ class TenderStatus(str, Enum):
 class ContractStatus(str, Enum):
     DRAFT = "draft"
     UNDER_REVIEW = "under_review"
+    PENDING_DUE_DILIGENCE = "pending_due_diligence"
     APPROVED = "approved"
     ACTIVE = "active"
     EXPIRED = "expired"
