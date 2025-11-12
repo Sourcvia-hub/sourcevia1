@@ -25,6 +25,7 @@ const Contracts = () => {
 
   useEffect(() => {
     fetchContracts();
+    fetchVendors();
   }, []);
 
   const fetchContracts = async () => {
@@ -35,6 +36,49 @@ const Contracts = () => {
       console.error('Error fetching contracts:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchVendors = async () => {
+    try {
+      const response = await axios.get(`${API}/vendors?status=approved`, { withCredentials: true });
+      setVendors(response.data);
+    } catch (error) {
+      console.error('Error fetching vendors:', error);
+    }
+  };
+
+  const handleCreateContract = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(
+        `${API}/contracts`,
+        {
+          ...formData,
+          value: parseFloat(formData.value),
+          start_date: new Date(formData.start_date).toISOString(),
+          end_date: new Date(formData.end_date).toISOString(),
+          milestones: [],
+          documents: [],
+        },
+        { withCredentials: true }
+      );
+      setShowCreateModal(false);
+      setFormData({
+        vendor_id: '',
+        contract_number: '',
+        title: '',
+        sow: '',
+        sla: '',
+        value: '',
+        start_date: '',
+        end_date: '',
+        is_outsourcing: false,
+      });
+      fetchContracts();
+    } catch (error) {
+      console.error('Error creating contract:', error);
+      alert('Failed to create contract: ' + (error.response?.data?.detail || error.message));
     }
   };
 
