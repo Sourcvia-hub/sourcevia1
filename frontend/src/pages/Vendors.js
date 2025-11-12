@@ -63,9 +63,17 @@ const Vendors = () => {
     fetchVendors();
   }, []);
 
-  const fetchVendors = async () => {
+  useEffect(() => {
+    const debounce = setTimeout(() => {
+      fetchVendors(searchQuery);
+    }, 300);
+    return () => clearTimeout(debounce);
+  }, [searchQuery]);
+
+  const fetchVendors = async (search = '') => {
     try {
-      const response = await axios.get(`${API}/vendors`, { withCredentials: true });
+      const url = search ? `${API}/vendors?search=${encodeURIComponent(search)}` : `${API}/vendors`;
+      const response = await axios.get(url, { withCredentials: true });
       setVendors(response.data);
     } catch (error) {
       console.error('Error fetching vendors:', error);
