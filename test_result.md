@@ -276,6 +276,18 @@ frontend:
           agent: "testing"
           comment: "✅ TESTED: Vendor search functionality works correctly. Search input with debounce searches by vendor_number, name_english, and commercial_name. Vendor cards display vendor_number and risk assessment properly. Backend API handles search queries correctly."
 
+  - task: "Due Diligence workflow (End-to-End)"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/VendorDetail.js, frontend/src/components/DueDiligenceQuestionnaire.js, frontend/src/components/OutsourcingQuestionnaire.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Complete Due Diligence workflow is functional. Contract creation with outsourcing assessment triggers DD requirements for high-risk vendors and outsourcing contracts. Vendor-25-0003 confirmed with status 'pending_due_diligence', DD Required: True, Risk Category: high. DD questionnaire component with 14 sections and 70+ questions loads correctly. Vendor detail page shows DD status and Complete Due Diligence button. Backend logic properly triggers DD requirements and updates vendor statuses. All components (OutsourcingQuestionnaire, DueDiligenceQuestionnaire, VendorDetail) working as designed."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
