@@ -218,15 +218,18 @@ backend:
 frontend:
   - task: "Contract creation with tender selection"
     implemented: true
-    working: "NA"
+    working: true
     file: "frontend/src/pages/Contracts.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Added tender selection dropdown showing tender_number. Display selected tender's RFP details (project, budget, requirements) as guidelines. Show vendor risk assessment score with color-coded display. Removed contract_number input field (auto-generated)."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Contract creation with tender selection works perfectly. Tender dropdown loads approved tenders, displays RFP guidelines (project, budget, requirements), auto-selects winning vendor from tender evaluation, shows vendor risk assessment with color coding. Outsourcing Assessment Questionnaire properly embedded and calculates contract classification. Contract creation triggers DD requirements correctly for outsourcing contracts."
   
   - task: "Search functionality on Contracts page"
     implemented: true
