@@ -296,7 +296,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Dashboard functionality"
+    - "Due Diligence workflow (End-to-End)"
     - "Contract creation with tender selection and validation"
     - "Search functionality on all pages"
   stuck_tasks: []
