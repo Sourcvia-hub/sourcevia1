@@ -548,6 +548,45 @@ def determine_outsourcing_classification(contract_data: dict) -> str:
     # Default: Not outsourcing
     return "not_outsourcing"
 
+def determine_noc_requirement(contract_data: dict, vendor_type: str) -> bool:
+    """
+    Determine if NOC (No Objection Certificate) is required for a contract.
+    
+    NOC required when:
+    1. Outsourcing contract with ANY yes on Section B assessment, OR
+    2. Cloud computing contract, OR  
+    3. Outsourcing contract with international vendor only
+    """
+    classification = contract_data.get('outsourcing_classification', '')
+    
+    # Check if cloud computing - always requires NOC
+    if classification == 'cloud_computing':
+        return True
+    
+    # For outsourcing contracts
+    if classification == 'outsourcing':
+        # Check if vendor is international
+        if vendor_type == 'international':
+            return True
+        
+        # Check if ANY Section B question is YES
+        section_b_fields = [
+            'b1_material_impact_if_disrupted',
+            'b2_financial_impact',
+            'b3_reputational_impact',
+            'b4_outside_ksa',
+            'b5_difficult_alternative',
+            'b6_data_transfer',
+            'b7_affiliation_relationship',
+            'b8_regulated_activity'
+        ]
+        
+        for field in section_b_fields:
+            if contract_data.get(field) is True:
+                return True
+    
+    return False
+
 # ==================== AUTH ENDPOINTS ====================
 class LoginRequest(BaseModel):
     email: EmailStr
