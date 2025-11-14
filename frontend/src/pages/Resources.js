@@ -59,8 +59,12 @@ const Resources = () => {
 
   const fetchContracts = async () => {
     try {
-      const response = await axios.get(`${API}/contracts?status=active`, { withCredentials: true });
-      setContracts(response.data);
+      const response = await axios.get(`${API}/contracts`, { withCredentials: true });
+      // Filter for active or approved contracts
+      const activeContracts = response.data.filter(c => 
+        c.status === 'active' || c.status === 'approved'
+      );
+      setContracts(activeContracts);
     } catch (error) {
       console.error('Error fetching contracts:', error);
     }
