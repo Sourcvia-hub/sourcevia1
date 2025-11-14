@@ -255,58 +255,6 @@ const Contracts = () => {
           </button>
         </div>
 
-        {/* Stats Dashboard */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span>📊</span>
-            Contract Statistics
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                 onClick={() => setActiveFilter('all')}>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-blue-700">{contracts.length}</p>
-                <p className="text-sm text-blue-600 font-medium mt-1">Total Contracts</p>
-              </div>
-            </div>
-            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                 onClick={() => setActiveFilter('active')}>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-green-700">{contracts.filter(c => c.status === 'active').length}</p>
-                <p className="text-sm text-green-600 font-medium mt-1">Active</p>
-              </div>
-            </div>
-            <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                 onClick={() => setActiveFilter('outsourcing')}>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-orange-700">{contracts.filter(c => c.outsourcing_classification === 'outsourcing').length}</p>
-                <p className="text-sm text-orange-600 font-medium mt-1">Outsourcing</p>
-              </div>
-            </div>
-            <div className="bg-cyan-50 border-2 border-cyan-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                 onClick={() => setActiveFilter('cloud')}>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-cyan-700">{contracts.filter(c => c.outsourcing_classification === 'cloud_computing').length}</p>
-                <p className="text-sm text-cyan-600 font-medium mt-1">Cloud</p>
-              </div>
-            </div>
-            <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                 onClick={() => setActiveFilter('noc')}>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-purple-700">{contracts.filter(c => c.is_noc).length}</p>
-                <p className="text-sm text-purple-600 font-medium mt-1">NOC</p>
-              </div>
-            </div>
-            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                 onClick={() => setActiveFilter('expired')}>
-              <div className="text-center">
-                <p className="text-3xl font-bold text-red-700">{contracts.filter(c => c.status === 'expired').length}</p>
-                <p className="text-sm text-red-600 font-medium mt-1">Expired</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Search Bar */}
         <div className="bg-white rounded-xl shadow-md p-4">
           <input
