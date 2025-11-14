@@ -629,6 +629,299 @@ class ProcurementTester:
             print(f"❌ Vendor DD integration test error: {str(e)}")
             return False
     
+    def test_contract_vendor_dd_status_checking(self):
+        """Test updated contract creation logic to verify vendor DD status checking as per review request"""
+        print(f"\n=== CONTRACT VENDOR DD STATUS CHECKING TEST ===")
+        
+        # Scenario 1: Create contract with vendor that has pending DD
+        print(f"\n--- SCENARIO 1: Contract with vendor that has pending DD ---")
+        
+        # First create a vendor with pending DD status
+        vendor_pending_dd = {
+            "name_english": "Pending DD Vendor",
+            "commercial_name": "Pending DD Co",
+            "vendor_type": "local",
+            "entity_type": "LLC",
+            "vat_number": "300123456789010",
+            "cr_number": "1010123460",
+            "cr_expiry_date": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+            "cr_country_city": "Riyadh, Saudi Arabia",
+            "activity_description": "Software Development Services",
+            "number_of_employees": 15,
+            "street": "King Fahd Road",
+            "building_no": "100",
+            "city": "Riyadh",
+            "district": "Al Malaz",
+            "country": "Saudi Arabia",
+            "mobile": "+966501234570",
+            "email": "contact@pendingdd.com",
+            "representative_name": "Khalid Al-Otaibi",
+            "representative_designation": "CEO",
+            "representative_id_type": "National ID",
+            "representative_id_number": "4567890123",
+            "representative_nationality": "Saudi",
+            "representative_mobile": "+966501234570",
+            "representative_email": "khalid@pendingdd.com",
+            "bank_account_name": "Pending DD Vendor",
+            "bank_name": "Saudi National Bank",
+            "bank_branch": "Riyadh Branch",
+            "bank_country": "Saudi Arabia",
+            "iban": "SA0310000000123456789015",
+            "currency": "SAR",
+            "swift_code": "NCBKSARI",
+            
+            # Checklist items to trigger pending_due_diligence status
+            "dd_checklist_supporting_documents": True,
+            "dd_checklist_related_party_checked": True,
+            "dd_checklist_sanction_screening": True
+        }
+        
+        try:
+            # Create vendor with pending DD
+            vendor_response = self.session.post(f"{BASE_URL}/vendors", json=vendor_pending_dd)
+            print(f"Create Pending DD Vendor Status: {vendor_response.status_code}")
+            
+            if vendor_response.status_code != 200:
+                print(f"❌ Failed to create pending DD vendor: {vendor_response.text}")
+                return False
+            
+            pending_vendor = vendor_response.json()
+            pending_vendor_id = pending_vendor.get('id')
+            pending_vendor_status = pending_vendor.get('status')
+            
+            print(f"✅ Pending DD Vendor created: {pending_vendor.get('name_english')}")
+            print(f"Vendor ID: {pending_vendor_id}")
+            print(f"Status: {pending_vendor_status}")
+            
+            # Verify vendor has pending DD status
+            if pending_vendor_status != "pending_due_diligence":
+                print(f"❌ Expected vendor status 'pending_due_diligence', got '{pending_vendor_status}'")
+                return False
+            
+            # Get an approved tender for contract creation
+            if not self.created_entities['tenders']:
+                print(f"❌ No tenders available for contract testing")
+                return False
+            
+            tender_id = self.created_entities['tenders'][0]
+            
+            # Create contract with pending DD vendor
+            contract_pending_dd = {
+                "tender_id": tender_id,
+                "vendor_id": pending_vendor_id,
+                "title": "Contract with Pending DD Vendor",
+                "sow": "Test contract to verify DD status checking",
+                "sla": "Standard SLA terms",
+                "value": 300000.0,
+                "start_date": datetime.now(timezone.utc).isoformat(),
+                "end_date": (datetime.now(timezone.utc) + timedelta(days=180)).isoformat(),
+                "is_outsourcing": True,  # This triggers DD requirements
+                "milestones": []
+            }
+            
+            contract_response = self.session.post(f"{BASE_URL}/contracts", json=contract_pending_dd)
+            print(f"Create Contract with Pending DD Vendor Status: {contract_response.status_code}")
+            
+            if contract_response.status_code == 200:
+                contract = contract_response.json()
+                contract_status = contract.get('status')
+                contract_number = contract.get('contract_number')
+                
+                print(f"✅ Contract created: {contract_number}")
+                print(f"Contract Status: {contract_status}")
+                
+                # VERIFY: Contract status should be "pending_due_diligence"
+                if contract_status == "pending_due_diligence":
+                    print(f"✅ SCENARIO 1 PASSED: Contract status is 'pending_due_diligence' as expected")
+                    self.created_entities['contracts'].append(contract.get('id'))
+                else:
+                    print(f"❌ SCENARIO 1 FAILED: Expected contract status 'pending_due_diligence', got '{contract_status}'")
+                    return False
+            else:
+                print(f"❌ Failed to create contract with pending DD vendor: {contract_response.text}")
+                return False
+            
+            # Scenario 2: Create contract with vendor that has completed DD
+            print(f"\n--- SCENARIO 2: Contract with vendor that has completed DD ---")
+            
+            # Create a vendor with completed DD (approved status)
+            vendor_completed_dd = {
+                "name_english": "Completed DD Vendor",
+                "commercial_name": "Completed DD Co",
+                "vendor_type": "local",
+                "entity_type": "LLC",
+                "vat_number": "300123456789011",
+                "cr_number": "1010123461",
+                "cr_expiry_date": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+                "cr_country_city": "Riyadh, Saudi Arabia",
+                "activity_description": "IT Consulting Services",
+                "number_of_employees": 25,
+                "street": "Prince Sultan Road",
+                "building_no": "200",
+                "city": "Riyadh",
+                "district": "Olaya",
+                "country": "Saudi Arabia",
+                "mobile": "+966501234571",
+                "email": "contact@completeddd.com",
+                "representative_name": "Nora Al-Rashid",
+                "representative_designation": "Managing Director",
+                "representative_id_type": "National ID",
+                "representative_id_number": "5678901234",
+                "representative_nationality": "Saudi",
+                "representative_mobile": "+966501234571",
+                "representative_email": "nora@completeddd.com",
+                "bank_account_name": "Completed DD Vendor",
+                "bank_name": "Riyad Bank",
+                "bank_branch": "Riyadh Main",
+                "bank_country": "Saudi Arabia",
+                "iban": "SA0320000000123456789016",
+                "currency": "SAR",
+                "swift_code": "RIBLSARI",
+                
+                # Include DD fields to mark as completed during creation
+                "dd_ownership_change_last_year": False,
+                "dd_location_moved_or_closed": False,
+                "dd_bc_rely_on_third_parties": True,
+                "dd_bc_strategy_exists": True,
+                "dd_bc_certified_standard": True,
+                "dd_bc_it_continuity_plan": True,
+                "dd_fraud_internal_last_year": False,
+                "dd_op_criminal_cases_last_3years": False,
+                "dd_op_documented_procedures": True,
+                "dd_hr_background_investigation": True,
+                "dd_safety_procedures_exist": True
+            }
+            
+            # Create vendor with completed DD
+            vendor_response2 = self.session.post(f"{BASE_URL}/vendors", json=vendor_completed_dd)
+            print(f"Create Completed DD Vendor Status: {vendor_response2.status_code}")
+            
+            if vendor_response2.status_code != 200:
+                print(f"❌ Failed to create completed DD vendor: {vendor_response2.text}")
+                return False
+            
+            completed_vendor = vendor_response2.json()
+            completed_vendor_id = completed_vendor.get('id')
+            completed_vendor_status = completed_vendor.get('status')
+            completed_dd_status = completed_vendor.get('dd_completed')
+            
+            print(f"✅ Completed DD Vendor created: {completed_vendor.get('name_english')}")
+            print(f"Vendor ID: {completed_vendor_id}")
+            print(f"Status: {completed_vendor_status}")
+            print(f"DD Completed: {completed_dd_status}")
+            
+            # Verify vendor is approved and DD completed
+            if completed_vendor_status != "approved" or completed_dd_status != True:
+                print(f"❌ Expected vendor status 'approved' and dd_completed=True, got status='{completed_vendor_status}', dd_completed={completed_dd_status}")
+                return False
+            
+            # Create contract with completed DD vendor (outsourcing to trigger DD check)
+            contract_completed_dd = {
+                "tender_id": tender_id,
+                "vendor_id": completed_vendor_id,
+                "title": "Contract with Completed DD Vendor",
+                "sow": "Test contract with vendor that has completed DD",
+                "sla": "Standard SLA terms",
+                "value": 400000.0,
+                "start_date": datetime.now(timezone.utc).isoformat(),
+                "end_date": (datetime.now(timezone.utc) + timedelta(days=180)).isoformat(),
+                "is_outsourcing": True,  # This triggers DD requirements but vendor DD is complete
+                "milestones": []
+            }
+            
+            contract_response2 = self.session.post(f"{BASE_URL}/contracts", json=contract_completed_dd)
+            print(f"Create Contract with Completed DD Vendor Status: {contract_response2.status_code}")
+            
+            if contract_response2.status_code == 200:
+                contract2 = contract_response2.json()
+                contract2_status = contract2.get('status')
+                contract2_number = contract2.get('contract_number')
+                
+                print(f"✅ Contract created: {contract2_number}")
+                print(f"Contract Status: {contract2_status}")
+                
+                # VERIFY: Contract status should be "approved" (since vendor DD is complete)
+                if contract2_status == "approved":
+                    print(f"✅ SCENARIO 2 PASSED: Contract status is 'approved' as expected")
+                    self.created_entities['contracts'].append(contract2.get('id'))
+                else:
+                    print(f"❌ SCENARIO 2 FAILED: Expected contract status 'approved', got '{contract2_status}'")
+                    return False
+            else:
+                print(f"❌ Failed to create contract with completed DD vendor: {contract_response2.text}")
+                return False
+            
+            # Scenario 3: Verify DD completion updates contract
+            print(f"\n--- SCENARIO 3: Verify DD completion updates contract ---")
+            
+            # Complete the DD questionnaire for the pending vendor
+            dd_completion_data = {
+                "dd_ownership_change_last_year": False,
+                "dd_location_moved_or_closed": False,
+                "dd_bc_rely_on_third_parties": True,
+                "dd_bc_strategy_exists": True,
+                "dd_bc_certified_standard": False,
+                "dd_bc_it_continuity_plan": True,
+                "dd_fraud_internal_last_year": False,
+                "dd_fraud_burglary_theft_last_year": False,
+                "dd_op_criminal_cases_last_3years": False,
+                "dd_op_financial_issues_last_3years": False,
+                "dd_op_documented_procedures": True,
+                "dd_cyber_data_outside_ksa": False,
+                "dd_safety_procedures_exist": True,
+                "dd_hr_background_investigation": True,
+                "dd_reg_regulated_by_authority": True,
+                "dd_coi_relationship_with_bank": False,
+                "dd_data_customer_data_policy": True,
+                "dd_fcp_read_and_understood": True,
+                "dd_fcp_will_comply": True
+            }
+            
+            dd_completion_response = self.session.put(f"{BASE_URL}/vendors/{pending_vendor_id}/due-diligence", json=dd_completion_data)
+            print(f"Complete DD for Pending Vendor Status: {dd_completion_response.status_code}")
+            
+            if dd_completion_response.status_code == 200:
+                dd_result = dd_completion_response.json()
+                print(f"✅ DD questionnaire completed successfully")
+                print(f"Message: {dd_result.get('message')}")
+                
+                # Get the contract that was created with pending DD vendor to verify it's updated
+                if self.created_entities['contracts']:
+                    # Get the first contract (should be the one with pending DD vendor)
+                    contract_id = self.created_entities['contracts'][-2]  # Second to last (first one we created)
+                    
+                    contract_check_response = self.session.get(f"{BASE_URL}/contracts/{contract_id}")
+                    print(f"Check Contract Status After DD Completion: {contract_check_response.status_code}")
+                    
+                    if contract_check_response.status_code == 200:
+                        updated_contract = contract_check_response.json()
+                        updated_contract_status = updated_contract.get('status')
+                        
+                        print(f"Updated Contract Status: {updated_contract_status}")
+                        
+                        # VERIFY: Contract status should be auto-updated to "approved"
+                        if updated_contract_status == "approved":
+                            print(f"✅ SCENARIO 3 PASSED: Contract status auto-updated to 'approved' after DD completion")
+                        else:
+                            print(f"❌ SCENARIO 3 FAILED: Expected contract status 'approved', got '{updated_contract_status}'")
+                            return False
+                    else:
+                        print(f"❌ Failed to retrieve contract for status check: {contract_check_response.text}")
+                        return False
+                else:
+                    print(f"⚠️ No contracts available for status update verification")
+            else:
+                print(f"❌ Failed to complete DD questionnaire: {dd_completion_response.text}")
+                return False
+            
+            print(f"\n✅ ALL SCENARIOS PASSED: Contract creation properly checks vendor DD status")
+            self.created_entities['vendors'].extend([pending_vendor_id, completed_vendor_id])
+            return True
+            
+        except Exception as e:
+            print(f"❌ Contract vendor DD status checking test error: {str(e)}")
+            return False
+
     def test_due_diligence_workflow(self):
         """Test the updated Due Diligence workflow as per review request"""
         print(f"\n=== DUE DILIGENCE WORKFLOW TEST ===")
