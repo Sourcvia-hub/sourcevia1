@@ -372,6 +372,18 @@ frontend:
           agent: "testing"
           comment: "✅ TESTED: Vendor creation form successfully updated to use VendorChecklist component instead of full DueDiligenceQuestionnaire. Verified: 1) Login successful with procurement@test.com/password, 2) Navigated to /vendors page successfully, 3) Create Vendor modal opens correctly, 4) Verification Checklist section appears with green background (bg-gradient-to-r from-green-50 to-emerald-50), 5) Exactly 3 checkboxes found with correct labels: 'Supporting Documents Provided', 'Related Party Checked', 'Sanction Screening Completed', 6) NO full Due Diligence questionnaire (70+ questions, 14 sections) detected, 7) Checklist is properly embedded in the vendor creation form (not in separate modal). The implementation correctly shows only the simple 3-item verification checklist as requested."
 
+  - task: "Updated Due Diligence Workflow - Backend Logic"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Updated Due Diligence workflow working correctly as specified in review request. STEP 1: Vendor creation with checklist items (dd_checklist_supporting_documents=true, dd_checklist_related_party_checked=true, dd_checklist_sanction_screening=true) correctly flags vendor as 'pending_due_diligence' status (NOT auto-approved) with dd_completed=false. STEP 2: DD questionnaire completion via PUT /api/vendors/{id}/due-diligence successfully updates vendor to dd_completed=true, status='approved', and recalculates risk score (New Risk Score: 22.0, Risk Category: low). STEP 3: Contract creation after DD completion works correctly with 'approved' status. STEP 4: All contract status updates work as expected. The workflow correctly implements: checklist items → pending_due_diligence → DD completion → approved status → contract updates. Backend logic in create_vendor and update_vendor_due_diligence endpoints working perfectly."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
