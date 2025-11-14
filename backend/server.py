@@ -2339,8 +2339,17 @@ async def update_resource(resource_id: str, resource_data: dict, request: Reques
     # Only allow updating certain fields
     allowed_fields = ['name', 'nationality', 'id_number', 'education_qualification', 
                      'years_of_experience', 'scope_of_work', 'has_relatives', 'relatives',
-                     'access_development', 'access_production', 'access_uat']
+                     'access_development', 'access_production', 'access_uat', 'start_date', 'end_date']
     update_data = {k: v for k, v in resource_data.items() if k in allowed_fields}
+    
+    # Convert date strings to ISO format if provided
+    if 'start_date' in update_data and update_data['start_date']:
+        if not isinstance(update_data['start_date'], str):
+            update_data['start_date'] = update_data['start_date'].isoformat()
+    if 'end_date' in update_data and update_data['end_date']:
+        if not isinstance(update_data['end_date'], str):
+            update_data['end_date'] = update_data['end_date'].isoformat()
+    
     update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
     
     await db.resources.update_one(
