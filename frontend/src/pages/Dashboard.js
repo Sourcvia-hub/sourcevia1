@@ -244,6 +244,44 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Resources Section */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <span className="text-3xl">👤</span>
+            <h2 className="text-2xl font-bold text-gray-900">Resources</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard
+              icon="👥"
+              label="Total"
+              value={stats?.resources?.all || 0}
+              color="bg-blue-50 border-blue-200"
+              link="/resources"
+            />
+            <StatCard
+              icon="✅"
+              label="Active"
+              value={stats?.resources?.active || 0}
+              color="bg-green-50 border-green-200"
+              link="/resources"
+            />
+            <StatCard
+              icon="🌍"
+              label="Offshore"
+              value={stats?.resources?.offshore || 0}
+              color="bg-purple-50 border-purple-200"
+              link="/resources"
+            />
+            <StatCard
+              icon="🏢"
+              label="On Premises"
+              value={stats?.resources?.on_premises || 0}
+              color="bg-orange-50 border-orange-200"
+              link="/resources"
+            />
+          </div>
+        </div>
+
         {/* Quick Actions */}
         {(user?.role === 'procurement_officer' || user?.role === 'requester' || user?.role === 'pd_officer') && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg p-6 border-2 border-blue-200">
