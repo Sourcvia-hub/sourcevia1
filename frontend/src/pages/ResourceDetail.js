@@ -18,6 +18,8 @@ const ResourceDetail = () => {
     id_number: '',
     education_qualification: '',
     years_of_experience: 0,
+    start_date: '',
+    end_date: '',
     scope_of_work: '',
     has_relatives: false,
     relatives: [],
