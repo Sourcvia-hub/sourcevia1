@@ -320,7 +320,7 @@ const AppRoutes = () => {
         path="/resources/:id"
         element={
           <ProtectedRoute>
-            <Resources />
+            <ResourceDetail />
           </ProtectedRoute>
         }
       />
