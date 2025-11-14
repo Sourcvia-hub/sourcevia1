@@ -60,6 +60,17 @@ const Invoices = () => {
     }
   };
 
+  const handleContractSelect = (contractId) => {
+    const selectedContract = contracts.find(c => c.id === contractId);
+    if (selectedContract) {
+      setFormData({
+        ...formData,
+        contract_id: contractId,
+        vendor_id: selectedContract.vendor_id // Auto-populate vendor from contract
+      });
+    }
+  };
+
   const handleSubmitInvoice = async (e) => {
     e.preventDefault();
     try {
