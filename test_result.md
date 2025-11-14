@@ -527,3 +527,29 @@ agent_communication:
         - Initial 401 auth errors during page loads (expected behavior before login)
         
         SUMMARY: All Phase 1 features are working correctly. Dashboard filtering, contract management, vendor type functionality, invoice CRUD operations, and vendor auto-population logic all function as specified. Only minor cosmetic issues with vendor type badge display found.
+
+    - agent: "testing"
+      message: |
+        VENDOR DD INTEGRATION TESTING COMPLETED - Comprehensive testing of vendor creation with Due Diligence questionnaire integration:
+        
+        ✅ DD INTEGRATION TEST RESULTS:
+        - Vendor Creation with DD Fields: Successfully created vendor "Test Vendor DD" with DD fields included during creation
+        - DD Completion Status: Vendor automatically marked as dd_completed=true when DD fields provided
+        - DD Fields Verification: All specified DD fields saved correctly:
+          * dd_ownership_change_last_year: True ✅
+          * dd_location_moved_or_closed: False ✅  
+          * dd_bc_rely_on_third_parties: True ✅
+        - DD Metadata: Completion metadata properly set (completed_by, completed_at, approved_by, approved_at)
+        - Risk Assessment: Risk score adjusted based on DD responses (Score: 17.0, Category: low)
+        - Auto-numbering: Vendor number generated correctly (Vendor-25-0007)
+        - Backend Integration: POST /api/vendors endpoint handles DD fields seamlessly
+        - Data Persistence: GET /api/vendors/{id} returns all DD fields correctly
+        
+        ✅ BACKEND SYSTEM VERIFICATION:
+        - All auto-numbering systems working (Vendors: Vendor-25-NNNN, Tenders: Tender-25-NNNN, Contracts: Contract-25-NNNN, Invoices: Invoice-25-NNNN)
+        - Sequential numbering confirmed across all entities
+        - Search functionality working for all entities
+        - Contract validation properly rejects invalid IDs
+        - Authentication working with procurement@test.com/password
+        
+        SUMMARY: Vendor creation with DD integration is fully functional. The fix for the DueDiligenceQuestionnaire component conditional vendor name display works correctly at the backend level. When DD fields are provided during vendor creation, the system automatically marks dd_completed=true, saves all DD fields, sets completion metadata, and adjusts risk scores appropriately. No critical issues found.
