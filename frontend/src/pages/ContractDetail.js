@@ -229,7 +229,144 @@ const ContractDetail = () => {
           </div>
         </div>
 
+        {/* Edit Form */}
+        {isEditing && (
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Contract</h2>
+            <form onSubmit={handleUpdateContract} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                <input
+                  type="text"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Statement of Work (SOW) *</label>
+                <textarea
+                  value={editFormData.sow}
+                  onChange={(e) => setEditFormData({ ...editFormData, sow: e.target.value })}
+                  required
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Service Level Agreement (SLA) *</label>
+                <textarea
+                  value={editFormData.sla}
+                  onChange={(e) => setEditFormData({ ...editFormData, sla: e.target.value })}
+                  required
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Milestones */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <label className="block text-sm font-medium text-gray-700">Milestones</label>
+                  <button
+                    type="button"
+                    onClick={handleAddMilestone}
+                    className="px-3 py-1 bg-green-600 text-white rounded text-sm font-medium hover:bg-green-700"
+                  >
+                    + Add Milestone
+                  </button>
+                </div>
+                
+                {editFormData.milestones.length > 0 ? (
+                  <div className="space-y-3">
+                    {editFormData.milestones.map((milestone, index) => (
+                      <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <input
+                          type="text"
+                          placeholder="Milestone Name"
+                          value={milestone.name}
+                          onChange={(e) => handleMilestoneChange(index, 'name', e.target.value)}
+                          className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        />
+                        <input
+                          type="date"
+                          value={milestone.date}
+                          onChange={(e) => handleMilestoneChange(index, 'date', e.target.value)}
+                          className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Amount"
+                          value={milestone.amount}
+                          onChange={(e) => handleMilestoneChange(index, 'amount', e.target.value)}
+                          step="0.01"
+                          className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMilestone(index)}
+                          className="px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No milestones. Click "Add Milestone" to create one.</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Contract Value *</label>
+                  <input
+                    type="number"
+                    value={editFormData.value}
+                    onChange={(e) => setEditFormData({ ...editFormData, value: e.target.value })}
+                    required
+                    min="0"
+                    step="0.01"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>
+                  <input
+                    type="date"
+                    value={editFormData.start_date}
+                    onChange={(e) => setEditFormData({ ...editFormData, start_date: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">End Date *</label>
+                  <input
+                    type="date"
+                    value={editFormData.end_date}
+                    onChange={(e) => setEditFormData({ ...editFormData, end_date: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Save Changes
+              </button>
+            </form>
+          </div>
+        )}
+
         {/* Main Contract Info Card */}
+        {!isEditing && (
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="flex justify-between items-start mb-6">
             <div className="flex-1">
