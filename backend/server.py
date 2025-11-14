@@ -2287,16 +2287,32 @@ async def get_resources(request: Request, status: Optional[str] = None):
     # Check for expired resources and update status
     now = datetime.now(timezone.utc)
     for resource in resources:
-        if isinstance(resource.get('end_date'), str):
-            resource['end_date'] = datetime.fromisoformat(resource['end_date'])
+        # Convert dates for comparison if needed
+        end_date = resource.get('end_date')
+        if isinstance(end_date, str):
+            end_date = datetime.fromisoformat(end_date)
+        
+        # Ensure timezone-aware for comparison
+        if end_date and end_date.tzinfo is None:
+            end_date = end_date.replace(tzinfo=timezone.utc)
         
         # Auto-terminate if end_date passed
-        if resource['end_date'] < now and resource.get('status') == 'active':
+        if end_date and end_date < now and resource.get('status') == 'active':
             await db.resources.update_one(
                 {"id": resource['id']},
                 {"$set": {"status": ResourceStatus.INACTIVE.value}}
             )
             resource['status'] = ResourceStatus.INACTIVE.value
+        
+        # Convert datetime objects back to strings for JSON serialization
+        if isinstance(resource.get('start_date'), datetime):
+            resource['start_date'] = resource['start_date'].isoformat()
+        if isinstance(resource.get('end_date'), datetime):
+            resource['end_date'] = resource['end_date'].isoformat()
+        if isinstance(resource.get('created_at'), datetime):
+            resource['created_at'] = resource['created_at'].isoformat()
+        if isinstance(resource.get('updated_at'), datetime):
+            resource['updated_at'] = resource['updated_at'].isoformat()
     
     return resources
 
