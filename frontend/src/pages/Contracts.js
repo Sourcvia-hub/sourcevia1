@@ -133,16 +133,52 @@ const Contracts = () => {
     const tender = tenders.find(t => t.id === tenderId);
     setSelectedTender(tender);
     
-    // Set tender information but don't auto-select vendor
-    setFormData({
-      ...formData,
-      tender_id: tenderId,
-      vendor_id: '', // User must manually select vendor
-      title: tender ? `Contract for ${tender.title}` : '',
-      sow: tender ? tender.requirements : '',
-      value: tender ? tender.budget : ''
-    });
-    setSelectedVendor(null);
+    // Fetch tender evaluation to get #1 ranked vendor
+    try {
+      const evalResponse = await axios.post(`${API}/tenders/${tenderId}/evaluate`, {}, { withCredentials: true });
+      
+      // Find the proposal with highest score (rank 1)
+      const topProposal = evalResponse.data.proposals
+        .filter(p => p.evaluated)
+        .sort((a, b) => b.final_score - a.final_score)[0];
+      
+      if (topProposal) {
+        // Auto-select the winning vendor (ranked #1)
+        const winningVendor = vendors.find(v => v.id === topProposal.vendor_id);
+        setSelectedVendor(winningVendor);
+        
+        setFormData({
+          ...formData,
+          tender_id: tenderId,
+          vendor_id: topProposal.vendor_id,
+          title: tender ? `Contract for ${tender.title}` : '',
+          sow: tender ? tender.requirements : '',
+          value: tender ? tender.budget : ''
+        });
+      } else {
+        // No evaluated proposals yet
+        setFormData({
+          ...formData,
+          tender_id: tenderId,
+          vendor_id: '',
+          title: tender ? `Contract for ${tender.title}` : '',
+          sow: tender ? tender.requirements : '',
+          value: tender ? tender.budget : ''
+        });
+        setSelectedVendor(null);
+      }
+    } catch (error) {
+      console.error('Error fetching tender evaluation:', error);
+      setFormData({
+        ...formData,
+        tender_id: tenderId,
+        vendor_id: '',
+        title: tender ? `Contract for ${tender.title}` : '',
+        sow: tender ? tender.requirements : '',
+        value: tender ? tender.budget : ''
+      });
+      setSelectedVendor(null);
+    }
   };
 
   const handleVendorSelect = async (vendorId) => {
