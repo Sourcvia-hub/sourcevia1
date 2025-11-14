@@ -838,3 +838,33 @@ agent_communication:
         VIEWPORT: 1920x800 ✅
         
         SUMMARY: All major UI features of the Sourcevia Procurement Management System are working correctly. Authentication, dashboard statistics, vendor management with verification checklist, tender management with proper vendor name display, contract management with filtering, purchase orders, invoices with CRUD operations, resources, and Due Diligence questionnaire (14 sections ending with "Review & Submit") all function as specified. Navigation, responsive design, and user experience elements are working properly. No critical issues found.
+
+    - agent: "testing"
+      message: |
+        VIEW VENDOR DETAILS BUTTON TESTING COMPLETED - Comprehensive testing of new button functionality in Contract Detail page:
+        
+        ✅ BUTTON IMPLEMENTATION TEST RESULTS:
+        - Authentication: Successfully logged in with procurement@test.com/password credentials
+        - Navigation: Successfully navigated to /contracts page and accessed contract detail via 'View Details' button
+        - Button Location: 'View Vendor Details →' button found in correct position (top-right corner of Vendor Information section)
+        - Button Styling: Verified correct styling matches 'View Tender' button (text-blue-600 hover:text-blue-800 classes)
+        - Button Text: Confirmed exact text 'View Vendor Details →' with arrow symbol
+        - Button Functionality: Successfully navigates to vendor detail page (/vendors/{vendor_id})
+        - Vendor Detail Page: Loads correctly showing vendor information (tested with vendor 'test')
+        - Screenshots: Captured both contract detail page with button and resulting vendor detail page
+        
+        ✅ TECHNICAL VERIFICATION:
+        - Button implemented in ContractDetail.js lines 465-470 in Vendor Information section
+        - Uses navigate() function to route to `/vendors/${vendor.id}`
+        - Proper conditional rendering (only shows when vendor data exists)
+        - Consistent styling with existing 'View Tender' button
+        - Responsive design maintained
+        
+        ✅ USER EXPERIENCE VERIFICATION:
+        - Button appears in logical location (Vendor Information section header)
+        - Clear call-to-action text with directional arrow
+        - Smooth navigation without page refresh
+        - Maintains application state and authentication
+        - No console errors or broken functionality
+        
+        SUMMARY: The 'View Vendor Details' button has been successfully implemented and tested. All requirements from the review request have been met: button appears in correct location, has proper styling, and provides seamless navigation to vendor detail pages. The feature enhances user workflow by allowing easy access to vendor information directly from contract details.
