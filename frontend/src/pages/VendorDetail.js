@@ -156,6 +156,19 @@ const VendorDetail = () => {
             </button>
             <h1 className="text-3xl font-bold text-gray-900">{vendor.name_english || vendor.company_name}</h1>
             <p className="text-gray-600 mt-1">Vendor Details</p>
+            
+            {/* DD Completion Badge */}
+            {vendor.dd_completed && (
+              <div className="mt-3">
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-bold border-2 border-green-300">
+                  ✓ Due Diligence Completed
+                  {vendor.dd_approved_at && (
+                    <span className="text-xs">({new Date(vendor.dd_approved_at).toLocaleDateString()})</span>
+                  )}
+                </span>
+              </div>
+            )}
+            
             {vendor.created_at && (
               <p className="text-sm text-gray-500 mt-2">
                 Created by <strong>{createdByUser?.name || 'System'}</strong> on {new Date(vendor.created_at).toLocaleDateString()}
