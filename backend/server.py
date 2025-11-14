@@ -1020,12 +1020,46 @@ async def create_vendor(vendor: Vendor, request: Request):
         vendor.dd_checklist_sanction_screening is not None,
     ])
     
-    # If checklist items are present, vendor requires DD completion later
-    if checklist_items_present:
+    # Check if actual DD fields are provided (indicating completed DD during creation)
+    dd_fields_present = any([
+        vendor.dd_ownership_change_last_year is not None,
+        vendor.dd_location_moved_or_closed is not None,
+        vendor.dd_bc_rely_on_third_parties is not None,
+        vendor.dd_bc_strategy_exists is not None,
+        vendor.dd_fraud_internal_last_year is not None,
+        vendor.dd_op_criminal_cases_last_3years is not None,
+        vendor.dd_hr_background_investigation is not None,
+        vendor.dd_safety_procedures_exist is not None
+    ])
+    
+    if dd_fields_present:
+        # DD fields provided during creation - mark as completed and approved
+        vendor.status = VendorStatus.APPROVED
+        vendor.dd_completed = True
+        vendor.dd_completed_by = user.id
+        vendor.dd_completed_at = datetime.now(timezone.utc)
+        vendor.dd_approved_by = user.id
+        vendor.dd_approved_at = datetime.now(timezone.utc)
+        
+        # Recalculate risk score based on DD responses
+        vendor_dict = vendor.model_dump()
+        dd_adjustment = calculate_dd_risk_adjustment(vendor_dict)
+        new_risk_score = max(0, vendor.risk_score + dd_adjustment)
+        vendor.risk_score = new_risk_score
+        
+        # Update risk category based on new score
+        if new_risk_score >= 50:
+            vendor.risk_category = RiskCategory.HIGH
+        elif new_risk_score >= 25:
+            vendor.risk_category = RiskCategory.MEDIUM
+        else:
+            vendor.risk_category = RiskCategory.LOW
+    elif checklist_items_present:
+        # Only checklist items present - vendor requires DD completion later
         vendor.status = VendorStatus.PENDING_DUE_DILIGENCE
         vendor.dd_completed = False  # Not completed yet, just flagged for DD
     else:
-        # No checklist items, vendor is approved directly
+        # No checklist items or DD fields - vendor is approved directly
         vendor.status = VendorStatus.APPROVED
     vendor.created_by = user.id
     
