@@ -360,6 +360,18 @@ frontend:
           agent: "testing"
           comment: "✅ TESTED: Vendor creation with DD integration working perfectly. When DD fields are provided during vendor creation, the vendor is automatically marked as dd_completed=true. Created test vendor 'Test Vendor DD' with DD fields (dd_ownership_change_last_year=true, dd_location_moved_or_closed=false, dd_bc_rely_on_third_parties=true). Verified dd_completed=true in response, all DD fields saved correctly, DD completion metadata properly set (completed_by, completed_at, approved_by, approved_at), and risk score adjusted based on DD responses (Risk Score: 17.0, Risk Category: low). Auto-numbering works (Vendor-25-0007). The fix for DueDiligenceQuestionnaire component conditional vendor name display is working correctly in the backend integration."
 
+  - task: "Vendor Creation Form - Verification Checklist Implementation"
+    implemented: true
+    working: true
+    file: "frontend/src/components/VendorForm.js, frontend/src/components/VendorChecklist.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Vendor creation form successfully updated to use VendorChecklist component instead of full DueDiligenceQuestionnaire. Verified: 1) Login successful with procurement@test.com/password, 2) Navigated to /vendors page successfully, 3) Create Vendor modal opens correctly, 4) Verification Checklist section appears with green background (bg-gradient-to-r from-green-50 to-emerald-50), 5) Exactly 3 checkboxes found with correct labels: 'Supporting Documents Provided', 'Related Party Checked', 'Sanction Screening Completed', 6) NO full Due Diligence questionnaire (70+ questions, 14 sections) detected, 7) Checklist is properly embedded in the vendor creation form (not in separate modal). The implementation correctly shows only the simple 3-item verification checklist as requested."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
