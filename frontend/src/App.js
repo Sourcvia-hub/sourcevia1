@@ -202,6 +202,7 @@ import ContractDetail from './pages/ContractDetail';
 import Invoices from './pages/Invoices';
 import InvoiceDetail from './pages/InvoiceDetail';
 import PurchaseOrders from './pages/PurchaseOrders';
+import Resources from './pages/Resources';
 
 // ==================== MAIN APP ====================
 const AppRoutes = () => {
