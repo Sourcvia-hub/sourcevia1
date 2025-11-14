@@ -289,6 +289,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/invoices/:id"
+        element={
+          <ProtectedRoute>
+            <InvoiceDetail />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };
