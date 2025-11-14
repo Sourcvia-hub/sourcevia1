@@ -351,7 +351,12 @@ class Contract(BaseModel):
     start_date: datetime
     end_date: datetime
     is_outsourcing: bool = False
+    is_noc: bool = False  # NOC (No Objection Certificate) required
     status: ContractStatus = ContractStatus.DRAFT
+    terminated: bool = False
+    terminated_by: Optional[str] = None
+    terminated_at: Optional[datetime] = None
+    termination_reason: Optional[str] = None
     created_by: Optional[str] = None  # user ID who created
     approved_by: Optional[str] = None  # user ID
     documents: List[str] = []
