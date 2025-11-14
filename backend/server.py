@@ -430,6 +430,7 @@ class PurchaseOrder(BaseModel):
     vendor_id: str
     items: List[POItem] = []
     total_amount: float = 0.0
+    delivery_time: Optional[str] = None
     
     # Risk Assessment Questions
     risk_level: str  # From vendor risk
