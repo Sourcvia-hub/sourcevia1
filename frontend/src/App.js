@@ -298,6 +298,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/purchase-orders"
+        element={
+          <ProtectedRoute>
+            <PurchaseOrders />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };
