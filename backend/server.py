@@ -587,6 +587,55 @@ def determine_noc_requirement(contract_data: dict, vendor_type: str) -> bool:
     
     return False
 
+def calculate_dd_risk_adjustment(vendor_data: dict) -> float:
+    """
+    Calculate risk score adjustment based on Due Diligence responses.
+    Negative score = reduced risk, Positive score = increased risk
+    """
+    risk_adjustment = 0.0
+    
+    # Business Continuity - Strong BC reduces risk
+    if vendor_data.get('dd_bc_strategy_exists') is True:
+        risk_adjustment -= 5
+    if vendor_data.get('dd_bc_certified_standard') is True:
+        risk_adjustment -= 5
+    if vendor_data.get('dd_bc_it_continuity_plan') is True:
+        risk_adjustment -= 5
+    
+    # Anti-Fraud - Issues increase risk
+    if vendor_data.get('dd_fraud_internal_last_year') is True:
+        risk_adjustment += 10
+    if vendor_data.get('dd_fraud_burglary_theft_last_year') is True:
+        risk_adjustment += 5
+    
+    # Operational Risks - Issues increase risk
+    if vendor_data.get('dd_op_criminal_cases_last_3years') is True:
+        risk_adjustment += 15
+    if vendor_data.get('dd_op_financial_issues_last_3years') is True:
+        risk_adjustment += 10
+    if vendor_data.get('dd_op_documented_procedures') is False:
+        risk_adjustment += 5
+    
+    # Cyber Security - Good practices reduce risk
+    if vendor_data.get('dd_cyber_third_party_access') is True:
+        risk_adjustment += 5
+    if vendor_data.get('dd_cyber_data_outside_ksa') is True:
+        risk_adjustment += 10
+    
+    # Safety and Security - Good practices reduce risk
+    if vendor_data.get('dd_safety_procedures_exist') is True:
+        risk_adjustment -= 3
+    if vendor_data.get('dd_safety_security_24_7') is True:
+        risk_adjustment -= 3
+    
+    # HR Practices - Good practices reduce risk
+    if vendor_data.get('dd_hr_background_investigation') is True:
+        risk_adjustment -= 5
+    if vendor_data.get('dd_hr_academic_verification') is True:
+        risk_adjustment -= 3
+    
+    return risk_adjustment
+
 # ==================== AUTH ENDPOINTS ====================
 class LoginRequest(BaseModel):
     email: EmailStr
