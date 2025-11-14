@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
 
-const DueDiligenceQuestionnaire = ({ vendor, onClose, onSubmit }) => {
-  const [formData, setFormData] = useState({});
+const DueDiligenceQuestionnaire = ({ vendor, formData: externalFormData, setFormData: externalSetFormData, onClose, onSubmit }) => {
+  const [internalFormData, setInternalFormData] = useState({});
   const [activeSection, setActiveSection] = useState(0);
 
+  // Use external formData if provided (vendor creation), otherwise use internal state (vendor detail)
+  const isCreationMode = !!externalFormData && !!externalSetFormData;
+  const formData = isCreationMode ? externalFormData : internalFormData;
+  const setFormData = isCreationMode ? externalSetFormData : setInternalFormData;
+
   useEffect(() => {
-    // Initialize form data with vendor's existing DD data
-    const initialData = {};
-    Object.keys(vendor).forEach(key => {
-      if (key.startsWith('dd_')) {
-        initialData[key] = vendor[key];
-      }
-    });
-    setFormData(initialData);
-  }, [vendor]);
+    // Initialize form data with vendor's existing DD data (only in detail mode)
+    if (!isCreationMode && vendor) {
+      const initialData = {};
+      Object.keys(vendor).forEach(key => {
+        if (key.startsWith('dd_')) {
+          initialData[key] = vendor[key];
+        }
+      });
+      setInternalFormData(initialData);
+    }
+  }, [vendor, isCreationMode]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
