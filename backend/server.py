@@ -1484,6 +1484,11 @@ async def create_contract(contract: Contract, request: Request):
     contract.outsourcing_classification = determine_outsourcing_classification(contract_doc)
     contract_doc["outsourcing_classification"] = contract.outsourcing_classification
     
+    # Determine NOC requirement
+    vendor_type = vendor.get('vendor_type', 'local')
+    contract.is_noc = determine_noc_requirement(contract_doc, vendor_type)
+    contract_doc["is_noc"] = contract.is_noc
+    
     # Check if Due Diligence is required
     vendor_risk = vendor.get('risk_category', 'low')
     classification = contract.outsourcing_classification
