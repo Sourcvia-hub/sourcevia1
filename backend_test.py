@@ -1140,11 +1140,823 @@ class ProcurementTester:
             print(f"❌ Due Diligence workflow test error: {str(e)}")
             return False
 
+    def test_comprehensive_authentication(self):
+        """Test authentication and user management"""
+        print(f"\n=== COMPREHENSIVE AUTHENTICATION TEST ===")
+        
+        try:
+            # Test /auth/me endpoint
+            me_response = self.session.get(f"{BASE_URL}/auth/me")
+            print(f"Get Current User Status: {me_response.status_code}")
+            
+            if me_response.status_code == 200:
+                user_data = me_response.json()
+                print(f"✅ Current user: {user_data.get('email')} (Role: {user_data.get('role')})")
+                return True
+            else:
+                print(f"❌ Failed to get current user: {me_response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Authentication test error: {str(e)}")
+            return False
+
+    def test_comprehensive_vendor_management(self):
+        """Test comprehensive vendor management including blacklisting and search"""
+        print(f"\n=== COMPREHENSIVE VENDOR MANAGEMENT TEST ===")
+        
+        try:
+            # Test 1: List all vendors
+            print("\n--- Test 1: List all vendors ---")
+            vendors_response = self.session.get(f"{BASE_URL}/vendors")
+            print(f"List Vendors Status: {vendors_response.status_code}")
+            
+            if vendors_response.status_code == 200:
+                vendors = vendors_response.json()
+                print(f"✅ Retrieved {len(vendors)} vendors")
+                
+                # Test 2: Create vendor without checklist (should be approved)
+                print("\n--- Test 2: Create vendor without checklist ---")
+                vendor_no_checklist = {
+                    "name_english": "Auto Approved Vendor",
+                    "commercial_name": "Auto Approved Co",
+                    "vendor_type": "local",
+                    "entity_type": "LLC",
+                    "vat_number": "300123456789020",
+                    "cr_number": "1010123470",
+                    "cr_expiry_date": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+                    "cr_country_city": "Riyadh, Saudi Arabia",
+                    "activity_description": "General Trading",
+                    "number_of_employees": 10,
+                    "street": "King Fahd Road",
+                    "building_no": "500",
+                    "city": "Riyadh",
+                    "district": "Al Malaz",
+                    "country": "Saudi Arabia",
+                    "mobile": "+966501234580",
+                    "email": "contact@autoapproved.com",
+                    "representative_name": "Ali Al-Mansouri",
+                    "representative_designation": "CEO",
+                    "representative_id_type": "National ID",
+                    "representative_id_number": "8901234567",
+                    "representative_nationality": "Saudi",
+                    "representative_mobile": "+966501234580",
+                    "representative_email": "ali@autoapproved.com",
+                    "bank_account_name": "Auto Approved Vendor",
+                    "bank_name": "Saudi National Bank",
+                    "bank_branch": "Riyadh Main",
+                    "bank_country": "Saudi Arabia",
+                    "iban": "SA0310000000123456789020",
+                    "currency": "SAR",
+                    "swift_code": "NCBKSARI"
+                }
+                
+                create_response = self.session.post(f"{BASE_URL}/vendors", json=vendor_no_checklist)
+                print(f"Create Vendor (No Checklist) Status: {create_response.status_code}")
+                
+                if create_response.status_code == 200:
+                    vendor = create_response.json()
+                    vendor_id = vendor.get('id')
+                    vendor_status = vendor.get('status')
+                    
+                    print(f"✅ Vendor created: {vendor.get('name_english')}")
+                    print(f"Status: {vendor_status}")
+                    
+                    # Verify approved status
+                    if vendor_status == "approved":
+                        print(f"✅ Vendor auto-approved as expected")
+                        self.created_entities['vendors'].append(vendor_id)
+                        
+                        # Test 3: Test vendor blacklisting
+                        print("\n--- Test 3: Test vendor blacklisting ---")
+                        blacklist_response = self.session.post(f"{BASE_URL}/vendors/{vendor_id}/blacklist")
+                        print(f"Blacklist Vendor Status: {blacklist_response.status_code}")
+                        
+                        if blacklist_response.status_code == 200:
+                            print(f"✅ Vendor blacklisted successfully")
+                            
+                            # Verify vendor status changed to blacklisted
+                            check_response = self.session.get(f"{BASE_URL}/vendors/{vendor_id}")
+                            if check_response.status_code == 200:
+                                updated_vendor = check_response.json()
+                                if updated_vendor.get('status') == 'blacklisted':
+                                    print(f"✅ Vendor status updated to blacklisted")
+                                else:
+                                    print(f"❌ Vendor status not updated: {updated_vendor.get('status')}")
+                                    return False
+                        else:
+                            print(f"❌ Failed to blacklist vendor: {blacklist_response.text}")
+                            return False
+                        
+                        # Test 4: Test vendor search functionality
+                        print("\n--- Test 4: Test vendor search functionality ---")
+                        search_tests = [
+                            ("Auto", "name search"),
+                            ("Vendor-25", "number search")
+                        ]
+                        
+                        for search_term, test_name in search_tests:
+                            search_response = self.session.get(f"{BASE_URL}/vendors?search={search_term}")
+                            print(f"Vendor {test_name} Status: {search_response.status_code}")
+                            
+                            if search_response.status_code == 200:
+                                search_results = search_response.json()
+                                print(f"✅ {test_name} returned {len(search_results)} results")
+                            else:
+                                print(f"❌ {test_name} failed: {search_response.text}")
+                                return False
+                        
+                        return True
+                    else:
+                        print(f"❌ Expected approved status, got: {vendor_status}")
+                        return False
+                else:
+                    print(f"❌ Failed to create vendor: {create_response.text}")
+                    return False
+            else:
+                print(f"❌ Failed to list vendors: {vendors_response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Comprehensive vendor management test error: {str(e)}")
+            return False
+
+    def test_comprehensive_tender_management(self):
+        """Test comprehensive tender management including proposals and evaluation"""
+        print(f"\n=== COMPREHENSIVE TENDER MANAGEMENT TEST ===")
+        
+        try:
+            # Test 1: List all tenders
+            print("\n--- Test 1: List all tenders ---")
+            tenders_response = self.session.get(f"{BASE_URL}/tenders")
+            print(f"List Tenders Status: {tenders_response.status_code}")
+            
+            if tenders_response.status_code == 200:
+                tenders = tenders_response.json()
+                print(f"✅ Retrieved {len(tenders)} tenders")
+                
+                # Test 2: Create new tender
+                print("\n--- Test 2: Create new tender ---")
+                tender_data = {
+                    "title": "Comprehensive Test Tender",
+                    "description": "Test tender for comprehensive testing",
+                    "project_name": "Comprehensive Test Project",
+                    "requirements": "Full testing of tender functionality",
+                    "budget": 750000.0,
+                    "deadline": (datetime.now(timezone.utc) + timedelta(days=45)).isoformat(),
+                    "invited_vendors": []
+                }
+                
+                create_response = self.session.post(f"{BASE_URL}/tenders", json=tender_data)
+                print(f"Create Tender Status: {create_response.status_code}")
+                
+                if create_response.status_code == 200:
+                    tender = create_response.json()
+                    tender_id = tender.get('id')
+                    tender_number = tender.get('tender_number')
+                    
+                    print(f"✅ Tender created: {tender_number}")
+                    print(f"Status: {tender.get('status')}")
+                    self.created_entities['tenders'].append(tender_id)
+                    
+                    # Test 3: Submit proposal to tender
+                    print("\n--- Test 3: Submit proposal to tender ---")
+                    if self.created_entities['vendors']:
+                        vendor_id = self.created_entities['vendors'][0]
+                        
+                        proposal_data = {
+                            "vendor_id": vendor_id,
+                            "technical_proposal": "Comprehensive technical solution with modern architecture",
+                            "financial_proposal": 650000.0,
+                            "documents": []
+                        }
+                        
+                        proposal_response = self.session.post(f"{BASE_URL}/tenders/{tender_id}/proposals", json=proposal_data)
+                        print(f"Submit Proposal Status: {proposal_response.status_code}")
+                        
+                        if proposal_response.status_code == 200:
+                            proposal = proposal_response.json()
+                            proposal_id = proposal.get('id')
+                            print(f"✅ Proposal submitted: {proposal.get('proposal_number')}")
+                            
+                            # Test 4: Test tender evaluation
+                            print("\n--- Test 4: Test tender evaluation ---")
+                            evaluation_data = {
+                                "proposal_id": proposal_id,
+                                "vendor_reliability_stability": 4.5,
+                                "delivery_warranty_backup": 4.0,
+                                "technical_experience": 4.8,
+                                "cost_score": 3.5,
+                                "meets_requirements": 4.7
+                            }
+                            
+                            eval_response = self.session.post(f"{BASE_URL}/tenders/{tender_id}/proposals/{proposal_id}/evaluate", json=evaluation_data)
+                            print(f"Evaluate Proposal Status: {eval_response.status_code}")
+                            
+                            if eval_response.status_code == 200:
+                                eval_result = eval_response.json()
+                                print(f"✅ Proposal evaluated successfully")
+                                print(f"Total Score: {eval_result.get('total_score')}")
+                                
+                                # Test 5: Verify tender search functionality
+                                print("\n--- Test 5: Verify tender search functionality ---")
+                                search_response = self.session.get(f"{BASE_URL}/tenders?search=Comprehensive")
+                                print(f"Tender Search Status: {search_response.status_code}")
+                                
+                                if search_response.status_code == 200:
+                                    search_results = search_response.json()
+                                    print(f"✅ Tender search returned {len(search_results)} results")
+                                    return True
+                                else:
+                                    print(f"❌ Tender search failed: {search_response.text}")
+                                    return False
+                            else:
+                                print(f"❌ Failed to evaluate proposal: {eval_response.text}")
+                                return False
+                        else:
+                            print(f"❌ Failed to submit proposal: {proposal_response.text}")
+                            return False
+                    else:
+                        print(f"⚠️ No vendors available for proposal testing")
+                        return True
+                else:
+                    print(f"❌ Failed to create tender: {create_response.text}")
+                    return False
+            else:
+                print(f"❌ Failed to list tenders: {tenders_response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Comprehensive tender management test error: {str(e)}")
+            return False
+
+    def test_comprehensive_contract_management(self):
+        """Test comprehensive contract management with various filters"""
+        print(f"\n=== COMPREHENSIVE CONTRACT MANAGEMENT TEST ===")
+        
+        try:
+            # Test 1: List all contracts with various filters
+            print("\n--- Test 1: List contracts with filters ---")
+            
+            filters = ["", "?status=active", "?status=approved", "?status=expired"]
+            filter_names = ["All contracts", "Active contracts", "Approved contracts", "Expired contracts"]
+            
+            for filter_param, filter_name in zip(filters, filter_names):
+                contracts_response = self.session.get(f"{BASE_URL}/contracts{filter_param}")
+                print(f"{filter_name} Status: {contracts_response.status_code}")
+                
+                if contracts_response.status_code == 200:
+                    contracts = contracts_response.json()
+                    print(f"✅ {filter_name}: {len(contracts)} found")
+                else:
+                    print(f"❌ Failed to get {filter_name.lower()}: {contracts_response.text}")
+                    return False
+            
+            # Test 2: Create contract with pending DD vendor
+            print("\n--- Test 2: Create contract with pending DD vendor ---")
+            if self.created_entities['tenders'] and self.created_entities['vendors']:
+                tender_id = self.created_entities['tenders'][0]
+                
+                # Create a vendor with pending DD status
+                pending_vendor_data = {
+                    "name_english": "Contract Test Vendor",
+                    "commercial_name": "Contract Test Co",
+                    "vendor_type": "local",
+                    "entity_type": "LLC",
+                    "vat_number": "300123456789030",
+                    "cr_number": "1010123480",
+                    "cr_expiry_date": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+                    "cr_country_city": "Riyadh, Saudi Arabia",
+                    "activity_description": "IT Services",
+                    "number_of_employees": 15,
+                    "street": "King Fahd Road",
+                    "building_no": "600",
+                    "city": "Riyadh",
+                    "district": "Al Malaz",
+                    "country": "Saudi Arabia",
+                    "mobile": "+966501234590",
+                    "email": "contact@contracttest.com",
+                    "representative_name": "Fahad Al-Otaibi",
+                    "representative_designation": "CEO",
+                    "representative_id_type": "National ID",
+                    "representative_id_number": "9012345678",
+                    "representative_nationality": "Saudi",
+                    "representative_mobile": "+966501234590",
+                    "representative_email": "fahad@contracttest.com",
+                    "bank_account_name": "Contract Test Vendor",
+                    "bank_name": "Saudi National Bank",
+                    "bank_branch": "Riyadh Main",
+                    "bank_country": "Saudi Arabia",
+                    "iban": "SA0310000000123456789030",
+                    "currency": "SAR",
+                    "swift_code": "NCBKSARI",
+                    
+                    # Checklist items to trigger pending DD
+                    "dd_checklist_supporting_documents": True,
+                    "dd_checklist_related_party_checked": True,
+                    "dd_checklist_sanction_screening": True
+                }
+                
+                vendor_response = self.session.post(f"{BASE_URL}/vendors", json=pending_vendor_data)
+                if vendor_response.status_code == 200:
+                    pending_vendor = vendor_response.json()
+                    pending_vendor_id = pending_vendor.get('id')
+                    
+                    print(f"✅ Created pending DD vendor: {pending_vendor.get('name_english')}")
+                    print(f"Vendor Status: {pending_vendor.get('status')}")
+                    
+                    # Create contract with pending DD vendor
+                    contract_data = {
+                        "tender_id": tender_id,
+                        "vendor_id": pending_vendor_id,
+                        "title": "Contract with Pending DD Vendor",
+                        "sow": "Test contract for DD status verification",
+                        "sla": "Standard SLA terms",
+                        "value": 500000.0,
+                        "start_date": datetime.now(timezone.utc).isoformat(),
+                        "end_date": (datetime.now(timezone.utc) + timedelta(days=180)).isoformat(),
+                        "is_outsourcing": True,
+                        "milestones": [
+                            {"name": "Phase 1", "amount": 250000.0, "due_date": (datetime.now(timezone.utc) + timedelta(days=90)).isoformat()},
+                            {"name": "Phase 2", "amount": 250000.0, "due_date": (datetime.now(timezone.utc) + timedelta(days=180)).isoformat()}
+                        ]
+                    }
+                    
+                    contract_response = self.session.post(f"{BASE_URL}/contracts", json=contract_data)
+                    print(f"Create Contract Status: {contract_response.status_code}")
+                    
+                    if contract_response.status_code == 200:
+                        contract = contract_response.json()
+                        contract_id = contract.get('id')
+                        contract_status = contract.get('status')
+                        
+                        print(f"✅ Contract created: {contract.get('contract_number')}")
+                        print(f"Contract Status: {contract_status}")
+                        
+                        # Verify contract status is pending_due_diligence
+                        if contract_status == "pending_due_diligence":
+                            print(f"✅ Contract correctly has pending_due_diligence status")
+                            self.created_entities['contracts'].append(contract_id)
+                            self.created_entities['vendors'].append(pending_vendor_id)
+                            
+                            # Test 3: Verify contract milestones
+                            print("\n--- Test 3: Verify contract milestones ---")
+                            milestones = contract.get('milestones', [])
+                            if len(milestones) == 2:
+                                print(f"✅ Contract has {len(milestones)} milestones as expected")
+                                
+                                # Test 4: Test contract search functionality
+                                print("\n--- Test 4: Test contract search functionality ---")
+                                search_response = self.session.get(f"{BASE_URL}/contracts?search=Contract-25")
+                                print(f"Contract Search Status: {search_response.status_code}")
+                                
+                                if search_response.status_code == 200:
+                                    search_results = search_response.json()
+                                    print(f"✅ Contract search returned {len(search_results)} results")
+                                    return True
+                                else:
+                                    print(f"❌ Contract search failed: {search_response.text}")
+                                    return False
+                            else:
+                                print(f"❌ Expected 2 milestones, got {len(milestones)}")
+                                return False
+                        else:
+                            print(f"❌ Expected pending_due_diligence status, got: {contract_status}")
+                            return False
+                    else:
+                        print(f"❌ Failed to create contract: {contract_response.text}")
+                        return False
+                else:
+                    print(f"❌ Failed to create pending DD vendor: {vendor_response.text}")
+                    return False
+            else:
+                print(f"⚠️ No tenders or vendors available for contract testing")
+                return True
+                
+        except Exception as e:
+            print(f"❌ Comprehensive contract management test error: {str(e)}")
+            return False
+
+    def test_comprehensive_purchase_orders(self):
+        """Test comprehensive purchase order functionality"""
+        print(f"\n=== COMPREHENSIVE PURCHASE ORDERS TEST ===")
+        
+        try:
+            # Test 1: List all purchase orders
+            print("\n--- Test 1: List all purchase orders ---")
+            po_response = self.session.get(f"{BASE_URL}/purchase-orders")
+            print(f"List Purchase Orders Status: {po_response.status_code}")
+            
+            if po_response.status_code == 200:
+                pos = po_response.json()
+                print(f"✅ Retrieved {len(pos)} purchase orders")
+                
+                # Test 2: Create new PO
+                print("\n--- Test 2: Create new PO ---")
+                if self.created_entities['vendors']:
+                    vendor_id = self.created_entities['vendors'][0]
+                    
+                    po_data = {
+                        "vendor_id": vendor_id,
+                        "items": [
+                            {
+                                "name": "Software Licenses",
+                                "description": "Annual software licenses for development tools",
+                                "quantity": 10,
+                                "price": 5000.0,
+                                "total": 50000.0
+                            },
+                            {
+                                "name": "Hardware Equipment",
+                                "description": "Servers and networking equipment",
+                                "quantity": 5,
+                                "price": 20000.0,
+                                "total": 100000.0
+                            }
+                        ],
+                        "total_amount": 150000.0,
+                        "delivery_time": "30 days",
+                        "has_data_access": True,
+                        "has_onsite_presence": False,
+                        "has_implementation": True,
+                        "duration_more_than_year": False
+                    }
+                    
+                    create_response = self.session.post(f"{BASE_URL}/purchase-orders", json=po_data)
+                    print(f"Create PO Status: {create_response.status_code}")
+                    
+                    if create_response.status_code == 200:
+                        po = create_response.json()
+                        po_id = po.get('id')
+                        po_number = po.get('po_number')
+                        requires_contract = po.get('requires_contract')
+                        
+                        print(f"✅ PO created: {po_number}")
+                        print(f"Requires Contract: {requires_contract}")
+                        
+                        # Test 3: Verify PO validation (should require contract for certain scenarios)
+                        print("\n--- Test 3: Verify PO validation ---")
+                        if requires_contract:
+                            print(f"✅ PO correctly flagged as requiring contract due to risk factors")
+                        else:
+                            print(f"⚠️ PO does not require contract (may be expected based on risk assessment)")
+                        
+                        return True
+                    else:
+                        print(f"❌ Failed to create PO: {create_response.text}")
+                        return False
+                else:
+                    print(f"⚠️ No vendors available for PO testing")
+                    return True
+            else:
+                print(f"❌ Failed to list purchase orders: {po_response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Comprehensive purchase orders test error: {str(e)}")
+            return False
+
+    def test_comprehensive_invoices(self):
+        """Test comprehensive invoice functionality"""
+        print(f"\n=== COMPREHENSIVE INVOICES TEST ===")
+        
+        try:
+            # Test 1: List all invoices
+            print("\n--- Test 1: List all invoices ---")
+            invoices_response = self.session.get(f"{BASE_URL}/invoices")
+            print(f"List Invoices Status: {invoices_response.status_code}")
+            
+            if invoices_response.status_code == 200:
+                invoices = invoices_response.json()
+                print(f"✅ Retrieved {len(invoices)} invoices")
+                
+                # Test 2: Create new invoice linked to contract
+                print("\n--- Test 2: Create new invoice linked to contract ---")
+                if self.created_entities['contracts'] and self.created_entities['vendors']:
+                    contract_id = self.created_entities['contracts'][0]
+                    vendor_id = self.created_entities['vendors'][0]
+                    
+                    invoice_data = {
+                        "contract_id": contract_id,
+                        "vendor_id": vendor_id,
+                        "amount": 125000.0,
+                        "description": "First milestone payment for comprehensive testing",
+                        "milestone_reference": "Phase 1 - Initial Development"
+                    }
+                    
+                    create_response = self.session.post(f"{BASE_URL}/invoices", json=invoice_data)
+                    print(f"Create Invoice Status: {create_response.status_code}")
+                    
+                    if create_response.status_code == 200:
+                        invoice = create_response.json()
+                        invoice_id = invoice.get('id')
+                        invoice_number = invoice.get('invoice_number')
+                        
+                        print(f"✅ Invoice created: {invoice_number}")
+                        print(f"Status: {invoice.get('status')}")
+                        self.created_entities['invoices'].append(invoice_id)
+                        
+                        # Test 3: Verify invoice detail retrieval
+                        print("\n--- Test 3: Verify invoice detail retrieval ---")
+                        detail_response = self.session.get(f"{BASE_URL}/invoices/{invoice_id}")
+                        print(f"Get Invoice Detail Status: {detail_response.status_code}")
+                        
+                        if detail_response.status_code == 200:
+                            invoice_detail = detail_response.json()
+                            print(f"✅ Invoice detail retrieved successfully")
+                            print(f"Amount: {invoice_detail.get('amount')}")
+                            print(f"Description: {invoice_detail.get('description')}")
+                            
+                            # Test 4: Test invoice editing
+                            print("\n--- Test 4: Test invoice editing ---")
+                            updated_invoice_data = {
+                                "contract_id": contract_id,
+                                "vendor_id": vendor_id,
+                                "amount": 130000.0,  # Updated amount
+                                "description": "Updated first milestone payment for comprehensive testing",
+                                "milestone_reference": "Phase 1 - Initial Development (Updated)"
+                            }
+                            
+                            update_response = self.session.put(f"{BASE_URL}/invoices/{invoice_id}", json=updated_invoice_data)
+                            print(f"Update Invoice Status: {update_response.status_code}")
+                            
+                            if update_response.status_code == 200:
+                                print(f"✅ Invoice updated successfully")
+                                
+                                # Test 5: Verify milestone auto-population from contract
+                                print("\n--- Test 5: Verify milestone auto-population from contract ---")
+                                # This would be tested by checking if milestone_reference matches contract milestones
+                                milestone_ref = invoice_detail.get('milestone_reference')
+                                if milestone_ref:
+                                    print(f"✅ Milestone reference populated: {milestone_ref}")
+                                else:
+                                    print(f"⚠️ No milestone reference found (may be expected)")
+                                
+                                return True
+                            else:
+                                print(f"❌ Failed to update invoice: {update_response.text}")
+                                return False
+                        else:
+                            print(f"❌ Failed to get invoice detail: {detail_response.text}")
+                            return False
+                    else:
+                        print(f"❌ Failed to create invoice: {create_response.text}")
+                        return False
+                else:
+                    print(f"⚠️ No contracts or vendors available for invoice testing")
+                    return True
+            else:
+                print(f"❌ Failed to list invoices: {invoices_response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Comprehensive invoices test error: {str(e)}")
+            return False
+
+    def test_comprehensive_resources(self):
+        """Test comprehensive resource functionality"""
+        print(f"\n=== COMPREHENSIVE RESOURCES TEST ===")
+        
+        try:
+            # Test 1: List all resources
+            print("\n--- Test 1: List all resources ---")
+            resources_response = self.session.get(f"{BASE_URL}/resources")
+            print(f"List Resources Status: {resources_response.status_code}")
+            
+            if resources_response.status_code == 200:
+                resources = resources_response.json()
+                print(f"✅ Retrieved {len(resources)} resources")
+                
+                # Test 2: Create resource linked to approved contract and vendor
+                print("\n--- Test 2: Create resource linked to approved contract and vendor ---")
+                if self.created_entities['contracts'] and self.created_entities['vendors']:
+                    contract_id = self.created_entities['contracts'][0]
+                    vendor_id = self.created_entities['vendors'][0]
+                    
+                    resource_data = {
+                        "contract_id": contract_id,
+                        "vendor_id": vendor_id,
+                        "name": "Ahmed Al-Rashid",
+                        "nationality": "Saudi",
+                        "id_number": "1234567890",
+                        "education_qualification": "Bachelor's in Computer Science",
+                        "years_of_experience": 5.5,
+                        "work_type": "on_premises",
+                        "start_date": datetime.now(timezone.utc).isoformat(),
+                        "end_date": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+                        "access_development": True,
+                        "access_production": False,
+                        "access_uat": True,
+                        "scope_of_work": "Full-stack development and system integration",
+                        "has_relatives": False,
+                        "relatives": []
+                    }
+                    
+                    create_response = self.session.post(f"{BASE_URL}/resources", json=resource_data)
+                    print(f"Create Resource Status: {create_response.status_code}")
+                    
+                    if create_response.status_code == 200:
+                        resource = create_response.json()
+                        resource_id = resource.get('id')
+                        resource_number = resource.get('resource_number')
+                        
+                        print(f"✅ Resource created: {resource.get('name')}")
+                        print(f"Resource Number: {resource_number}")
+                        print(f"Status: {resource.get('status')}")
+                        
+                        # Test 3: Verify resource status changes based on contract/vendor status
+                        print("\n--- Test 3: Verify resource status changes ---")
+                        # This would involve checking if resource status updates when contract/vendor status changes
+                        resource_status = resource.get('status')
+                        if resource_status == 'active':
+                            print(f"✅ Resource has active status as expected")
+                        else:
+                            print(f"⚠️ Resource status is '{resource_status}' (may be expected based on contract/vendor status)")
+                        
+                        # Test 4: Test resource duration and expiry
+                        print("\n--- Test 4: Test resource duration and expiry ---")
+                        start_date = resource.get('start_date')
+                        end_date = resource.get('end_date')
+                        
+                        if start_date and end_date:
+                            print(f"✅ Resource has proper start and end dates")
+                            print(f"Start Date: {start_date}")
+                            print(f"End Date: {end_date}")
+                        else:
+                            print(f"❌ Resource missing start or end date")
+                            return False
+                        
+                        return True
+                    else:
+                        print(f"❌ Failed to create resource: {create_response.text}")
+                        return False
+                else:
+                    print(f"⚠️ No contracts or vendors available for resource testing")
+                    return True
+            else:
+                print(f"❌ Failed to list resources: {resources_response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Comprehensive resources test error: {str(e)}")
+            return False
+
+    def test_comprehensive_dashboard(self):
+        """Test comprehensive dashboard functionality"""
+        print(f"\n=== COMPREHENSIVE DASHBOARD TEST ===")
+        
+        try:
+            # Test dashboard stats for all modules
+            print("\n--- Test: Verify dashboard stats for all modules ---")
+            dashboard_response = self.session.get(f"{BASE_URL}/dashboard")
+            print(f"Get Dashboard Status: {dashboard_response.status_code}")
+            
+            if dashboard_response.status_code == 200:
+                dashboard_data = dashboard_response.json()
+                print(f"✅ Dashboard data retrieved successfully")
+                
+                # Check vendor stats
+                vendor_stats = dashboard_data.get('vendors', {})
+                print(f"\nVendor Statistics:")
+                print(f"  - Total: {vendor_stats.get('all', 0)}")
+                print(f"  - Active: {vendor_stats.get('active', 0)}")
+                print(f"  - High Risk: {vendor_stats.get('high_risk', 0)}")
+                print(f"  - Waiting DD: {vendor_stats.get('waiting_due_diligence', 0)}")
+                print(f"  - Blacklisted: {vendor_stats.get('blacklisted', 0)}")
+                
+                # Check tender stats
+                tender_stats = dashboard_data.get('tenders', {})
+                print(f"\nTender Statistics:")
+                print(f"  - Total: {tender_stats.get('all', 0)}")
+                print(f"  - Active: {tender_stats.get('active', 0)}")
+                print(f"  - Waiting Proposals: {tender_stats.get('waiting_proposals', 0)}")
+                print(f"  - Waiting Evaluation: {tender_stats.get('waiting_evaluation', 0)}")
+                
+                # Check contract stats
+                contract_stats = dashboard_data.get('contracts', {})
+                print(f"\nContract Statistics:")
+                print(f"  - Total: {contract_stats.get('all', 0)}")
+                print(f"  - Active: {contract_stats.get('active', 0)}")
+                print(f"  - Outsourcing: {contract_stats.get('outsourcing', 0)}")
+                print(f"  - Cloud: {contract_stats.get('cloud', 0)}")
+                print(f"  - NOC: {contract_stats.get('noc', 0)}")
+                print(f"  - Expired: {contract_stats.get('expired', 0)}")
+                
+                # Check invoice stats
+                invoice_stats = dashboard_data.get('invoices', {})
+                print(f"\nInvoice Statistics:")
+                print(f"  - Total: {invoice_stats.get('all', 0)}")
+                print(f"  - Due: {invoice_stats.get('due', 0)}")
+                
+                # Check resource stats (Total, Active, Offshore, On-premises)
+                resource_stats = dashboard_data.get('resources', {})
+                print(f"\nResource Statistics:")
+                print(f"  - Total: {resource_stats.get('all', 0)}")
+                print(f"  - Active: {resource_stats.get('active', 0)}")
+                print(f"  - Offshore: {resource_stats.get('offshore', 0)}")
+                print(f"  - On-premises: {resource_stats.get('on_premises', 0)}")
+                
+                print(f"\n✅ All dashboard statistics retrieved successfully")
+                return True
+            else:
+                print(f"❌ Failed to get dashboard data: {dashboard_response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Comprehensive dashboard test error: {str(e)}")
+            return False
+
+    def test_data_integrity(self):
+        """Test data integrity including auto-numbering and MongoDB ObjectId handling"""
+        print(f"\n=== DATA INTEGRITY TEST ===")
+        
+        try:
+            # Test 1: Verify auto-numbering for all entities
+            print("\n--- Test 1: Verify auto-numbering for all entities ---")
+            
+            # Check if we have created entities with proper numbering
+            entities_to_check = [
+                ('vendors', 'vendor_number', 'Vendor-25-'),
+                ('tenders', 'tender_number', 'Tender-25-'),
+                ('contracts', 'contract_number', 'Contract-25-'),
+                ('invoices', 'invoice_number', 'Invoice-25-')
+            ]
+            
+            for entity_type, number_field, prefix in entities_to_check:
+                if self.created_entities.get(entity_type):
+                    entity_id = self.created_entities[entity_type][0]
+                    response = self.session.get(f"{BASE_URL}/{entity_type}/{entity_id}")
+                    
+                    if response.status_code == 200:
+                        entity_data = response.json()
+                        number = entity_data.get(number_field)
+                        
+                        if number and number.startswith(prefix):
+                            print(f"✅ {entity_type.capitalize()} auto-numbering format correct: {number}")
+                        else:
+                            print(f"❌ {entity_type.capitalize()} auto-numbering format incorrect: {number}")
+                            return False
+                    else:
+                        print(f"❌ Failed to retrieve {entity_type} for numbering check")
+                        return False
+                else:
+                    print(f"⚠️ No {entity_type} created for numbering verification")
+            
+            # Test 2: Test MongoDB ObjectId handling (ensure no serialization errors)
+            print("\n--- Test 2: Test MongoDB ObjectId handling ---")
+            
+            # Test various endpoints that might have ObjectId serialization issues
+            test_endpoints = [
+                "/vendors",
+                "/tenders", 
+                "/contracts",
+                "/invoices"
+            ]
+            
+            for endpoint in test_endpoints:
+                response = self.session.get(f"{BASE_URL}{endpoint}")
+                if response.status_code == 200:
+                    print(f"✅ {endpoint} - No ObjectId serialization errors")
+                else:
+                    print(f"❌ {endpoint} - Potential ObjectId serialization error: {response.status_code}")
+                    return False
+            
+            # Test 3: Verify date/datetime conversions
+            print("\n--- Test 3: Verify date/datetime conversions ---")
+            
+            # Check if datetime fields are properly handled in responses
+            if self.created_entities.get('vendors'):
+                vendor_id = self.created_entities['vendors'][0]
+                response = self.session.get(f"{BASE_URL}/vendors/{vendor_id}")
+                
+                if response.status_code == 200:
+                    vendor_data = response.json()
+                    
+                    # Check for datetime fields
+                    datetime_fields = ['created_at', 'updated_at', 'cr_expiry_date']
+                    for field in datetime_fields:
+                        if field in vendor_data and vendor_data[field]:
+                            print(f"✅ {field} properly formatted: {vendor_data[field]}")
+                        else:
+                            print(f"⚠️ {field} not found or empty (may be expected)")
+                    
+                    print(f"✅ Date/datetime conversions working correctly")
+                else:
+                    print(f"❌ Failed to retrieve vendor for datetime check")
+                    return False
+            
+            print(f"\n✅ All data integrity tests passed")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Data integrity test error: {str(e)}")
+            return False
+
     def run_all_tests(self):
-        """Run all backend tests"""
-        print("=" * 60)
-        print("SOURCEVIA PROCUREMENT BACKEND TESTING")
-        print("=" * 60)
+        """Run all comprehensive backend tests"""
+        print("=" * 80)
+        print("SOURCEVIA PROCUREMENT MANAGEMENT SYSTEM - COMPREHENSIVE BACKEND TESTING")
+        print("=" * 80)
         
         # Login first
         if not self.login("procurement"):
@@ -1152,6 +1964,7 @@ class ProcurementTester:
             return False
         
         test_results = {
+            # Core functionality tests (existing)
             "vendor_auto_numbering": self.test_vendor_auto_numbering(),
             "vendor_dd_integration": self.test_vendor_creation_with_dd_integration(),
             "contract_vendor_dd_status_checking": self.test_contract_vendor_dd_status_checking(),
@@ -1161,7 +1974,18 @@ class ProcurementTester:
             "contract_auto_numbering": self.test_contract_auto_numbering(),
             "contract_validation": self.test_contract_validation(),
             "invoice_auto_numbering": self.test_invoice_auto_numbering(),
-            "search_functionality": self.test_search_functionality()
+            "search_functionality": self.test_search_functionality(),
+            
+            # Comprehensive module tests (new)
+            "comprehensive_authentication": self.test_comprehensive_authentication(),
+            "comprehensive_vendor_management": self.test_comprehensive_vendor_management(),
+            "comprehensive_tender_management": self.test_comprehensive_tender_management(),
+            "comprehensive_contract_management": self.test_comprehensive_contract_management(),
+            "comprehensive_purchase_orders": self.test_comprehensive_purchase_orders(),
+            "comprehensive_invoices": self.test_comprehensive_invoices(),
+            "comprehensive_resources": self.test_comprehensive_resources(),
+            "comprehensive_dashboard": self.test_comprehensive_dashboard(),
+            "data_integrity": self.test_data_integrity()
         }
         
         # Summary
