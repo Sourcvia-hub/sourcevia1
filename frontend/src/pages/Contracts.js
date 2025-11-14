@@ -512,6 +512,90 @@ const Contracts = () => {
                 />
               </div>
 
+              {/* Milestones Section */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <label className="block text-sm font-medium text-gray-700">Milestones</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({
+                        ...formData,
+                        milestones: [
+                          ...formData.milestones,
+                          { name: '', date: '', amount: '' }
+                        ]
+                      });
+                    }}
+                    className="px-3 py-1 bg-green-600 text-white rounded text-sm font-medium hover:bg-green-700"
+                  >
+                    + Add Milestone
+                  </button>
+                </div>
+                
+                {formData.milestones.length > 0 ? (
+                  <div className="space-y-3">
+                    {formData.milestones.map((milestone, index) => (
+                      <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Milestone Name"
+                            value={milestone.name}
+                            onChange={(e) => {
+                              const newMilestones = [...formData.milestones];
+                              newMilestones[index].name = e.target.value;
+                              setFormData({ ...formData, milestones: newMilestones });
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="date"
+                            value={milestone.date}
+                            onChange={(e) => {
+                              const newMilestones = [...formData.milestones];
+                              newMilestones[index].date = e.target.value;
+                              setFormData({ ...formData, milestones: newMilestones });
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="number"
+                            placeholder="Amount"
+                            value={milestone.amount}
+                            onChange={(e) => {
+                              const newMilestones = [...formData.milestones];
+                              newMilestones[index].amount = e.target.value;
+                              setFormData({ ...formData, milestones: newMilestones });
+                            }}
+                            step="0.01"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newMilestones = formData.milestones.filter((_, i) => i !== index);
+                              setFormData({ ...formData, milestones: newMilestones });
+                            }}
+                            className="w-full px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No milestones added. Click "Add Milestone" to create one.</p>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Contract Value *</label>
