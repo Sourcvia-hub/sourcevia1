@@ -351,7 +351,7 @@ const PurchaseOrders = () => {
                 </label>
                 <select
                   value={formData.tender_id}
-                  onChange={(e) => setFormData({ ...formData, tender_id: e.target.value })}
+                  onChange={(e) => handleTenderSelect(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">No Tender</option>
@@ -362,6 +362,27 @@ const PurchaseOrders = () => {
                   ))}
                 </select>
               </div>
+
+              {/* Tender Brief Info */}
+              {selectedTender && (
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-900 mb-2">📋 Tender Information</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-blue-600 font-medium">Title:</p>
+                      <p className="text-blue-900">{selectedTender.title}</p>
+                    </div>
+                    <div>
+                      <p className="text-blue-600 font-medium">Budget:</p>
+                      <p className="text-blue-900">${selectedTender.budget?.toLocaleString()}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-blue-600 font-medium">Requirements:</p>
+                      <p className="text-blue-900">{selectedTender.requirements}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Vendor Selection */}
               <div>
