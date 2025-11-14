@@ -247,42 +247,6 @@ const PurchaseOrders = () => {
           </button>
         </div>
 
-        {/* Stats Dashboard */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span>📊</span>
-            Purchase Order Statistics
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-blue-700">{pos.length}</p>
-                <p className="text-sm text-blue-600 font-medium mt-1">Total POs</p>
-              </div>
-            </div>
-            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-green-700">{pos.filter(p => p.status === 'issued').length}</p>
-                <p className="text-sm text-green-600 font-medium mt-1">Issued</p>
-              </div>
-            </div>
-            <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-purple-700">{pos.filter(p => p.status === 'converted_to_contract').length}</p>
-                <p className="text-sm text-purple-600 font-medium mt-1">Converted</p>
-              </div>
-            </div>
-            <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-orange-700">
-                  ${pos.reduce((sum, p) => sum + (p.total_amount || 0), 0).toLocaleString()}
-                </p>
-                <p className="text-sm text-orange-600 font-medium mt-1">Total Value</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* PO List */}
         {loading ? (
           <div className="flex items-center justify-center h-64">
