@@ -356,9 +356,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Due Diligence workflow (End-to-End)"
-    - "Contract creation with tender selection and validation"
-    - "Search functionality on all pages"
+    - "Phase 1 Vendor Type Management" 
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
