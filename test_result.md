@@ -348,6 +348,18 @@ frontend:
           agent: "testing"
           comment: "✅ TESTED: Vendor auto-population logic working correctly as specified. Contract creation: vendor field remains empty when tender selected (user must manually select). Invoice creation: vendor field auto-populated and disabled when contract selected. Both behaviors match requirements perfectly."
 
+  - task: "Vendor Creation with Due Diligence Integration"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Vendor creation with DD integration working perfectly. When DD fields are provided during vendor creation, the vendor is automatically marked as dd_completed=true. Created test vendor 'Test Vendor DD' with DD fields (dd_ownership_change_last_year=true, dd_location_moved_or_closed=false, dd_bc_rely_on_third_parties=true). Verified dd_completed=true in response, all DD fields saved correctly, DD completion metadata properly set (completed_by, completed_at, approved_by, approved_at), and risk score adjusted based on DD responses (Risk Score: 17.0, Risk Category: low). Auto-numbering works (Vendor-25-0007). The fix for DueDiligenceQuestionnaire component conditional vendor name display is working correctly in the backend integration."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
