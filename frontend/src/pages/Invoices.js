@@ -244,12 +244,15 @@ const Invoices = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Vendor *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Vendor * {formData.contract_id && <span className="text-xs text-gray-500">(Auto-populated from contract)</span>}
+                </label>
                 <select
                   value={formData.vendor_id}
                   onChange={(e) => setFormData({ ...formData, vendor_id: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={!!formData.contract_id}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="">Select a vendor</option>
                   {vendors.map((vendor) => (
