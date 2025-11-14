@@ -19,6 +19,7 @@ const Layout = ({ children }) => {
     { name: 'Tenders', path: '/tenders', icon: '📋', roles: ['all'] },
     { name: 'Contracts', path: '/contracts', icon: '📄', roles: ['all'] },
     { name: 'Purchase Orders', path: '/purchase-orders', icon: '📝', roles: ['all'] },
+    { name: 'Resources', path: '/resources', icon: '👤', roles: ['all'] },
     { name: 'Invoices', path: '/invoices', icon: '💰', roles: ['all'] },
   ];
 
