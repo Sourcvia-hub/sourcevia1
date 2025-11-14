@@ -243,10 +243,10 @@ const VendorForm = ({ formData, setFormData, onSubmit, onCancel, isEdit = false 
         </div>
       </div>
 
-      {/* Due Diligence Questionnaire */}
+      {/* Verification Checklist */}
       {!isEdit && (
         <div className="mt-6">
-          <DueDiligenceQuestionnaire 
+          <VendorChecklist 
             formData={formData} 
             setFormData={setFormData} 
           />
