@@ -957,6 +957,12 @@ async def get_dashboard_stats(request: Request):
         "invoices": {
             "all": all_invoices,
             "due": due_invoices
+        },
+        "resources": {
+            "all": await db.resources.count_documents({}),
+            "active": await db.resources.count_documents({"status": ResourceStatus.ACTIVE.value}),
+            "offshore": await db.resources.count_documents({"work_type": WorkType.OFFSHORE.value}),
+            "on_premises": await db.resources.count_documents({"work_type": WorkType.ON_PREMISES.value})
         }
     }
 
