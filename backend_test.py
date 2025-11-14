@@ -1576,6 +1576,7 @@ class ProcurementTester:
                         ],
                         "total_amount": 150000.0,
                         "delivery_time": "30 days",
+                        "risk_level": "medium",  # Required field
                         "has_data_access": True,
                         "has_onsite_presence": False,
                         "has_implementation": True,
