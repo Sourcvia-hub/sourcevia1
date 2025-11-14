@@ -2208,6 +2208,138 @@ async def convert_po_to_contract(po_id: str, contract_data: dict, request: Reque
         "contract_number": contract.contract_number
     }
 
+# ==================== RESOURCE ENDPOINTS ====================
+@api_router.post("/resources")
+async def create_resource(resource: Resource, request: Request):
+    """Create new resource based on approved contract and vendor"""
+    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN, UserRole.PD_OFFICER, UserRole.ADMIN, UserRole.REQUESTER])
+    
+    # Verify contract exists and is approved
+    contract = await db.contracts.find_one({"id": resource.contract_id})
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    
+    if contract.get('status') not in ['active', 'approved']:
+        raise HTTPException(status_code=400, detail="Contract must be active or approved")
+    
+    # Verify vendor exists and is approved
+    vendor = await db.vendors.find_one({"id": resource.vendor_id})
+    if not vendor:
+        raise HTTPException(status_code=404, detail="Vendor not found")
+    
+    if vendor.get('status') != 'approved':
+        raise HTTPException(status_code=400, detail="Vendor must be approved")
+    
+    # Check if resource duration is within contract duration
+    contract_end = contract.get('end_date')
+    if isinstance(contract_end, str):
+        contract_end = datetime.fromisoformat(contract_end)
+    
+    if resource.end_date > contract_end:
+        raise HTTPException(status_code=400, detail="Resource end date cannot exceed contract end date")
+    
+    # Generate resource number
+    year = datetime.now(timezone.utc).strftime('%y')
+    count = await db.resources.count_documents({}) + 1
+    resource.resource_number = f"RES-{year}-{count:04d}"
+    
+    # Populate contract and vendor info
+    resource.contract_name = contract.get('title')
+    resource.scope = contract.get('sow')
+    resource.sla = contract.get('sla')
+    resource.contract_duration = f"{contract.get('start_date')} to {contract.get('end_date')}"
+    resource.vendor_name = vendor.get('name_english') or vendor.get('commercial_name')
+    
+    resource.created_by = user.id
+    resource_dict = resource.model_dump()
+    
+    await db.resources.insert_one(resource_dict)
+    
+    return {
+        "message": "Resource registered successfully",
+        "resource_number": resource.resource_number
+    }
+
+@api_router.get("/resources")
+async def get_resources(request: Request, status: Optional[str] = None):
+    """Get all resources"""
+    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN, UserRole.PD_OFFICER, UserRole.ADMIN])
+    
+    query = {}
+    if status:
+        query["status"] = status
+    
+    resources = await db.resources.find(query, {"_id": 0}).to_list(1000)
+    
+    # Check for expired resources and update status
+    now = datetime.now(timezone.utc)
+    for resource in resources:
+        if isinstance(resource.get('end_date'), str):
+            resource['end_date'] = datetime.fromisoformat(resource['end_date'])
+        
+        # Auto-terminate if end_date passed
+        if resource['end_date'] < now and resource.get('status') == 'active':
+            await db.resources.update_one(
+                {"id": resource['id']},
+                {"$set": {"status": ResourceStatus.INACTIVE.value}}
+            )
+            resource['status'] = ResourceStatus.INACTIVE.value
+    
+    return resources
+
+@api_router.get("/resources/{resource_id}")
+async def get_resource(resource_id: str, request: Request):
+    """Get resource by ID"""
+    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN, UserRole.PD_OFFICER, UserRole.ADMIN])
+    
+    resource = await db.resources.find_one({"id": resource_id}, {"_id": 0})
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    
+    return resource
+
+@api_router.put("/resources/{resource_id}")
+async def update_resource(resource_id: str, resource_data: dict, request: Request):
+    """Update resource details"""
+    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN, UserRole.PD_OFFICER, UserRole.ADMIN])
+    
+    resource = await db.resources.find_one({"id": resource_id})
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    
+    # Only allow updating certain fields
+    allowed_fields = ['name', 'nationality', 'id_number', 'education_qualification', 
+                     'years_of_experience', 'scope_of_work', 'has_relatives', 'relatives',
+                     'access_development', 'access_production', 'access_uat']
+    update_data = {k: v for k, v in resource_data.items() if k in allowed_fields}
+    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+    
+    await db.resources.update_one(
+        {"id": resource_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Resource updated successfully"}
+
+@api_router.post("/resources/{resource_id}/terminate")
+async def terminate_resource(resource_id: str, request: Request, reason: str = "Manual termination"):
+    """Terminate a resource"""
+    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN, UserRole.PD_OFFICER, UserRole.ADMIN])
+    
+    resource = await db.resources.find_one({"id": resource_id})
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    
+    await db.resources.update_one(
+        {"id": resource_id},
+        {"$set": {
+            "status": ResourceStatus.TERMINATED.value,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"message": "Resource terminated successfully"}
+
 # ==================== DASHBOARD ENDPOINTS ====================
 @api_router.get("/dashboard/stats")
 async def get_dashboard_summary_stats(request: Request):
