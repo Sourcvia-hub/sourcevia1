@@ -383,6 +383,21 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ TESTED: Updated Due Diligence workflow working correctly as specified in review request. STEP 1: Vendor creation with checklist items (dd_checklist_supporting_documents=true, dd_checklist_related_party_checked=true, dd_checklist_sanction_screening=true) correctly flags vendor as 'pending_due_diligence' status (NOT auto-approved) with dd_completed=false. STEP 2: DD questionnaire completion via PUT /api/vendors/{id}/due-diligence successfully updates vendor to dd_completed=true, status='approved', and recalculates risk score (New Risk Score: 22.0, Risk Category: low). STEP 3: Contract creation after DD completion works correctly with 'approved' status. STEP 4: All contract status updates work as expected. The workflow correctly implements: checklist items → pending_due_diligence → DD completion → approved status → contract updates. Backend logic in create_vendor and update_vendor_due_diligence endpoints working perfectly."
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE CONTRACT DD STATUS TESTING COMPLETED: All three scenarios from review request verified successfully. SCENARIO 1: Contract with vendor having pending DD status correctly creates contract with 'pending_due_diligence' status. SCENARIO 2: Contract with vendor having completed DD (dd_completed=true) correctly creates contract with 'approved' status. SCENARIO 3: DD completion automatically updates existing contracts from 'pending_due_diligence' to 'approved' status. Fixed critical bug in contract creation logic where contract status wasn't being saved to database. Updated vendor creation logic to properly handle DD fields provided during creation (marks dd_completed=true and recalculates risk scores). All contract creation scenarios working as designed with proper vendor DD status checking."
+
+  - task: "Contract Creation Vendor DD Status Checking"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Contract creation logic properly checks vendor DD status as per review request. All three test scenarios passed: 1) Contract with pending DD vendor → contract status 'pending_due_diligence', 2) Contract with completed DD vendor → contract status 'approved', 3) DD completion auto-updates contract status to 'approved'. Fixed vendor creation logic to properly handle DD fields during creation and contract status persistence bug. API endpoint POST /api/contracts now correctly evaluates vendor DD status and sets appropriate contract status based on outsourcing classification and vendor DD completion status."
 
 metadata:
   created_by: "main_agent"
