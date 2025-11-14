@@ -266,19 +266,63 @@ const Contracts = () => {
           />
         </div>
 
+        {/* Filter Buttons */}
+        <div className="bg-white rounded-xl shadow-md p-4">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveFilter('all')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              All ({contracts.length})
+            </button>
+            <button
+              onClick={() => setActiveFilter('active')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeFilter === 'active' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              Active ({contracts.filter(c => c.status === 'active').length})
+            </button>
+            <button
+              onClick={() => setActiveFilter('outsourcing')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeFilter === 'outsourcing' ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              Outsourcing ({contracts.filter(c => c.outsourcing_classification === 'outsourcing').length})
+            </button>
+            <button
+              onClick={() => setActiveFilter('cloud')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeFilter === 'cloud' ? 'bg-cyan-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              Cloud ({contracts.filter(c => c.outsourcing_classification === 'cloud_computing').length})
+            </button>
+            <button
+              onClick={() => setActiveFilter('noc')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeFilter === 'noc' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              NOC ({contracts.filter(c => c.is_noc).length})
+            </button>
+            <button
+              onClick={() => setActiveFilter('expired')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeFilter === 'expired' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+              Expired ({contracts.filter(c => c.status === 'expired').length})
+            </button>
+          </div>
+        </div>
+
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
-        ) : contracts.length === 0 ? (
+        ) : filteredContracts.length === 0 ? (
           <div className="bg-white rounded-xl shadow-md p-12 text-center">
             <span className="text-6xl mb-4 block">📄</span>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No contracts found</h3>
-            <p className="text-gray-600">Contracts will appear here once tenders are awarded.</p>
+            <p className="text-gray-600">
+              {activeFilter !== 'all' ? `No ${activeFilter} contracts found.` : 'Contracts will appear here once tenders are awarded.'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {contracts.map((contract) => (
+            {filteredContracts.map((contract) => (
               <Link
                 key={contract.id}
                 to={`/contracts/${contract.id}`}
