@@ -116,8 +116,15 @@ const Resources = () => {
       return;
     }
 
+    // Prepare data with proper date format
+    const resourceData = {
+      ...formData,
+      start_date: new Date(formData.start_date).toISOString(),
+      end_date: new Date(formData.end_date).toISOString(),
+    };
+
     try {
-      await axios.post(`${API}/resources`, formData, { withCredentials: true });
+      await axios.post(`${API}/resources`, resourceData, { withCredentials: true });
       alert('Resource registered successfully!');
       setShowCreateModal(false);
       fetchResources();
