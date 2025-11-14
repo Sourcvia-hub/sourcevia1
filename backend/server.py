@@ -2241,7 +2241,14 @@ async def create_resource(resource: Resource, request: Request):
     if isinstance(contract_end, str):
         contract_end = datetime.fromisoformat(contract_end)
     
-    if resource.end_date > contract_end:
+    # Ensure both datetimes are timezone-aware for comparison
+    resource_end = resource.end_date
+    if resource_end.tzinfo is None:
+        resource_end = resource_end.replace(tzinfo=timezone.utc)
+    if contract_end.tzinfo is None:
+        contract_end = contract_end.replace(tzinfo=timezone.utc)
+    
+    if resource_end > contract_end:
         raise HTTPException(status_code=400, detail="Resource end date cannot exceed contract end date")
     
     # Generate resource number
