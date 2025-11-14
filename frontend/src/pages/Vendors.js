@@ -158,8 +158,25 @@ const Vendors = () => {
       pending: 'bg-yellow-100 text-yellow-800',
       approved: 'bg-green-100 text-green-800',
       rejected: 'bg-red-100 text-red-800',
+      pending_due_diligence: 'bg-orange-100 text-orange-800',
+      blacklisted: 'bg-black text-white',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const handleBlacklistVendor = async (vendorId) => {
+    if (!window.confirm('Are you sure you want to blacklist this vendor? This will terminate all active contracts.')) {
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/vendors/${vendorId}/blacklist`, {}, { withCredentials: true });
+      alert('Vendor blacklisted successfully');
+      fetchVendors();
+    } catch (error) {
+      console.error('Error blacklisting vendor:', error);
+      alert('Failed to blacklist vendor');
+    }
   };
 
   return (
