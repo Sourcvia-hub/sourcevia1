@@ -762,6 +762,7 @@ async def get_dashboard_stats(request: Request):
             "active": active_contracts,
             "outsourcing": outsourcing_contracts,
             "cloud": cloud_contracts,
+            "noc": noc_contracts,
             "expired": expired_contracts
         },
         "invoices": {
