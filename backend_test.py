@@ -1779,37 +1779,61 @@ class ProcurementTester:
                     print(f"Create Resource Status: {create_response.status_code}")
                     
                     if create_response.status_code == 200:
-                        resource = create_response.json()
-                        resource_id = resource.get('id')
-                        resource_number = resource.get('resource_number')
+                        resource_response = create_response.json()
+                        resource_number = resource_response.get('resource_number')
+                        message = resource_response.get('message')
                         
-                        print(f"✅ Resource created: {resource.get('name')}")
+                        print(f"✅ Resource created successfully")
                         print(f"Resource Number: {resource_number}")
-                        print(f"Status: {resource.get('status')}")
+                        print(f"Message: {message}")
                         
-                        # Test 3: Verify resource status changes based on contract/vendor status
-                        print("\n--- Test 3: Verify resource status changes ---")
-                        # This would involve checking if resource status updates when contract/vendor status changes
-                        resource_status = resource.get('status')
-                        if resource_status == 'active':
-                            print(f"✅ Resource has active status as expected")
+                        # Test 3: Get the created resource to verify details
+                        print("\n--- Test 3: Verify created resource details ---")
+                        resources_list_response = self.session.get(f"{BASE_URL}/resources")
+                        
+                        if resources_list_response.status_code == 200:
+                            resources_list = resources_list_response.json()
+                            
+                            # Find our created resource
+                            created_resource = None
+                            for res in resources_list:
+                                if res.get('resource_number') == resource_number:
+                                    created_resource = res
+                                    break
+                            
+                            if created_resource:
+                                print(f"✅ Found created resource: {created_resource.get('name')}")
+                                print(f"Status: {created_resource.get('status')}")
+                                print(f"Work Type: {created_resource.get('work_type')}")
+                                
+                                # Test 4: Test resource duration and expiry
+                                print("\n--- Test 4: Test resource duration and expiry ---")
+                                start_date = created_resource.get('start_date')
+                                end_date = created_resource.get('end_date')
+                                
+                                if start_date and end_date:
+                                    print(f"✅ Resource has proper start and end dates")
+                                    print(f"Start Date: {start_date}")
+                                    print(f"End Date: {end_date}")
+                                    
+                                    # Test 5: Verify resource status changes based on contract/vendor status
+                                    print("\n--- Test 5: Verify resource status logic ---")
+                                    resource_status = created_resource.get('status')
+                                    if resource_status == 'active':
+                                        print(f"✅ Resource has active status as expected")
+                                    else:
+                                        print(f"⚠️ Resource status is '{resource_status}' (may be expected based on contract/vendor status)")
+                                    
+                                    return True
+                                else:
+                                    print(f"❌ Resource missing start or end date")
+                                    return False
+                            else:
+                                print(f"❌ Could not find created resource in list")
+                                return False
                         else:
-                            print(f"⚠️ Resource status is '{resource_status}' (may be expected based on contract/vendor status)")
-                        
-                        # Test 4: Test resource duration and expiry
-                        print("\n--- Test 4: Test resource duration and expiry ---")
-                        start_date = resource.get('start_date')
-                        end_date = resource.get('end_date')
-                        
-                        if start_date and end_date:
-                            print(f"✅ Resource has proper start and end dates")
-                            print(f"Start Date: {start_date}")
-                            print(f"End Date: {end_date}")
-                        else:
-                            print(f"❌ Resource missing start or end date")
+                            print(f"❌ Failed to get resources list: {resources_list_response.text}")
                             return False
-                        
-                        return True
                     else:
                         print(f"❌ Failed to create resource: {create_response.text}")
                         return False
