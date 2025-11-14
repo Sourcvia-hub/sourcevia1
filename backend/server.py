@@ -700,8 +700,7 @@ async def get_dashboard_stats(request: Request):
     high_risk_vendors = await db.vendors.count_documents({"risk_category": "high"})
     waiting_due_diligence = await db.vendors.count_documents({"status": VendorStatus.PENDING_DUE_DILIGENCE.value})
     inactive_vendors = await db.vendors.count_documents({"status": VendorStatus.REJECTED.value})
-    # Note: blacklisted vendors - assuming we use rejected status for now
-    blacklisted_vendors = await db.vendors.count_documents({"status": VendorStatus.REJECTED.value})
+    blacklisted_vendors = await db.vendors.count_documents({"status": VendorStatus.BLACKLISTED.value})
     
     # Tender Statistics
     all_tenders = await db.tenders.count_documents({})
