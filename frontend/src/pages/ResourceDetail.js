@@ -69,8 +69,16 @@ const ResourceDetail = () => {
 
   const handleUpdateResource = async (e) => {
     e.preventDefault();
+    
+    // Prepare data with proper date format
+    const updateData = {
+      ...editFormData,
+      start_date: new Date(editFormData.start_date).toISOString(),
+      end_date: new Date(editFormData.end_date).toISOString(),
+    };
+    
     try {
-      await axios.put(`${API}/resources/${id}`, editFormData, { withCredentials: true });
+      await axios.put(`${API}/resources/${id}`, updateData, { withCredentials: true });
       alert('Resource updated successfully');
       setIsEditing(false);
       fetchResource();
