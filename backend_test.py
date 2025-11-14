@@ -700,10 +700,28 @@ class ProcurementTester:
             
             # Get an approved tender for contract creation
             if not self.created_entities['tenders']:
-                print(f"❌ No tenders available for contract testing")
-                return False
-            
-            tender_id = self.created_entities['tenders'][0]
+                # Create a tender for testing
+                tender_data = {
+                    "title": "DD Test Tender",
+                    "description": "Test tender for DD status checking",
+                    "project_name": "DD Test Project",
+                    "requirements": "Software development with DD requirements",
+                    "budget": 500000.0,
+                    "deadline": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+                    "invited_vendors": []
+                }
+                
+                tender_response = self.session.post(f"{BASE_URL}/tenders", json=tender_data)
+                if tender_response.status_code == 200:
+                    tender = tender_response.json()
+                    tender_id = tender.get('id')
+                    self.created_entities['tenders'].append(tender_id)
+                    print(f"✅ Created test tender: {tender.get('tender_number')}")
+                else:
+                    print(f"❌ Failed to create test tender: {tender_response.text}")
+                    return False
+            else:
+                tender_id = self.created_entities['tenders'][0]
             
             # Create contract with pending DD vendor
             contract_pending_dd = {
