@@ -99,6 +99,50 @@ const ContractDetail = () => {
     return colors[category] || 'bg-gray-100 text-gray-800';
   };
 
+  const handleEditClick = () => {
+    setEditFormData({
+      title: contract.title || '',
+      sow: contract.sow || '',
+      sla: contract.sla || '',
+      value: contract.value || '',
+      start_date: contract.start_date ? new Date(contract.start_date).toISOString().split('T')[0] : '',
+      end_date: contract.end_date ? new Date(contract.end_date).toISOString().split('T')[0] : '',
+      milestones: contract.milestones || []
+    });
+    setIsEditing(true);
+  };
+
+  const handleUpdateContract = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`${API}/contracts/${id}`, editFormData, { withCredentials: true });
+      alert('Contract updated successfully');
+      setIsEditing(false);
+      fetchContract();
+    } catch (error) {
+      console.error('Error updating contract:', error);
+      alert('Failed to update contract: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleAddMilestone = () => {
+    setEditFormData({
+      ...editFormData,
+      milestones: [...editFormData.milestones, { name: '', date: '', amount: '' }]
+    });
+  };
+
+  const handleRemoveMilestone = (index) => {
+    const newMilestones = editFormData.milestones.filter((_, i) => i !== index);
+    setEditFormData({ ...editFormData, milestones: newMilestones });
+  };
+
+  const handleMilestoneChange = (index, field, value) => {
+    const newMilestones = [...editFormData.milestones];
+    newMilestones[index][field] = value;
+    setEditFormData({ ...editFormData, milestones: newMilestones });
+  };
+
   const calculateContractProgress = () => {
     if (!contract) return 0;
     const now = new Date();
