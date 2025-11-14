@@ -1787,6 +1787,7 @@ async def create_contract(contract: Contract, request: Request):
     if vendor_dd_pending:
         # Set contract to pending_due_diligence status
         contract.status = ContractStatus.PENDING_DUE_DILIGENCE
+        contract_doc["status"] = ContractStatus.PENDING_DUE_DILIGENCE.value
         
         # Update vendor to require and pending due diligence (if not already set)
         if vendor_status != VendorStatus.PENDING_DUE_DILIGENCE.value:
@@ -1800,6 +1801,8 @@ async def create_contract(contract: Contract, request: Request):
     else:
         # Auto-approve if no due diligence required or already completed
         contract.status = ContractStatus.APPROVED
+        contract_doc["status"] = ContractStatus.APPROVED.value
+    
     contract_doc["start_date"] = contract_doc["start_date"].isoformat()
     contract_doc["end_date"] = contract_doc["end_date"].isoformat()
     contract_doc["created_at"] = contract_doc["created_at"].isoformat()
