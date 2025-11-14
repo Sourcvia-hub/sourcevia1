@@ -16,6 +16,16 @@ const ContractDetail = () => {
   const [tender, setTender] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    sow: '',
+    sla: '',
+    value: '',
+    start_date: '',
+    end_date: '',
+    milestones: []
+  });
 
   useEffect(() => {
     fetchContract();
