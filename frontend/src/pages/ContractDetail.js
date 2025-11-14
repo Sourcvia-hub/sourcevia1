@@ -210,6 +210,23 @@ const ContractDetail = () => {
           >
             ← Back to Contracts
           </button>
+          <div className="flex gap-2">
+            {!isEditing ? (
+              <button
+                onClick={handleEditClick}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Edit Contract
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsEditing(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
+              >
+                Cancel Edit
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Main Contract Info Card */}
