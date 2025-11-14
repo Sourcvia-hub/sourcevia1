@@ -1772,6 +1772,36 @@ async def terminate_contract(contract_id: str, request: Request, reason: str = "
     
     return {"message": "Contract terminated successfully"}
 
+@api_router.put("/contracts/{contract_id}")
+async def update_contract(contract_id: str, contract_data: dict, request: Request):
+    """Update contract details"""
+    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN, UserRole.PD_OFFICER, UserRole.ADMIN])
+    
+    contract = await db.contracts.find_one({"id": contract_id})
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    
+    # Only allow updating certain fields
+    allowed_fields = ['title', 'sow', 'sla', 'milestones', 'value', 'start_date', 'end_date']
+    update_data = {k: v for k, v in contract_data.items() if k in allowed_fields}
+    
+    # Convert dates to ISO format if they're provided
+    if 'start_date' in update_data and update_data['start_date']:
+        if not isinstance(update_data['start_date'], str):
+            update_data['start_date'] = update_data['start_date'].isoformat()
+    if 'end_date' in update_data and update_data['end_date']:
+        if not isinstance(update_data['end_date'], str):
+            update_data['end_date'] = update_data['end_date'].isoformat()
+    
+    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+    
+    await db.contracts.update_one(
+        {"id": contract_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Contract updated successfully"}
+
 @api_router.get("/contracts/expiring")
 async def get_expiring_contracts(request: Request, days: int = 30):
     """Get contracts expiring soon"""
