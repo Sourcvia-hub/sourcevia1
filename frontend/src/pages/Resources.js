@@ -193,40 +193,6 @@ const Resources = () => {
           </button>
         </div>
 
-        {/* Stats Dashboard */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span>📊</span>
-            Resource Statistics
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-blue-700">{resources.length}</p>
-                <p className="text-sm text-blue-600 font-medium mt-1">Total Resources</p>
-              </div>
-            </div>
-            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-green-700">{resources.filter(r => r.status === 'active').length}</p>
-                <p className="text-sm text-green-600 font-medium mt-1">Active</p>
-              </div>
-            </div>
-            <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-purple-700">{resources.filter(r => r.work_type === 'offshore').length}</p>
-                <p className="text-sm text-purple-600 font-medium mt-1">Offshore</p>
-              </div>
-            </div>
-            <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-orange-700">{resources.filter(r => r.work_type === 'on_premises').length}</p>
-                <p className="text-sm text-orange-600 font-medium mt-1">On Premises</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Resources List */}
         {loading ? (
           <div className="flex items-center justify-center h-64">
