@@ -229,15 +229,6 @@ const Tenders = () => {
                   <span className="text-sm text-gray-600">
                     Created {new Date(tender.created_at).toLocaleDateString()}
                   </span>
-                  {(tender.status === 'published' || tender.status === 'closed') && (
-                    <Link
-                      to={`/tenders/${tender.id}/evaluate`}
-                      className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors font-medium"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Evaluate
-                    </Link>
-                  )}
                 </div>
               </div>
             ))}
