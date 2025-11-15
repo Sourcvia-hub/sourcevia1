@@ -248,20 +248,18 @@ const Invoices = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Vendor * {formData.contract_id && <span className="text-xs text-gray-500">(Auto-populated from contract)</span>}
                 </label>
-                <select
+                <SearchableSelect
+                  options={vendors.map(vendor => ({
+                    value: vendor.id,
+                    label: `${vendor.vendor_number ? `${vendor.vendor_number} - ` : ''}${vendor.name_english || vendor.commercial_name || vendor.company_name || 'Unknown Vendor'}`
+                  }))}
                   value={formData.vendor_id}
-                  onChange={(e) => setFormData({ ...formData, vendor_id: e.target.value })}
-                  required
-                  disabled={!!formData.contract_id}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option value="">Select a vendor</option>
-                  {vendors.map((vendor) => (
-                    <option key={vendor.id} value={vendor.id}>
-                      {vendor.name_english || vendor.commercial_name || vendor.company_name || 'Unknown Vendor'}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setFormData({ ...formData, vendor_id: value })}
+                  placeholder="Search and select vendor..."
+                  isDisabled={!!formData.contract_id}
+                  required={true}
+                  isClearable={false}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Contract *</label>
