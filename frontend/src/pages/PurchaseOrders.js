@@ -324,20 +324,21 @@ const PurchaseOrders = () => {
               {/* Tender Selection (Optional) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Tender (Optional)
+                  Tender (Optional)
                 </label>
-                <select
+                <SearchableSelect
+                  options={[
+                    { value: '', label: 'No Tender' },
+                    ...tenders.map(tender => ({
+                      value: tender.id,
+                      label: `${tender.tender_number} - ${tender.title}`
+                    }))
+                  ]}
                   value={formData.tender_id}
-                  onChange={(e) => handleTenderSelect(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">No Tender</option>
-                  {tenders.map((tender) => (
-                    <option key={tender.id} value={tender.id}>
-                      {tender.tender_number} - {tender.title}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleTenderSelect(value)}
+                  placeholder="Search and select tender..."
+                  isClearable={true}
+                />
               </div>
 
               {/* Tender Brief Info */}
