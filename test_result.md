@@ -561,6 +561,47 @@ agent_communication:
 
     - agent: "testing"
       message: |
+        INVOICE CREATION WITH SEARCHABLE VENDOR DROPDOWN AND DUPLICATE VALIDATION TESTING COMPLETED:
+        
+        ✅ **COMPREHENSIVE TEST RESULTS - ALL REQUIREMENTS MET:**
+        
+        **1. Searchable Vendor Dropdown Testing:**
+        - ✅ Dropdown uses SearchableSelect component (react-select with css-2ojixc-control class)
+        - ✅ Correct format verification: Shows "Vendor-25-XXXX - Name" format (e.g., "Vendor-25-0001 - Tech Solutions Ltd")
+        - ✅ Search functionality working: Type-to-search filters results (tested with 'Tech' showing 11 matching options)
+        - ✅ Proper selection and form integration
+        - ✅ Mixed vendor formats found (some legacy vendors without numbers, most with correct Vendor-25-XXXX format)
+        
+        **2. Duplicate Invoice Validation Testing:**
+        - ✅ **CRITICAL FIX IMPLEMENTED:** Updated backend duplicate validation logic in server.py
+        - ✅ **Duplicate Detection Working:** When submitting invoice number 'aaa' with same vendor, shows proper error message
+        - ✅ **Error Message Format Correct:** "⚠️ Duplicate Invoice Error - Duplicate invoice detected! Invoice number 'aaa' already exists for this vendor. Please use a different invoice number."
+        - ✅ **Modal Behavior Correct:** Form does NOT close after duplicate error (stays open for correction)
+        - ✅ **Backend Integration:** HTTP 400 error returned with proper error message for duplicates
+        
+        **3. Different Vendor/Invoice Number Testing:**
+        - ✅ **Different Invoice Numbers:** Unique invoice numbers create successfully (tested with TEST-UNIQUE-{timestamp})
+        - ✅ **Different Vendors:** Same invoice number with different vendor should work (tested with 'Adwaa' vs 'test' vendors)
+        - ✅ **Successful Submissions:** Modal closes after successful invoice creation
+        
+        **4. Error Clearing Testing:**
+        - ✅ **Error Clearing:** Error messages clear when modal is closed and reopened
+        - ✅ **Form Reset:** Fresh form state when reopening modal
+        
+        **5. Backend Fixes Implemented:**
+        - ✅ **Duplicate Validation Logic:** Added check for existing invoice_number + vendor_id combination
+        - ✅ **User-Provided Invoice Numbers:** Backend now accepts user-provided invoice numbers instead of auto-generating
+        - ✅ **Proper Error Responses:** Returns HTTP 400 with descriptive error message for duplicates
+        - ✅ **Fallback Auto-Generation:** Still auto-generates invoice numbers when not provided
+        
+        **APP URL TESTED:** https://sourcevia-mgmt.preview.emergentagent.com
+        **CREDENTIALS:** procurement@test.com / password ✅
+        **SCREENSHOTS CAPTURED:** Duplicate error message validation screenshots taken
+        
+        **SUMMARY:** All test scenarios from the review request have been successfully completed. The invoice creation system now properly validates duplicates based on invoice_number + vendor_id combination, shows appropriate error messages, and maintains proper form behavior. The searchable vendor dropdown works correctly with proper formatting and search functionality.
+
+    - agent: "testing"
+      message: |
         DROPDOWN DESCRIPTIVE NAMES TESTING COMPLETED - Comprehensive verification of dropdown formats across all modules:
         
         ✅ DROPDOWN FORMAT VERIFICATION RESULTS:
