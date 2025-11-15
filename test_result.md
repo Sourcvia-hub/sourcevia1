@@ -419,7 +419,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Invoice Creation with Searchable Vendor Dropdown and Duplicate Validation"
+    - "Vendor-based Contract Filtering in Invoice Creation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
