@@ -452,6 +452,52 @@ agent_communication:
 
     - agent: "testing"
       message: |
+        DROPDOWN DESCRIPTIVE NAMES TESTING COMPLETED - Comprehensive verification of dropdown formats across all modules:
+        
+        ✅ DROPDOWN FORMAT VERIFICATION RESULTS:
+        
+        **CONTRACT CREATION (/contracts - Create Contract):**
+        - Tender dropdown: ✅ CORRECT FORMAT - Shows "Tender-25-XXXX - Title" (e.g., "Tender-25-0001 - Software Development Services")
+        - Vendor dropdown: ⚠️ MIXED FORMAT - Some show "Vendor-25-XXXX - Name", others show only name without numbers
+        
+        **INVOICE CREATION (/invoices - Create Invoice):**
+        - Contract dropdown: ⚠️ MIXED FORMAT - Some show "Contract-25-XXXX - Title", others show legacy format (e.g., "CNT-001 - Test Contract")
+        
+        **RESOURCE CREATION (/resources - Register Resource):**
+        - Contract dropdown: ✅ CORRECT FORMAT - Shows "Contract-25-XXXX - Title (status)" (e.g., "Contract-25-0001 - Software Development Contract (approved)")
+        
+        **PURCHASE ORDER CREATION (/purchase-orders - Create PO):**
+        - Tender dropdown: ✅ CORRECT FORMAT - Shows "Tender-25-XXXX - Title" (e.g., "Tender-25-0001 - Software Development Services")
+        - Vendor dropdown: ⚠️ MIXED FORMAT - Some show "Vendor-25-XXXX - Name (risk_category risk)", others show only "Name (risk_category risk)"
+        
+        🔍 SEARCH FUNCTIONALITY TESTING:
+        - HTML select elements are NOT searchable by default
+        - Users cannot type to filter options in any dropdown
+        - No search/filter capability within dropdown options
+        
+        📊 DETAILED FINDINGS:
+        1. ✅ Purchase Orders have the BEST implementation with vendor numbers AND risk categories
+        2. ✅ Resources show contract status correctly in dropdown format
+        3. ⚠️ Contracts page has mixed vendor formats (some with numbers, some without)
+        4. ⚠️ Invoices page has mixed contract formats (legacy and new auto-numbered formats)
+        5. ❌ No dropdowns are searchable - major UX limitation for large datasets
+        
+        🚨 CRITICAL ISSUES FOUND:
+        - Inconsistent formatting across modules - some entities show auto-numbers, others don't
+        - Legacy data mixed with new auto-numbered data in dropdowns
+        - No search functionality within dropdowns makes selection difficult with large datasets
+        
+        💡 RECOMMENDATIONS FOR MAIN AGENT:
+        1. Standardize ALL vendor dropdowns to show "Vendor-25-XXXX - Name (risk_category risk)"
+        2. Standardize ALL contract dropdowns to show "Contract-25-XXXX - Title (status)"
+        3. Update legacy data to use new auto-numbering format or filter out from dropdowns
+        4. Implement searchable dropdown components (react-select or similar) for better UX
+        5. Ensure consistent formatting across all modules
+        
+        SUMMARY: Dropdown descriptive names are PARTIALLY implemented. New auto-numbered entities show correct format, but legacy data and inconsistent implementation across modules needs attention. Search functionality is completely missing from all dropdowns.
+
+    - agent: "testing"
+      message: |
         BACKEND TESTING COMPLETED - Comprehensive testing of auto-numbering system and search functionality:
         
         ✅ PASSED TESTS:
