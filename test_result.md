@@ -507,15 +507,18 @@ test_plan:
 
   - task: "Invoice Creation Combined Dropdown Testing"
     implemented: true
-    working: "NA"
+    working: true
     file: "frontend/src/pages/Invoices.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Invoice creation now allows selecting either an approved contract OR an approved PO. Combined dropdown shows both contracts (📄 Contract: ...) and POs (📝 PO: ...). Filtering by vendor works for both contracts and POs. Helper text shows count: '(X contracts, Y POs)'. Need comprehensive testing of all scenarios including dropdown display, search functionality, vendor filtering, form validation, and contract/PO selection workflows."
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE COMBINED DROPDOWN TESTING COMPLETED: All test scenarios from review request successfully verified. **1. Combined Dropdown Display:** ✅ Dropdown shows both contracts and POs correctly, Contracts display with 📄 icon: '📄 Contract: Contract-25-XXXX - Title', POs display with 📝 icon: '📝 PO: PO-25-XXXX - Purchase Order', Helper text shows correct format: '(X contracts, Y POs)' (e.g., '(1 contracts, 2 POs)'). **2. Search Functionality:** ✅ Type-to-search works within dropdown using SearchableSelect component, Filters results as user types, Search input properly integrated with react-select. **3. Vendor Filtering:** ✅ Selecting vendor filters both contracts and POs to show only that vendor's items, Helper text updates dynamically based on filtered results, Tested multiple vendors - some with contracts only, some with both contracts and POs. **4. Contract/PO Selection:** ✅ Contract selection works correctly with proper format display, PO selection works correctly (tested with vendor 'Adwaa' having 2 POs), Vendor auto-populates when contract or PO is selected, Dropdown shows filtered options after selection. **5. Form Validation:** ✅ Form prevents submission without selecting contract or PO, Validation works correctly requiring all mandatory fields. **6. Auto-population Logic:** ✅ Vendor field auto-populates when contract/PO selected, Dropdown filtering updates correctly based on vendor selection, Bidirectional logic works (vendor→contract/PO and contract/PO→vendor). TECHNICAL VERIFICATION: SearchableSelect component properly implemented, Combined options array correctly merges contracts and POs with proper prefixes ('contract-{id}' and 'po-{id}'), handleContractOrPOSelect() function correctly parses selection type and updates form state, Filtering logic in filteredContracts and filteredPOs works correctly. All requirements from review request successfully met."
 
 agent_communication:
     - agent: "main"
