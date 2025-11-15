@@ -15,6 +15,7 @@ const Tenders = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [vendors, setVendors] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
 
   const [formData, setFormData] = useState({
     title: '',
