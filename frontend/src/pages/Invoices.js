@@ -33,6 +33,7 @@ const Invoices = () => {
     fetchInvoices();
     if (user?.role === 'procurement_officer') {
       fetchContracts();
+      fetchPurchaseOrders();
       fetchVendors();
     }
   }, []);
