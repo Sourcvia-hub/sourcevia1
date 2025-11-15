@@ -419,7 +419,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Searchable Dropdown Functionality Across ALL Modules"
+    - "Invoice Creation with Searchable Vendor Dropdown and Duplicate Validation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
