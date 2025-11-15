@@ -282,11 +282,13 @@ const Vendors = () => {
             <div className="bg-white rounded-xl shadow-md p-12 text-center">
               <span className="text-6xl mb-4 block">🏢</span>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No vendors found</h3>
-            <p className="text-gray-600">No vendors match the current filter.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {vendors.map((vendor) => (
+              <p className="text-gray-600">
+                {searchQuery ? 'Try adjusting your search criteria.' : 'No vendors match the current filter.'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {filteredVendors.map((vendor) => (
               <div
                 key={vendor.id}
                 className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
