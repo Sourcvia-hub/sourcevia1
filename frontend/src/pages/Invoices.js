@@ -58,6 +58,15 @@ const Invoices = () => {
     }
   };
 
+  const fetchPurchaseOrders = async () => {
+    try {
+      const response = await axios.get(`${API}/purchase-orders`, { withCredentials: true });
+      setPurchaseOrders(response.data);
+    } catch (error) {
+      console.error('Error fetching purchase orders:', error);
+    }
+  };
+
   const fetchVendors = async () => {
     try {
       const response = await axios.get(`${API}/vendors?status=approved`, { withCredentials: true });
