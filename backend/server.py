@@ -393,7 +393,7 @@ class Invoice(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    invoice_number: Optional[str] = None  # Auto-generated (e.g., Invoice-25-0001)
+    invoice_number: Optional[str] = None  # User-provided or auto-generated (e.g., Invoice-25-0001)
     contract_id: str
     vendor_id: str
     amount: float
