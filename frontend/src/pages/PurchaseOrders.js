@@ -367,20 +367,18 @@ const PurchaseOrders = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Vendor * {formData.tender_id && <span className="text-xs text-gray-500">(Auto-selected from tender)</span>}
                 </label>
-                <select
+                <SearchableSelect
+                  options={vendors.map(vendor => ({
+                    value: vendor.id,
+                    label: `${vendor.vendor_number ? `${vendor.vendor_number} - ` : ''}${vendor.name_english || vendor.commercial_name} (${vendor.risk_category} risk)`
+                  }))}
                   value={formData.vendor_id}
-                  onChange={(e) => handleVendorSelect(e.target.value)}
-                  required
-                  disabled={!!formData.tender_id}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option value="">Select a vendor</option>
-                  {vendors.map((vendor) => (
-                    <option key={vendor.id} value={vendor.id}>
-                      {vendor.vendor_number ? `${vendor.vendor_number} - ` : ''}{vendor.name_english || vendor.commercial_name} ({vendor.risk_category} risk)
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleVendorSelect(value)}
+                  placeholder="Search and select vendor..."
+                  isDisabled={!!formData.tender_id}
+                  required={true}
+                  isClearable={false}
+                />
               </div>
 
               {/* Delivery Time */}
