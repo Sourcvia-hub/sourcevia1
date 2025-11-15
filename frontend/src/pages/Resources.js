@@ -296,22 +296,18 @@ const Resources = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Contract * {contracts.length === 0 && <span className="text-red-600 text-xs">(No active/approved contracts available)</span>}
                 </label>
-                <select
+                <SearchableSelect
+                  options={contracts.map(contract => ({
+                    value: contract.id,
+                    label: `${contract.contract_number} - ${contract.title} (${contract.status})`
+                  }))}
                   value={formData.contract_id}
-                  onChange={(e) => handleContractSelect(e.target.value)}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  disabled={contracts.length === 0}
-                >
-                  <option value="">
-                    {contracts.length === 0 ? 'No contracts available - Please create an approved contract first' : 'Select a contract'}
-                  </option>
-                  {contracts.map((contract) => (
-                    <option key={contract.id} value={contract.id}>
-                      {contract.contract_number} - {contract.title} ({contract.status})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleContractSelect(value)}
+                  placeholder={contracts.length === 0 ? 'No contracts available - Please create an approved contract first' : 'Search and select contract...'}
+                  isDisabled={contracts.length === 0}
+                  required={true}
+                  isClearable={false}
+                />
               </div>
 
               {/* Contract Brief Info */}
