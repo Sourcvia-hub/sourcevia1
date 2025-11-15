@@ -196,20 +196,131 @@ const Resources = () => {
           </button>
         </div>
 
+        {/* Dashboard Stats */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span>📊</span>
+            Resource Statistics
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-blue-700">{resources.length}</p>
+                <p className="text-sm text-blue-600 font-medium mt-1">Total</p>
+              </div>
+            </div>
+            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-green-700">{resources.filter(r => r.status === 'active').length}</p>
+                <p className="text-sm text-green-600 font-medium mt-1">Active</p>
+              </div>
+            </div>
+            <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-purple-700">{resources.filter(r => r.work_type === 'offshore').length}</p>
+                <p className="text-sm text-purple-600 font-medium mt-1">Offshore</p>
+              </div>
+            </div>
+            <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+              <div className="text-center">
+                <p className="text-3xl font-bold text-orange-700">{resources.filter(r => r.work_type === 'on_premises').length}</p>
+                <p className="text-sm text-orange-600 font-medium mt-1">On Premises</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Buttons */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setActiveFilter('all')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+            }`}
+          >
+            All ({resources.length})
+          </button>
+          <button
+            onClick={() => setActiveFilter('active')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeFilter === 'active' ? 'bg-green-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+            }`}
+          >
+            Active ({resources.filter(r => r.status === 'active').length})
+          </button>
+          <button
+            onClick={() => setActiveFilter('inactive')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeFilter === 'inactive' ? 'bg-gray-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+            }`}
+          >
+            Inactive ({resources.filter(r => r.status === 'inactive').length})
+          </button>
+          <button
+            onClick={() => setActiveFilter('offshore')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeFilter === 'offshore' ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+            }`}
+          >
+            Offshore ({resources.filter(r => r.work_type === 'offshore').length})
+          </button>
+          <button
+            onClick={() => setActiveFilter('on_premises')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeFilter === 'on_premises' ? 'bg-orange-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+            }`}
+          >
+            On Premises ({resources.filter(r => r.work_type === 'on_premises').length})
+          </button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="bg-white rounded-xl shadow-md p-4">
+          <input
+            type="text"
+            placeholder="Search by name, vendor, or resource number..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+
         {/* Resources List */}
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
-        ) : resources.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <span className="text-6xl mb-4 block">👤</span>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No resources found</h3>
-            <p className="text-gray-600">Register your first resource to get started.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {resources.map((resource) => (
+        ) : (() => {
+          const filteredResources = resources.filter(resource => {
+            // Apply filter
+            if (activeFilter === 'active' && resource.status !== 'active') return false;
+            if (activeFilter === 'inactive' && resource.status !== 'inactive') return false;
+            if (activeFilter === 'offshore' && resource.work_type !== 'offshore') return false;
+            if (activeFilter === 'on_premises' && resource.work_type !== 'on_premises') return false;
+            
+            // Apply search
+            if (searchQuery) {
+              const query = searchQuery.toLowerCase();
+              return (
+                resource.name?.toLowerCase().includes(query) ||
+                resource.vendor_name?.toLowerCase().includes(query) ||
+                resource.resource_number?.toLowerCase().includes(query)
+              );
+            }
+            return true;
+          });
+
+          return filteredResources.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-md p-12 text-center">
+              <span className="text-6xl mb-4 block">👤</span>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No resources found</h3>
+              <p className="text-gray-600">
+                {searchQuery ? 'Try adjusting your search criteria.' : 'Register your first resource to get started.'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {filteredResources.map((resource) => (
               <div key={resource.id} className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
                 <div className="flex justify-between items-start mb-4">
                   <div>
