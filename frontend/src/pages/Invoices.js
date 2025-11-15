@@ -75,6 +75,20 @@ const Invoices = () => {
 
   const handleSubmitInvoice = async (e) => {
     e.preventDefault();
+    
+    // Check for duplicate invoice (same invoice_number and vendor_id)
+    const duplicate = invoices.find(
+      inv => inv.invoice_number === formData.invoice_number && inv.vendor_id === formData.vendor_id
+    );
+    
+    if (duplicate) {
+      setDuplicateError(`Duplicate invoice detected! Invoice number "${formData.invoice_number}" already exists for this vendor. Please use a different invoice number.`);
+      return;
+    }
+    
+    // Clear any previous error
+    setDuplicateError('');
+    
     try {
       await axios.post(
         `${API}/invoices`,
@@ -93,9 +107,13 @@ const Invoices = () => {
         amount: '',
         description: '',
       });
+      setDuplicateError('');
       fetchInvoices();
     } catch (error) {
       console.error('Error submitting invoice:', error);
+      if (error.response?.data?.detail) {
+        setDuplicateError(error.response.data.detail);
+      }
     }
   };
 
