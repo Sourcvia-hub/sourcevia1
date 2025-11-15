@@ -383,8 +383,9 @@ const Resources = () => {
                 </div>
               </div>
             ))}
-          </div>
-        )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Create Resource Modal */}
