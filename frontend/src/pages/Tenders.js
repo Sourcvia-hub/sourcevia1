@@ -245,8 +245,9 @@ const Tenders = () => {
                 </div>
               </div>
             ))}
-          </div>
-        )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Create Tender Modal */}
