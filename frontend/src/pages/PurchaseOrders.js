@@ -378,8 +378,8 @@ const PurchaseOrders = () => {
                 </div>
               </div>
             ))}
-          </div>
-        );
+            </div>
+          );
         })()}
       </div>
 
