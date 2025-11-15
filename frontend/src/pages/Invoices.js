@@ -265,19 +265,17 @@ const Invoices = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Contract *</label>
-                <select
+                <SearchableSelect
+                  options={contracts.map(contract => ({
+                    value: contract.id,
+                    label: `${contract.contract_number} - ${contract.title}`
+                  }))}
                   value={formData.contract_id}
-                  onChange={(e) => handleContractSelect(e.target.value)}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a contract</option>
-                  {contracts.map((contract) => (
-                    <option key={contract.id} value={contract.id}>
-                      {contract.contract_number} - {contract.title}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleContractSelect(value)}
+                  placeholder="Search and select contract..."
+                  required={true}
+                  isClearable={false}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Amount *</label>
