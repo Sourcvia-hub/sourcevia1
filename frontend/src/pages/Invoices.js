@@ -234,46 +234,6 @@ const Invoices = () => {
           )}
         </div>
 
-        {/* Dashboard Stats */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span>📊</span>
-            Invoice Statistics
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-blue-700">{invoices.length}</p>
-                <p className="text-sm text-blue-600 font-medium mt-1">Total</p>
-              </div>
-            </div>
-            <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-yellow-700">{invoices.filter(i => i.status === 'pending').length}</p>
-                <p className="text-sm text-yellow-600 font-medium mt-1">Pending</p>
-              </div>
-            </div>
-            <div className="bg-cyan-50 border-2 border-cyan-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-cyan-700">{invoices.filter(i => i.status === 'verified').length}</p>
-                <p className="text-sm text-cyan-600 font-medium mt-1">Verified</p>
-              </div>
-            </div>
-            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-green-700">{invoices.filter(i => i.status === 'approved').length}</p>
-                <p className="text-sm text-green-600 font-medium mt-1">Approved</p>
-              </div>
-            </div>
-            <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-purple-700">{invoices.filter(i => i.status === 'paid').length}</p>
-                <p className="text-sm text-purple-600 font-medium mt-1">Paid</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Filter Buttons */}
         <div className="flex flex-wrap gap-2">
           <button
