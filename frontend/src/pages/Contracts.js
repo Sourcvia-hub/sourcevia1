@@ -399,19 +399,17 @@ const Contracts = () => {
               {/* Tender Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Select Approved Tender *</label>
-                <select
+                <SearchableSelect
+                  options={tenders.map(tender => ({
+                    value: tender.id,
+                    label: `${tender.tender_number} - ${tender.title}`
+                  }))}
                   value={formData.tender_id}
-                  onChange={(e) => handleTenderSelect(e.target.value)}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a tender</option>
-                  {tenders.map((tender) => (
-                    <option key={tender.id} value={tender.id}>
-                      {tender.tender_number} - {tender.title}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => handleTenderSelect(value)}
+                  placeholder="Search and select tender..."
+                  required={true}
+                  isClearable={false}
+                />
               </div>
 
               {/* Tender RFP Guidelines */}
