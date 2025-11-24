@@ -28,15 +28,7 @@ const AuthProvider = ({ children }) => {
       setUser(response.data);
       setError(null);
     } catch (error) {
-      // If not authenticated, try auto-login
-      try {
-        const autoLoginResponse = await axios.post(`${API}/auth/auto-login`, {}, { withCredentials: true });
-        setUser(autoLoginResponse.data.user);
-        setError(null);
-      } catch (autoLoginError) {
-        console.error('Auto-login failed:', autoLoginError);
-        setUser(null);
-      }
+      setUser(null);
     } finally {
       setLoading(false);
     }
