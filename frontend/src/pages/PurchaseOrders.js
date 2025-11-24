@@ -375,8 +375,16 @@ const PurchaseOrders = () => {
                   )}
                 </div>
 
-                <div className="text-sm text-gray-500">
-                  Created {new Date(po.created_at).toLocaleDateString()}
+                <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+                  <div className="text-sm text-gray-500">
+                    Created {new Date(po.created_at).toLocaleDateString()}
+                  </div>
+                  <Link
+                    to={`/purchase-orders/${po.id}`}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    View Details
+                  </Link>
                 </div>
               </div>
             ))}
