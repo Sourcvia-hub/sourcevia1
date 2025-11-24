@@ -3218,7 +3218,7 @@ async def export_tenders(request: Request):
 
 @api_router.get("/export/invoices")
 async def export_invoices(request: Request):
-    """Export all invoices to Excel"""
+    """Export all invoices with complete details to Excel"""
     await require_auth(request)
     
     invoices = await db.invoices.find({}, {"_id": 0}).to_list(1000)
@@ -3231,7 +3231,10 @@ async def export_invoices(request: Request):
     header_font = Font(bold=True, color="FFFFFF")
     
     headers = ["ID", "Invoice Number", "Vendor ID", "Contract ID", "PO ID", "Amount", 
-               "Status", "Description", "Created At"]
+               "Status", "Description", "Issue Date", "Due Date", "Payment Date",
+               "Tax Amount", "Discount", "Net Amount",
+               "Milestone", "Payment Method", "Notes",
+               "Approved By", "Created At", "Updated At"]
     
     for col, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=header)
@@ -3248,7 +3251,18 @@ async def export_invoices(request: Request):
         ws.cell(row=row_idx, column=6, value=invoice.get("amount", 0))
         ws.cell(row=row_idx, column=7, value=invoice.get("status", ""))
         ws.cell(row=row_idx, column=8, value=invoice.get("description", ""))
-        ws.cell(row=row_idx, column=9, value=str(invoice.get("created_at", "")))
+        ws.cell(row=row_idx, column=9, value=str(invoice.get("issue_date", "")))
+        ws.cell(row=row_idx, column=10, value=str(invoice.get("due_date", "")))
+        ws.cell(row=row_idx, column=11, value=str(invoice.get("payment_date", "")))
+        ws.cell(row=row_idx, column=12, value=invoice.get("tax_amount", 0))
+        ws.cell(row=row_idx, column=13, value=invoice.get("discount", 0))
+        ws.cell(row=row_idx, column=14, value=invoice.get("net_amount", 0))
+        ws.cell(row=row_idx, column=15, value=invoice.get("milestone", ""))
+        ws.cell(row=row_idx, column=16, value=invoice.get("payment_method", ""))
+        ws.cell(row=row_idx, column=17, value=invoice.get("notes", ""))
+        ws.cell(row=row_idx, column=18, value=invoice.get("approved_by", ""))
+        ws.cell(row=row_idx, column=19, value=str(invoice.get("created_at", "")))
+        ws.cell(row=row_idx, column=20, value=str(invoice.get("updated_at", "")))
     
     for col in ws.columns:
         max_length = 0
