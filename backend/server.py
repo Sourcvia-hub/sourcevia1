@@ -3174,24 +3174,25 @@ async def export_tenders(request: Request):
         cell.alignment = Alignment(horizontal="center")
     
     eval_row = 2
-    for tender in tenders:
-        proposals = tender.get("proposals", [])
-        for proposal in proposals:
-            evaluation = proposal.get("evaluation", {})
-            if evaluation:
-                ws_evaluations.cell(row=eval_row, column=1, value=evaluation.get("id", ""))
-                ws_evaluations.cell(row=eval_row, column=2, value=tender.get("id", ""))
-                ws_evaluations.cell(row=eval_row, column=3, value=proposal.get("proposal_id", ""))
-                ws_evaluations.cell(row=eval_row, column=4, value=proposal.get("vendor_name", ""))
-                ws_evaluations.cell(row=eval_row, column=5, value=evaluation.get("vendor_reliability_stability", ""))
-                ws_evaluations.cell(row=eval_row, column=6, value=evaluation.get("delivery_warranty_backup", ""))
-                ws_evaluations.cell(row=eval_row, column=7, value=evaluation.get("technical_experience", ""))
-                ws_evaluations.cell(row=eval_row, column=8, value=evaluation.get("cost_score", ""))
-                ws_evaluations.cell(row=eval_row, column=9, value=evaluation.get("meets_requirements", ""))
-                ws_evaluations.cell(row=eval_row, column=10, value=evaluation.get("total_score", ""))
-                ws_evaluations.cell(row=eval_row, column=11, value=evaluation.get("evaluated_by", ""))
-                ws_evaluations.cell(row=eval_row, column=12, value=str(evaluation.get("evaluated_at", "")))
-                eval_row += 1
+    for proposal in all_proposals:
+        evaluation = proposal.get("evaluation", {})
+        if evaluation:
+            tender_id = proposal.get("tender_id", "")
+            tender = next((t for t in tenders if t.get("id") == tender_id), {})
+            
+            ws_evaluations.cell(row=eval_row, column=1, value=evaluation.get("id", ""))
+            ws_evaluations.cell(row=eval_row, column=2, value=tender_id)
+            ws_evaluations.cell(row=eval_row, column=3, value=proposal.get("id", ""))
+            ws_evaluations.cell(row=eval_row, column=4, value=proposal.get("vendor_name", ""))
+            ws_evaluations.cell(row=eval_row, column=5, value=evaluation.get("vendor_reliability_stability", ""))
+            ws_evaluations.cell(row=eval_row, column=6, value=evaluation.get("delivery_warranty_backup", ""))
+            ws_evaluations.cell(row=eval_row, column=7, value=evaluation.get("technical_experience", ""))
+            ws_evaluations.cell(row=eval_row, column=8, value=evaluation.get("cost_score", ""))
+            ws_evaluations.cell(row=eval_row, column=9, value=evaluation.get("meets_requirements", ""))
+            ws_evaluations.cell(row=eval_row, column=10, value=evaluation.get("total_score", ""))
+            ws_evaluations.cell(row=eval_row, column=11, value=evaluation.get("evaluated_by", ""))
+            ws_evaluations.cell(row=eval_row, column=12, value=str(evaluation.get("evaluated_at", "")))
+            eval_row += 1
     
     # Auto-size
     for col in ws_evaluations.columns:
