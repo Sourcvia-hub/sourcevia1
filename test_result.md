@@ -2547,3 +2547,34 @@ Add a comprehensive detail view page for Purchase Orders to view and edit PO inf
 ✅ File upload section visible in edit mode
 ✅ Responsive design confirmed
 
+
+---
+
+## CORS Configuration Fix - Nov 24, 2025
+
+### Issue:
+Deployed app stuck on "Authenticating..." screen. Frontend could not reach backend API.
+
+### Root Cause:
+1. CORS middleware was placed AFTER `app.include_router()` initially
+2. After moving CORS before router, localhost origin was not included in CORS_ORIGINS
+3. Frontend accessed via localhost:3000 was trying to reach external preview domain, creating cross-origin requests that failed
+
+### Fix Applied:
+1. Moved CORS middleware configuration BEFORE `app.include_router(api_router)` in server.py
+2. Updated `/app/backend/.env` to include both domains:
+   ```
+   CORS_ORIGINS="https://attachmate-3.preview.emergentagent.com,http://localhost:3000"
+   ```
+3. Restarted backend service to load new environment variables
+
+### Testing:
+✅ App now loads correctly on localhost:3000
+✅ Auto-login working
+✅ Dashboard displaying with all data
+✅ Navigation functional
+
+### Files Modified:
+- `/app/backend/server.py` (CORS middleware placement)
+- `/app/backend/.env` (CORS_ORIGINS configuration)
+
