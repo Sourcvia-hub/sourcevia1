@@ -532,6 +532,19 @@ const PurchaseOrders = () => {
                   </button>
                 </div>
 
+                {/* AI PO Item Analyzer */}
+                {currentItem.description && currentItem.description.trim().length >= 10 && (
+                  <div className="mb-4">
+                    <AIPOItemAnalyzer 
+                      itemDescription={currentItem.description}
+                      onAnalysisComplete={(analysis) => {
+                        console.log('AI Analysis:', analysis);
+                        // Optionally auto-fill fields based on AI analysis
+                      }}
+                    />
+                  </div>
+                )}
+
                 {/* Items List */}
                 {formData.items.length > 0 && (
                   <div className="space-y-2 mb-4">
