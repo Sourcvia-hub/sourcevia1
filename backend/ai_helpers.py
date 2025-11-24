@@ -262,10 +262,12 @@ Respond in JSON format:
     user_message = UserMessage(text=prompt)
     response = await chat.send_message(user_message)
     
-    try:
-        result = json.loads(response)
+    # Extract JSON from response (handles markdown code blocks)
+    result = extract_json_from_response(response)
+    
+    if result:
         return result
-    except:
+    else:
         return {
             "matched_milestone_name": None,
             "confidence": 0,
