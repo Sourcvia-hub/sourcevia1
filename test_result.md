@@ -1799,3 +1799,54 @@ const value = Math.max(0, Math.min(100, parseInt(e.target.value) || 50));
 - ✅ Error handling properly stringifies objects
 - ✅ Contract AI auto-applies classifications on analysis complete
 
+
+---
+## Tender Evaluation Score Conversion Fix
+**Date:** 2025-11-24
+**Status:** ✅ FIXED
+
+### Issue:
+- **Error:** `[{"type":"greater_than_equal","loc":["body","delivery_warranty_backup"],"msg":"Input should be greater than or equal to 1","input":0}]`
+- **Problem:** AI Tender Evaluator was converting 0-100 scores to 1-5 scale incorrectly, resulting in values < 1
+- **Impact:** Backend validation rejected submissions with scores < 1
+
+### Root Cause:
+Original conversion formula: `(score / 20)` 
+- Score 0 → 0 / 20 = **0** ❌ (invalid, must be >= 1)
+- Score 20 → 20 / 20 = 1 ✓
+- Score 100 → 100 / 20 = 5 ✓
+
+### Solution:
+New conversion formula: `(score * 4 / 100) + 1`
+- Ensures minimum value is always 1.0
+- Ensures maximum value is always 5.0
+- Rounds to nearest 0.5 to match form step
+- Validated with Math.max(1, Math.min(5, ...))
+
+**Conversion Results:**
+```
+Score   0 → 1.0 ✓ (minimum enforced)
+Score  20 → 2.0 ✓
+Score  50 → 3.0 ✓
+Score  75 → 4.0 ✓
+Score  85 → 4.5 ✓
+Score 100 → 5.0 ✓ (maximum)
+```
+
+### Additional Improvements:
+1. **Frontend Validation:** Added pre-submission check to ensure all scores are 1-5
+2. **Error Handling:** Improved error message display for Pydantic validation errors
+3. **Type Safety:** All conversions use proper Math operations
+
+### Files Modified:
+- `/app/frontend/src/pages/TenderEvaluation.js`
+  - Fixed score conversion in AITenderEvaluator callback
+  - Added validation before submission
+  - Improved error message handling
+
+### Testing:
+- ✅ All scores 0-100 convert to valid 1-5 range
+- ✅ Edge cases (0, 100) handled correctly
+- ✅ No more validation errors on submission
+- ✅ Pre-submission validation prevents invalid data
+
