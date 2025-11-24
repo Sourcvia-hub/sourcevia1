@@ -3133,21 +3133,23 @@ async def export_tenders(request: Request):
         cell.alignment = Alignment(horizontal="center")
     
     proposal_row = 2
-    for tender in tenders:
-        proposals = tender.get("proposals", [])
-        for proposal in proposals:
-            ws_proposals.cell(row=proposal_row, column=1, value=proposal.get("proposal_id", ""))
-            ws_proposals.cell(row=proposal_row, column=2, value=tender.get("id", ""))
-            ws_proposals.cell(row=proposal_row, column=3, value=tender.get("tender_number", ""))
-            ws_proposals.cell(row=proposal_row, column=4, value=proposal.get("vendor_id", ""))
-            ws_proposals.cell(row=proposal_row, column=5, value=proposal.get("vendor_name", ""))
-            ws_proposals.cell(row=proposal_row, column=6, value=proposal.get("proposed_price", 0))
-            ws_proposals.cell(row=proposal_row, column=7, value=proposal.get("technical_approach", ""))
-            ws_proposals.cell(row=proposal_row, column=8, value=proposal.get("delivery_time", ""))
-            ws_proposals.cell(row=proposal_row, column=9, value=proposal.get("status", ""))
-            ws_proposals.cell(row=proposal_row, column=10, value=str(proposal.get("submitted_at", "")))
-            ws_proposals.cell(row=proposal_row, column=11, value=str(proposal.get("updated_at", "")))
-            proposal_row += 1
+    for proposal in all_proposals:
+        # Find tender number
+        tender_id = proposal.get("tender_id", "")
+        tender = next((t for t in tenders if t.get("id") == tender_id), {})
+        
+        ws_proposals.cell(row=proposal_row, column=1, value=proposal.get("id", ""))
+        ws_proposals.cell(row=proposal_row, column=2, value=tender_id)
+        ws_proposals.cell(row=proposal_row, column=3, value=tender.get("title", ""))
+        ws_proposals.cell(row=proposal_row, column=4, value=proposal.get("vendor_id", ""))
+        ws_proposals.cell(row=proposal_row, column=5, value=proposal.get("vendor_name", ""))
+        ws_proposals.cell(row=proposal_row, column=6, value=proposal.get("proposed_price", 0))
+        ws_proposals.cell(row=proposal_row, column=7, value=proposal.get("technical_approach", ""))
+        ws_proposals.cell(row=proposal_row, column=8, value=proposal.get("delivery_time", ""))
+        ws_proposals.cell(row=proposal_row, column=9, value=proposal.get("status", ""))
+        ws_proposals.cell(row=proposal_row, column=10, value=str(proposal.get("created_at", "")))
+        ws_proposals.cell(row=proposal_row, column=11, value=str(proposal.get("updated_at", "")))
+        proposal_row += 1
     
     # Auto-size
     for col in ws_proposals.columns:
