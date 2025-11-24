@@ -3389,7 +3389,7 @@ async def export_purchase_orders(request: Request):
 
 @api_router.get("/export/resources")
 async def export_resources(request: Request):
-    """Export all resources to Excel"""
+    """Export all resources with complete details to Excel"""
     await require_auth(request)
     
     resources = await db.resources.find({}, {"_id": 0}).to_list(1000)
@@ -3401,7 +3401,12 @@ async def export_resources(request: Request):
     header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
     header_font = Font(bold=True, color="FFFFFF")
     
-    headers = ["ID", "Name", "Vendor ID", "Contract ID", "Location", "Status", "Created At"]
+    headers = ["ID", "Name", "Resource Type", "Vendor ID", "Contract ID", 
+               "Location", "Location Type", "Status", "Position/Role", 
+               "Department", "Start Date", "End Date", "Cost", 
+               "Qualifications", "Experience", "Certifications",
+               "Contact Email", "Contact Phone", "Notes",
+               "Created At", "Updated At"]
     
     for col, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=header)
@@ -3412,11 +3417,25 @@ async def export_resources(request: Request):
     for row_idx, resource in enumerate(resources, 2):
         ws.cell(row=row_idx, column=1, value=resource.get("id", ""))
         ws.cell(row=row_idx, column=2, value=resource.get("name", ""))
-        ws.cell(row=row_idx, column=3, value=resource.get("vendor_id", ""))
-        ws.cell(row=row_idx, column=4, value=resource.get("contract_id", ""))
-        ws.cell(row=row_idx, column=5, value=resource.get("location", ""))
-        ws.cell(row=row_idx, column=6, value=resource.get("status", ""))
-        ws.cell(row=row_idx, column=7, value=str(resource.get("created_at", "")))
+        ws.cell(row=row_idx, column=3, value=resource.get("resource_type", ""))
+        ws.cell(row=row_idx, column=4, value=resource.get("vendor_id", ""))
+        ws.cell(row=row_idx, column=5, value=resource.get("contract_id", ""))
+        ws.cell(row=row_idx, column=6, value=resource.get("location", ""))
+        ws.cell(row=row_idx, column=7, value=resource.get("location_type", ""))
+        ws.cell(row=row_idx, column=8, value=resource.get("status", ""))
+        ws.cell(row=row_idx, column=9, value=resource.get("position", ""))
+        ws.cell(row=row_idx, column=10, value=resource.get("department", ""))
+        ws.cell(row=row_idx, column=11, value=str(resource.get("start_date", "")))
+        ws.cell(row=row_idx, column=12, value=str(resource.get("end_date", "")))
+        ws.cell(row=row_idx, column=13, value=resource.get("cost", 0))
+        ws.cell(row=row_idx, column=14, value=resource.get("qualifications", ""))
+        ws.cell(row=row_idx, column=15, value=resource.get("experience", ""))
+        ws.cell(row=row_idx, column=16, value=resource.get("certifications", ""))
+        ws.cell(row=row_idx, column=17, value=resource.get("email", ""))
+        ws.cell(row=row_idx, column=18, value=resource.get("phone", ""))
+        ws.cell(row=row_idx, column=19, value=resource.get("notes", ""))
+        ws.cell(row=row_idx, column=20, value=str(resource.get("created_at", "")))
+        ws.cell(row=row_idx, column=21, value=str(resource.get("updated_at", "")))
     
     for col in ws.columns:
         max_length = 0
