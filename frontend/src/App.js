@@ -50,10 +50,6 @@ const AuthProvider = ({ children }) => {
     try {
       await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
       setUser(null);
-      // Trigger auto-login after logout
-      setTimeout(() => {
-        checkAuth();
-      }, 500);
     } catch (error) {
       console.error('Logout error:', error);
     }
