@@ -534,13 +534,12 @@ class AuditLog(BaseModel):
 
 # ==================== AUTH HELPERS ====================
 def hash_password(password: str) -> str:
-    """Simple password hashing (in production, use bcrypt or passlib)"""
-    import hashlib
-    return hashlib.sha256(password.encode()).hexdigest()
+    """Hash password using bcrypt"""
+    return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify password against hash"""
-    return hash_password(plain_password) == hashed_password
+    """Verify password against bcrypt hash"""
+    return pwd_context.verify(plain_password, hashed_password)
 
 async def get_current_user(request: Request) -> Optional[User]:
     """Get current user from session token"""
