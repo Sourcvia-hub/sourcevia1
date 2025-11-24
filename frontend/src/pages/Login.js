@@ -71,7 +71,12 @@ const Login = () => {
       await login(formData.email, formData.password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Registration failed. Email may already exist.');
+      const errorDetail = err.response?.data?.detail;
+      if (errorDetail === 'User already exists') {
+        setError('This email is already registered. Please login instead or use a different email.');
+      } else {
+        setError(errorDetail || 'Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
