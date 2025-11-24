@@ -1986,3 +1986,87 @@ active_contracts = await db.contracts.count_documents({
 ✅ All contract statistics showing accurate counts
 ✅ Consistent with Contracts page filter counts
 
+
+---
+## Skip Login Page - Direct Dashboard Access
+**Date:** 2025-11-24
+**Status:** ✅ IMPLEMENTED
+
+### Requirement:
+- **User Request:** "I want to skip the login page and show the dashboard immediately as start page"
+
+### Previous Behavior:
+1. Visit root URL (/) → Show login page
+2. Auto-login triggers in background
+3. Redirect to /dashboard after auto-login completes
+
+**Result:** Brief flash of login page before dashboard
+
+### New Behavior:
+1. Visit root URL (/) → Immediately redirect to /dashboard
+2. Auto-login happens seamlessly in background
+3. Dashboard loads with authenticated user
+
+**Result:** Direct dashboard access, no login page shown
+
+### Implementation:
+
+**Updated Root Route Handler:**
+```javascript
+// Before: LoginWrapper - showed login page first
+const LoginWrapper = () => {
+  if (user) return <Navigate to="/dashboard" />;
+  return <LoginPage />;
+};
+
+// After: RootRedirect - always goes to dashboard
+const RootRedirect = () => {
+  if (loading) return <LoadingSpinner />;
+  return <Navigate to="/dashboard" replace />;
+};
+```
+
+**Updated Protected Route:**
+```javascript
+// Shows "Authenticating..." message if user not yet loaded
+// Auto-login in AuthProvider handles authentication
+if (!user) {
+  return <AuthenticatingMessage />;
+}
+```
+
+### Verification:
+
+**Test Results:**
+- ✅ Cleared cookies (fresh visit simulation)
+- ✅ Visited root URL: `https://vendorprocure.preview.emergentagent.com`
+- ✅ **Redirected to:** `/dashboard` (immediate)
+- ✅ **No login page shown**
+- ✅ Dashboard fully loaded with all stats
+- ✅ User authenticated: `procurement@test.com`
+- ✅ All navigation working
+
+**Screenshot Evidence:**
+- Dashboard visible immediately
+- Full stats showing (Vendors: 94, Active Contracts: 49, Tenders: 49)
+- User logged in automatically
+- No login form visible at any point
+
+### Files Modified:
+- `/app/frontend/src/App.js`
+  - Renamed `LoginWrapper` to `RootRedirect`
+  - Removed login page display logic
+  - Updated to always redirect to dashboard
+  - Enhanced ProtectedRoute to show loading state instead of redirecting
+
+### User Experience:
+✅ **One-Click Access:** Visit URL → Dashboard appears immediately
+✅ **Seamless Auth:** Auto-login happens in background
+✅ **No Interruption:** No login forms or credential prompts
+✅ **Fast Loading:** Direct navigation, no intermediate pages
+
+### Note:
+- Login page component still exists but is never shown
+- Auto-login endpoint handles authentication automatically
+- User can still logout (will auto-login again on next visit)
+
