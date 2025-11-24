@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
 import { useParams, useNavigate } from 'react-router-dom';
+import AITenderEvaluator from '../components/AITenderEvaluator';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
