@@ -482,6 +482,21 @@ const TenderDetail = () => {
                 </div>
               </div>
 
+              {/* File Attachments */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Supporting Documents</h3>
+                <FileUpload
+                  entityId={id}
+                  module="tenders"
+                  label="Attach Supporting Documents (PDF, DOCX, XLSX, Images)"
+                  accept=".pdf,.doc,.docx,.xlsx,.xls,.png,.jpg,.jpeg"
+                  multiple={true}
+                  onUploadComplete={(files) => {
+                    console.log('Files uploaded:', files);
+                  }}
+                />
+              </div>
+
               <div className="flex gap-4 justify-end mt-6">
                 <button
                   type="button"
