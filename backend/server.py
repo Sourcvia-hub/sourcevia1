@@ -3462,3 +3462,244 @@ logger = logging.getLogger(__name__)
 async def shutdown_db_client():
     client.close()
 
+
+# ==================== FILE UPLOAD ENDPOINTS ====================
+from fastapi import File, UploadFile
+from pathlib import Path
+import shutil
+
+UPLOAD_DIR = Path("/app/backend/uploads")
+
+@api_router.post("/upload/vendor/{vendor_id}")
+async def upload_vendor_files(
+    vendor_id: str,
+    request: Request,
+    files: list[UploadFile] = File(...),
+    file_type: str = "supporting_documents"  # supporting_documents, due_diligence
+):
+    """Upload files for vendor (supporting documents, due diligence)"""
+    await require_auth(request)
+    
+    uploaded_files = []
+    vendor_dir = UPLOAD_DIR / "vendors" / vendor_id
+    vendor_dir.mkdir(parents=True, exist_ok=True)
+    
+    for file in files:
+        # Generate unique filename
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}_{file.filename}"
+        file_path = vendor_dir / filename
+        
+        # Save file
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        uploaded_files.append({
+            "filename": file.filename,
+            "stored_filename": filename,
+            "file_type": file_type,
+            "size": file_path.stat().st_size,
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    # Update vendor record with file metadata
+    await db.vendors.update_one(
+        {"id": vendor_id},
+        {"$push": {"attachments": {"$each": uploaded_files}}}
+    )
+    
+    return {"message": f"Uploaded {len(uploaded_files)} files", "files": uploaded_files}
+
+@api_router.post("/upload/tender/{tender_id}")
+async def upload_tender_files(
+    tender_id: str,
+    request: Request,
+    files: list[UploadFile] = File(...)
+):
+    """Upload supporting documents for tender"""
+    await require_auth(request)
+    
+    uploaded_files = []
+    tender_dir = UPLOAD_DIR / "tenders" / tender_id
+    tender_dir.mkdir(parents=True, exist_ok=True)
+    
+    for file in files:
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}_{file.filename}"
+        file_path = tender_dir / filename
+        
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        uploaded_files.append({
+            "filename": file.filename,
+            "stored_filename": filename,
+            "size": file_path.stat().st_size,
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    await db.tenders.update_one(
+        {"id": tender_id},
+        {"$push": {"attachments": {"$each": uploaded_files}}}
+    )
+    
+    return {"message": f"Uploaded {len(uploaded_files)} files", "files": uploaded_files}
+
+@api_router.post("/upload/proposal/{proposal_id}")
+async def upload_proposal_files(
+    proposal_id: str,
+    request: Request,
+    files: list[UploadFile] = File(...)
+):
+    """Upload supporting documents for proposal"""
+    await require_auth(request)
+    
+    uploaded_files = []
+    proposal_dir = UPLOAD_DIR / "proposals" / proposal_id
+    proposal_dir.mkdir(parents=True, exist_ok=True)
+    
+    for file in files:
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}_{file.filename}"
+        file_path = proposal_dir / filename
+        
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        uploaded_files.append({
+            "filename": file.filename,
+            "stored_filename": filename,
+            "size": file_path.stat().st_size,
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    await db.proposals.update_one(
+        {"id": proposal_id},
+        {"$push": {"attachments": {"$each": uploaded_files}}}
+    )
+    
+    return {"message": f"Uploaded {len(uploaded_files)} files", "files": uploaded_files}
+
+@api_router.post("/upload/purchase-order/{po_id}")
+async def upload_po_files(
+    po_id: str,
+    request: Request,
+    files: list[UploadFile] = File(...),
+    file_type: str = "quotation"  # quotation, supporting_documents
+):
+    """Upload quotations and supporting documents for PO"""
+    await require_auth(request)
+    
+    uploaded_files = []
+    po_dir = UPLOAD_DIR / "purchase_orders" / po_id
+    po_dir.mkdir(parents=True, exist_ok=True)
+    
+    for file in files:
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}_{file.filename}"
+        file_path = po_dir / filename
+        
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        uploaded_files.append({
+            "filename": file.filename,
+            "stored_filename": filename,
+            "file_type": file_type,
+            "size": file_path.stat().st_size,
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    await db.purchase_orders.update_one(
+        {"id": po_id},
+        {"$push": {"attachments": {"$each": uploaded_files}}}
+    )
+    
+    return {"message": f"Uploaded {len(uploaded_files)} files", "files": uploaded_files}
+
+@api_router.post("/upload/invoice/{invoice_id}")
+async def upload_invoice_files(
+    invoice_id: str,
+    request: Request,
+    files: list[UploadFile] = File(...)
+):
+    """Upload invoice files"""
+    await require_auth(request)
+    
+    uploaded_files = []
+    invoice_dir = UPLOAD_DIR / "invoices" / invoice_id
+    invoice_dir.mkdir(parents=True, exist_ok=True)
+    
+    for file in files:
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}_{file.filename}"
+        file_path = invoice_dir / filename
+        
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        uploaded_files.append({
+            "filename": file.filename,
+            "stored_filename": filename,
+            "size": file_path.stat().st_size,
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$push": {"attachments": {"$each": uploaded_files}}}
+    )
+    
+    return {"message": f"Uploaded {len(uploaded_files)} files", "files": uploaded_files}
+
+@api_router.post("/upload/resource/{resource_id}")
+async def upload_resource_files(
+    resource_id: str,
+    request: Request,
+    files: list[UploadFile] = File(...)
+):
+    """Upload supporting documents for resource"""
+    await require_auth(request)
+    
+    uploaded_files = []
+    resource_dir = UPLOAD_DIR / "resources" / resource_id
+    resource_dir.mkdir(parents=True, exist_ok=True)
+    
+    for file in files:
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}_{file.filename}"
+        file_path = resource_dir / filename
+        
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        uploaded_files.append({
+            "filename": file.filename,
+            "stored_filename": filename,
+            "size": file_path.stat().st_size,
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    await db.resources.update_one(
+        {"id": resource_id},
+        {"$push": {"attachments": {"$each": uploaded_files}}}
+    )
+    
+    return {"message": f"Uploaded {len(uploaded_files)} files", "files": uploaded_files}
+
+@api_router.get("/download/{module}/{entity_id}/{filename}")
+async def download_file(module: str, entity_id: str, filename: str, request: Request):
+    """Download uploaded file"""
+    await require_auth(request)
+    
+    file_path = UPLOAD_DIR / module / entity_id / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    from fastapi.responses import FileResponse
+    return FileResponse(
+        path=file_path,
+        filename=filename.split("_", 1)[1] if "_" in filename else filename  # Remove timestamp prefix
+    )
+
