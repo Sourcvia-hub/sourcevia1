@@ -2213,3 +2213,91 @@ link.setAttribute('download', `${module}_export.xlsx`)
 ✅ **Fast Download:** Streaming response for performance
 ✅ **All Modules:** 6 modules, 6 export options
 
+
+---
+
+## File Attachment Feature Integration - Nov 24, 2025
+
+### Objective:
+Integrate the FileUpload component across all modules (Vendors, Tenders, Contracts, Purchase Orders, Invoices, Resources) to allow users to attach supporting documents.
+
+### Implementation Details:
+
+**Backend Changes:**
+1. Added contract file upload endpoint: `POST /api/upload/contract/{contract_id}`
+   - Location: `/app/backend/server.py` (line ~3690)
+   - Stores files in `/app/backend/uploads/contracts/{contract_id}/`
+   - Updates contract document with attachments metadata
+
+**Frontend Changes:**
+
+1. **VendorForm.js**
+   - Imported FileUpload component
+   - Added `vendorId` prop to component signature
+   - Added FileUpload section for supporting documents
+   - Accepts: .pdf, .doc, .docx, .xlsx, .xls, .png, .jpg, .jpeg
+   - Disabled until vendor is saved (requires entity ID)
+
+2. **VendorDetail.js**
+   - Passed `vendorId={id}` to VendorForm in edit modal
+
+3. **TenderDetail.js**
+   - Imported FileUpload component
+   - Added FileUpload section in edit modal
+   - Enabled for existing tenders
+
+4. **PurchaseOrders.js**
+   - Imported FileUpload component
+   - Added placeholder message in create modal
+   - Note: Files can only be attached after PO is created
+
+5. **Invoices.js**
+   - Imported FileUpload component
+   - Added placeholder message in create modal
+   
+6. **InvoiceDetail.js**
+   - Imported FileUpload component
+   - Added FileUpload section in edit form
+   - Enabled for existing invoices
+
+7. **Resources.js**
+   - Imported FileUpload component
+   - Added placeholder message in create modal
+
+8. **ResourceDetail.js**
+   - Imported FileUpload component
+   - Added FileUpload section in edit form
+   - Enabled for existing resources
+
+9. **Contracts.js**
+   - Imported FileUpload component
+   - Added placeholder message in create modal
+
+10. **ContractDetail.js**
+    - Imported FileUpload component
+    - Added FileUpload section in edit form
+    - Enabled for existing contracts
+
+### File Upload Flow:
+1. **For New Entities (Create):** 
+   - User sees a placeholder message: "Save first to enable file uploads"
+   - User must create the entity first, then edit it to attach files
+   
+2. **For Existing Entities (Edit/Detail):**
+   - FileUpload component is fully functional
+   - Users can upload multiple files
+   - Files are displayed with download buttons
+   - Supports file types: PDF, DOCX, XLSX, Images
+
+### Technical Notes:
+- Backend endpoints store files locally in `/app/backend/uploads/{module}/{entity_id}/`
+- Files are timestamped to prevent naming conflicts
+- Metadata (filename, size, upload time) is stored in MongoDB
+- All upload endpoints require authentication
+
+### Next Steps:
+1. Test file upload for all modules
+2. Verify file download functionality
+3. Test with different file types
+4. Verify UI/UX across all forms
+
