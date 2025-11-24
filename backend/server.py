@@ -2874,3 +2874,324 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+# ==================== EXPORT ENDPOINTS ====================
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from io import BytesIO
+from fastapi.responses import StreamingResponse
+
+@api_router.get("/export/vendors")
+async def export_vendors(request: Request):
+    """Export all vendors to Excel"""
+    await require_auth(request)
+    
+    vendors = await db.vendors.find({}, {"_id": 0}).to_list(1000)
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Vendors"
+    
+    # Header styling
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    
+    # Define headers
+    headers = ["ID", "Name (English)", "Commercial Name", "Entity Type", "VAT Number", "CR Number", 
+               "Activity", "Employees", "Status", "Risk Category", "Risk Score", "Created At"]
+    
+    # Write headers
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    # Write data
+    for row_idx, vendor in enumerate(vendors, 2):
+        ws.cell(row=row_idx, column=1, value=vendor.get("id", ""))
+        ws.cell(row=row_idx, column=2, value=vendor.get("name_english", ""))
+        ws.cell(row=row_idx, column=3, value=vendor.get("commercial_name", ""))
+        ws.cell(row=row_idx, column=4, value=vendor.get("entity_type", ""))
+        ws.cell(row=row_idx, column=5, value=vendor.get("vat_number", ""))
+        ws.cell(row=row_idx, column=6, value=vendor.get("cr_number", ""))
+        ws.cell(row=row_idx, column=7, value=vendor.get("activity_description", ""))
+        ws.cell(row=row_idx, column=8, value=vendor.get("number_of_employees", ""))
+        ws.cell(row=row_idx, column=9, value=vendor.get("status", ""))
+        ws.cell(row=row_idx, column=10, value=vendor.get("risk_category", ""))
+        ws.cell(row=row_idx, column=11, value=vendor.get("risk_score", ""))
+        ws.cell(row=row_idx, column=12, value=str(vendor.get("created_at", "")))
+    
+    # Auto-size columns
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[column].width = min(max_length + 2, 50)
+    
+    # Save to BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=vendors_export.xlsx"}
+    )
+
+@api_router.get("/export/contracts")
+async def export_contracts(request: Request):
+    """Export all contracts to Excel"""
+    await require_auth(request)
+    
+    contracts = await db.contracts.find({}, {"_id": 0}).to_list(1000)
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Contracts"
+    
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    
+    headers = ["ID", "Contract Number", "Title", "Vendor ID", "Status", "Value", "Start Date", 
+               "End Date", "Classification", "NOC Required", "Created At"]
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    for row_idx, contract in enumerate(contracts, 2):
+        ws.cell(row=row_idx, column=1, value=contract.get("id", ""))
+        ws.cell(row=row_idx, column=2, value=contract.get("contract_number", ""))
+        ws.cell(row=row_idx, column=3, value=contract.get("title", ""))
+        ws.cell(row=row_idx, column=4, value=contract.get("vendor_id", ""))
+        ws.cell(row=row_idx, column=5, value=contract.get("status", ""))
+        ws.cell(row=row_idx, column=6, value=contract.get("value", 0))
+        ws.cell(row=row_idx, column=7, value=str(contract.get("start_date", "")))
+        ws.cell(row=row_idx, column=8, value=str(contract.get("end_date", "")))
+        ws.cell(row=row_idx, column=9, value=contract.get("outsourcing_classification", ""))
+        ws.cell(row=row_idx, column=10, value=str(contract.get("is_noc", False)))
+        ws.cell(row=row_idx, column=11, value=str(contract.get("created_at", "")))
+    
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[column].width = min(max_length + 2, 50)
+    
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=contracts_export.xlsx"}
+    )
+
+@api_router.get("/export/tenders")
+async def export_tenders(request: Request):
+    """Export all tenders to Excel"""
+    await require_auth(request)
+    
+    tenders = await db.tenders.find({}, {"_id": 0}).to_list(1000)
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Tenders"
+    
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    
+    headers = ["ID", "Tender Number", "Title", "Status", "Budget", "Deadline", "Requirements", "Created At"]
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    for row_idx, tender in enumerate(tenders, 2):
+        ws.cell(row=row_idx, column=1, value=tender.get("id", ""))
+        ws.cell(row=row_idx, column=2, value=tender.get("tender_number", ""))
+        ws.cell(row=row_idx, column=3, value=tender.get("title", ""))
+        ws.cell(row=row_idx, column=4, value=tender.get("status", ""))
+        ws.cell(row=row_idx, column=5, value=tender.get("budget", 0))
+        ws.cell(row=row_idx, column=6, value=str(tender.get("deadline", "")))
+        ws.cell(row=row_idx, column=7, value=tender.get("requirements", ""))
+        ws.cell(row=row_idx, column=8, value=str(tender.get("created_at", "")))
+    
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[column].width = min(max_length + 2, 50)
+    
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=tenders_export.xlsx"}
+    )
+
+@api_router.get("/export/invoices")
+async def export_invoices(request: Request):
+    """Export all invoices to Excel"""
+    await require_auth(request)
+    
+    invoices = await db.invoices.find({}, {"_id": 0}).to_list(1000)
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Invoices"
+    
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    
+    headers = ["ID", "Invoice Number", "Vendor ID", "Contract ID", "PO ID", "Amount", 
+               "Status", "Description", "Created At"]
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    for row_idx, invoice in enumerate(invoices, 2):
+        ws.cell(row=row_idx, column=1, value=invoice.get("id", ""))
+        ws.cell(row=row_idx, column=2, value=invoice.get("invoice_number", ""))
+        ws.cell(row=row_idx, column=3, value=invoice.get("vendor_id", ""))
+        ws.cell(row=row_idx, column=4, value=invoice.get("contract_id", ""))
+        ws.cell(row=row_idx, column=5, value=invoice.get("po_id", ""))
+        ws.cell(row=row_idx, column=6, value=invoice.get("amount", 0))
+        ws.cell(row=row_idx, column=7, value=invoice.get("status", ""))
+        ws.cell(row=row_idx, column=8, value=invoice.get("description", ""))
+        ws.cell(row=row_idx, column=9, value=str(invoice.get("created_at", "")))
+    
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[column].width = min(max_length + 2, 50)
+    
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=invoices_export.xlsx"}
+    )
+
+@api_router.get("/export/purchase-orders")
+async def export_purchase_orders(request: Request):
+    """Export all purchase orders to Excel"""
+    await require_auth(request)
+    
+    pos = await db.purchase_orders.find({}, {"_id": 0}).to_list(1000)
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Purchase Orders"
+    
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    
+    headers = ["ID", "PO Number", "Vendor ID", "Status", "Total Value", "Created At"]
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    for row_idx, po in enumerate(pos, 2):
+        ws.cell(row=row_idx, column=1, value=po.get("id", ""))
+        ws.cell(row=row_idx, column=2, value=po.get("po_number", ""))
+        ws.cell(row=row_idx, column=3, value=po.get("vendor_id", ""))
+        ws.cell(row=row_idx, column=4, value=po.get("status", ""))
+        ws.cell(row=row_idx, column=5, value=po.get("total_value", 0))
+        ws.cell(row=row_idx, column=6, value=str(po.get("created_at", "")))
+    
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[column].width = min(max_length + 2, 50)
+    
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=purchase_orders_export.xlsx"}
+    )
+
+@api_router.get("/export/resources")
+async def export_resources(request: Request):
+    """Export all resources to Excel"""
+    await require_auth(request)
+    
+    resources = await db.resources.find({}, {"_id": 0}).to_list(1000)
+    
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Resources"
+    
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    
+    headers = ["ID", "Name", "Vendor ID", "Contract ID", "Location", "Status", "Created At"]
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    for row_idx, resource in enumerate(resources, 2):
+        ws.cell(row=row_idx, column=1, value=resource.get("id", ""))
+        ws.cell(row=row_idx, column=2, value=resource.get("name", ""))
+        ws.cell(row=row_idx, column=3, value=resource.get("vendor_id", ""))
+        ws.cell(row=row_idx, column=4, value=resource.get("contract_id", ""))
+        ws.cell(row=row_idx, column=5, value=resource.get("location", ""))
+        ws.cell(row=row_idx, column=6, value=resource.get("status", ""))
+        ws.cell(row=row_idx, column=7, value=str(resource.get("created_at", "")))
+    
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[column].width = min(max_length + 2, 50)
+    
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=resources_export.xlsx"}
+    )
+
