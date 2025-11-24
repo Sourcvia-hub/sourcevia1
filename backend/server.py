@@ -2957,39 +2957,99 @@ async def export_vendors(request: Request):
 
 @api_router.get("/export/contracts")
 async def export_contracts(request: Request):
-    """Export all contracts to Excel"""
+    """Export all contracts with milestones to Excel"""
     await require_auth(request)
     
     contracts = await db.contracts.find({}, {"_id": 0}).to_list(1000)
     
     wb = Workbook()
-    ws = wb.active
-    ws.title = "Contracts"
+    
+    # Sheet 1: Contracts
+    ws_contracts = wb.active
+    ws_contracts.title = "Contracts"
     
     header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
     header_font = Font(bold=True, color="FFFFFF")
     
-    headers = ["ID", "Contract Number", "Title", "Vendor ID", "Status", "Value", "Start Date", 
-               "End Date", "Classification", "NOC Required", "Created At"]
+    contract_headers = ["ID", "Contract Number", "Title", "Tender ID", "Vendor ID", 
+                        "Status", "Value", "Start Date", "End Date", "Duration (months)",
+                        "Statement of Work", "SLA", 
+                        "Classification", "NOC Required", "Data Access", "Subcontracting",
+                        "Is Outsourcing", "Created By", "Approved By",
+                        "Created At", "Updated At"]
     
-    for col, header in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col, value=header)
+    for col, header in enumerate(contract_headers, 1):
+        cell = ws_contracts.cell(row=1, column=col, value=header)
         cell.fill = header_fill
         cell.font = header_font
         cell.alignment = Alignment(horizontal="center")
     
     for row_idx, contract in enumerate(contracts, 2):
-        ws.cell(row=row_idx, column=1, value=contract.get("id", ""))
-        ws.cell(row=row_idx, column=2, value=contract.get("contract_number", ""))
-        ws.cell(row=row_idx, column=3, value=contract.get("title", ""))
-        ws.cell(row=row_idx, column=4, value=contract.get("vendor_id", ""))
-        ws.cell(row=row_idx, column=5, value=contract.get("status", ""))
-        ws.cell(row=row_idx, column=6, value=contract.get("value", 0))
-        ws.cell(row=row_idx, column=7, value=str(contract.get("start_date", "")))
-        ws.cell(row=row_idx, column=8, value=str(contract.get("end_date", "")))
-        ws.cell(row=row_idx, column=9, value=contract.get("outsourcing_classification", ""))
-        ws.cell(row=row_idx, column=10, value=str(contract.get("is_noc", False)))
-        ws.cell(row=row_idx, column=11, value=str(contract.get("created_at", "")))
+        ws_contracts.cell(row=row_idx, column=1, value=contract.get("id", ""))
+        ws_contracts.cell(row=row_idx, column=2, value=contract.get("contract_number", ""))
+        ws_contracts.cell(row=row_idx, column=3, value=contract.get("title", ""))
+        ws_contracts.cell(row=row_idx, column=4, value=contract.get("tender_id", ""))
+        ws_contracts.cell(row=row_idx, column=5, value=contract.get("vendor_id", ""))
+        ws_contracts.cell(row=row_idx, column=6, value=contract.get("status", ""))
+        ws_contracts.cell(row=row_idx, column=7, value=contract.get("value", 0))
+        ws_contracts.cell(row=row_idx, column=8, value=str(contract.get("start_date", "")))
+        ws_contracts.cell(row=row_idx, column=9, value=str(contract.get("end_date", "")))
+        ws_contracts.cell(row=row_idx, column=10, value=contract.get("duration_months", ""))
+        ws_contracts.cell(row=row_idx, column=11, value=contract.get("sow", ""))
+        ws_contracts.cell(row=row_idx, column=12, value=contract.get("sla", ""))
+        ws_contracts.cell(row=row_idx, column=13, value=contract.get("outsourcing_classification", ""))
+        ws_contracts.cell(row=row_idx, column=14, value=str(contract.get("is_noc", False)))
+        ws_contracts.cell(row=row_idx, column=15, value=str(contract.get("involves_data_access", False)))
+        ws_contracts.cell(row=row_idx, column=16, value=str(contract.get("involves_subcontracting", False)))
+        ws_contracts.cell(row=row_idx, column=17, value=str(contract.get("is_outsourcing", False)))
+        ws_contracts.cell(row=row_idx, column=18, value=contract.get("created_by", ""))
+        ws_contracts.cell(row=row_idx, column=19, value=contract.get("approved_by", ""))
+        ws_contracts.cell(row=row_idx, column=20, value=str(contract.get("created_at", "")))
+        ws_contracts.cell(row=row_idx, column=21, value=str(contract.get("updated_at", "")))
+    
+    # Auto-size
+    for col in ws_contracts.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws_contracts.column_dimensions[column].width = min(max_length + 2, 50)
+    
+    # Sheet 2: Milestones
+    ws_milestones = wb.create_sheet("Milestones")
+    milestone_headers = ["Contract ID", "Contract Number", "Milestone Name", "Description",
+                         "Due Date", "Payment Percentage", "Amount", "Status", "Completed Date"]
+    
+    for col, header in enumerate(milestone_headers, 1):
+        cell = ws_milestones.cell(row=1, column=col, value=header)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    milestone_row = 2
+    for contract in contracts:
+        milestones = contract.get("milestones", [])
+        for milestone in milestones:
+            ws_milestones.cell(row=milestone_row, column=1, value=contract.get("id", ""))
+            ws_milestones.cell(row=milestone_row, column=2, value=contract.get("contract_number", ""))
+            ws_milestones.cell(row=milestone_row, column=3, value=milestone.get("name", ""))
+            ws_milestones.cell(row=milestone_row, column=4, value=milestone.get("description", ""))
+            ws_milestones.cell(row=milestone_row, column=5, value=str(milestone.get("due_date", "")))
+            ws_milestones.cell(row=milestone_row, column=6, value=milestone.get("payment_percentage", 0))
+            ws_milestones.cell(row=milestone_row, column=7, value=milestone.get("amount", 0))
+            ws_milestones.cell(row=milestone_row, column=8, value=milestone.get("status", ""))
+            ws_milestones.cell(row=milestone_row, column=9, value=str(milestone.get("completed_date", "")))
+            milestone_row += 1
+    
+    # Auto-size
+    for col in ws_milestones.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+        ws_milestones.column_dimensions[column].width = min(max_length + 2, 50)
     
     for col in ws.columns:
         max_length = 0
