@@ -3514,7 +3514,7 @@ async def upload_vendor_files(
 async def upload_tender_files(
     tender_id: str,
     request: Request,
-    files: list[UploadFile] = File(...)
+    files: List[UploadFile] = File(...)
 ):
     """Upload supporting documents for tender"""
     await require_auth(request)
