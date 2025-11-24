@@ -484,6 +484,19 @@ const Invoices = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+
+              {/* AI Invoice Matcher */}
+              {formData.contract_id && formData.description && formData.description.trim().length >= 10 && (
+                <AIInvoiceMatcher 
+                  invoiceDescription={formData.description}
+                  milestones={contracts.find(c => c.id === formData.contract_id)?.milestones || []}
+                  onMilestoneMatched={(milestoneName) => {
+                    console.log('AI matched milestone:', milestoneName);
+                    // Optionally update form with matched milestone
+                  }}
+                />
+              )}
+
               <div className="flex space-x-4 pt-4">
                 <button
                   type="button"
