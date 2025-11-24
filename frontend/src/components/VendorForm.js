@@ -2,7 +2,7 @@ import React from 'react';
 import AIDueDiligence from './AIDueDiligence';
 import FileUpload from './FileUpload';
 
-const VendorForm = ({ formData, setFormData, onSubmit, onCancel, isEdit = false }) => {
+const VendorForm = ({ formData, setFormData, onSubmit, onCancel, isEdit = false, vendorId = null }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
