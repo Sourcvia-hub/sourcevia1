@@ -37,6 +37,28 @@ const Dashboard = () => {
     );
   }
 
+  const handleExport = async (module) => {
+    try {
+      const response = await axios.get(`${API}/export/${module}`, {
+        withCredentials: true,
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${module}_export.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Failed to export data. Please try again.');
+    }
+  };
+
   const StatCard = ({ icon, label, value, color, link, filterType }) => {
     const linkWithFilter = filterType ? `${link}?filter=${filterType}` : link;
     return (
