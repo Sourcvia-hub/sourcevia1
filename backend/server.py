@@ -3687,6 +3687,42 @@ async def upload_resource_files(
     
     return {"message": f"Uploaded {len(uploaded_files)} files", "files": uploaded_files}
 
+
+@api_router.post("/upload/contract/{contract_id}")
+async def upload_contract_files(
+    contract_id: str,
+    request: Request,
+    files: list[UploadFile] = File(...)
+):
+    """Upload contract documents"""
+    await require_auth(request)
+    
+    uploaded_files = []
+    contract_dir = UPLOAD_DIR / "contracts" / contract_id
+    contract_dir.mkdir(parents=True, exist_ok=True)
+    
+    for file in files:
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        filename = f"{timestamp}_{file.filename}"
+        file_path = contract_dir / filename
+        
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        uploaded_files.append({
+            "filename": file.filename,
+            "stored_filename": filename,
+            "size": file_path.stat().st_size,
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    await db.contracts.update_one(
+        {"id": contract_id},
+        {"$push": {"attachments": {"$each": uploaded_files}}}
+    )
+    
+    return {"message": f"Uploaded {len(uploaded_files)} files", "files": uploaded_files}
+
 @api_router.get("/download/{module}/{entity_id}/{filename}")
 async def download_file(module: str, entity_id: str, filename: str, request: Request):
     """Download uploaded file"""
