@@ -2630,3 +2630,70 @@ error Command failed with exit code 1.
 - CORS_ORIGINS will be auto-configured for production domain
 - Frontend REACT_APP_BACKEND_URL will be auto-set to production URL
 
+
+---
+
+## Login/Registration System Restored - Nov 24, 2025
+
+### Objective:
+Replace auto-login with traditional login screen and add registration functionality with default "procurement_officer" role.
+
+### Changes Made:
+
+**1. Removed Auto-Login Feature:**
+- Updated `App.js` to remove auto-login from `checkAuth()` function
+- Updated logout function to not trigger auto-login
+- Changed RootRedirect to navigate to /login if not authenticated
+
+**2. Created Login Page:**
+- New file: `/app/frontend/src/pages/Login.js`
+- Features:
+  - Toggle between Login and Register modes
+  - Email and password fields for login
+  - Full name, email, password fields for registration
+  - Role automatically set to "procurement_officer"
+  - Error handling with user-friendly messages
+  - Auto-login after successful registration
+  - Responsive design with gradient background
+
+**3. Added Login Route:**
+- Added `/login` route to App.js
+- Login page is now the default landing page for unauthenticated users
+
+**4. Backend:**
+- Registration endpoint already existed at `/api/auth/register`
+- Accepts: email, password, name, role
+- Creates user with hashed password
+- Returns success message
+
+### User Flow:
+
+**Registration:**
+1. User visits app → redirected to /login
+2. Click "Register" tab
+3. Enter: Full Name, Email, Password (min 6 chars)
+4. Role automatically set to "Procurement Officer"
+5. Click "Create Account"
+6. Auto-login and redirect to dashboard
+
+**Login:**
+1. User visits app → redirected to /login
+2. Enter: Email and Password
+3. Click "Login"
+4. Redirect to dashboard
+
+### Testing Results:
+✅ Login page displays correctly with form
+✅ Register tab switches to registration form
+✅ Registration form shows: Full Name, Email, Password fields
+✅ Role indicator shows "Procurement Officer (default)"
+✅ Test user registration successful (test@example.com)
+✅ Auto-login after registration working
+✅ Redirected to dashboard successfully
+✅ Dashboard shows "Welcome back, Test User!"
+✅ User profile shows role as "Procurement Officer"
+
+### Files Modified:
+- `/app/frontend/src/App.js` - Removed auto-login, added login route
+- `/app/frontend/src/pages/Login.js` - Created new login/registration page
+
