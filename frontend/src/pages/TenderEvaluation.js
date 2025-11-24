@@ -292,9 +292,36 @@ const TenderEvaluation = () => {
       {/* Evaluation Modal */}
       {showEvaluateModal && selectedProposal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6">
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Evaluate Proposal</h2>
             <p className="text-gray-600 mb-6">Vendor: <strong>{selectedProposal.vendor_name}</strong></p>
+            
+            {/* AI Tender Evaluator */}
+            <div className="mb-6">
+              <AITenderEvaluator 
+                tenderData={{
+                  title: tender?.title,
+                  requirements: tender?.requirements || tender?.description,
+                  budget: tender?.budget
+                }}
+                proposalData={{
+                  vendor_name: selectedProposal.vendor_name,
+                  proposed_price: selectedProposal.proposed_price,
+                  technical_approach: selectedProposal.technical_approach || 'See proposal details',
+                  timeline: selectedProposal.delivery_time || 'See proposal details'
+                }}
+                onScoresGenerated={(scores) => {
+                  // Auto-fill form with AI scores (convert 0-100 to 1-5 scale)
+                  setEvaluationForm({
+                    vendor_reliability_stability: Math.round((scores.technical_score / 20) * 10) / 10,
+                    delivery_warranty_backup: Math.round((scores.financial_score / 20) * 10) / 10,
+                    technical_experience: Math.round((scores.overall_score / 20) * 10) / 10,
+                    cost_score: evaluationForm.cost_score,
+                    meets_requirements: Math.round((scores.overall_score / 20) * 10) / 10,
+                  });
+                }}
+              />
+            </div>
             
             <form onSubmit={submitEvaluation} className="space-y-6">
               {/* Vendor Reliability & Stability */}
