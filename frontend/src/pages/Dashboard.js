@@ -136,7 +136,7 @@ const Dashboard = () => {
               icon="🚫"
               label="Blacklisted"
               value={stats?.vendors.blacklisted || 0}
-              color="bg-black border-gray-800 text-white"
+              color="bg-indigo-200 border-red-800 text-white"
               link="/vendors"
             />
             <StatCard
