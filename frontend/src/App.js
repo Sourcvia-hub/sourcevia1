@@ -239,6 +239,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<RootRedirect />} />
+      <Route path="/login" element={<Login />} />
       <Route
         path="/dashboard"
         element={
