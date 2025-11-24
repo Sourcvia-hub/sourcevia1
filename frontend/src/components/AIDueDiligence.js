@@ -29,10 +29,10 @@ const AIDueDiligence = ({ formData, setFormData }) => {
       
       setAiAnalysis(response.data);
       
-      // Auto-fill risk score and category
+      // Auto-fill risk score and category (ensure numbers not strings)
       setFormData(prev => ({
         ...prev,
-        risk_score: response.data.risk_score || 50,
+        risk_score: parseInt(response.data.risk_score) || 50,
         risk_category: response.data.risk_category || 'medium'
       }));
       
