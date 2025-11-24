@@ -1918,3 +1918,71 @@ Total: 62 contracts
 ✅ AI contract classification correctly maps to backend fields
 ✅ NOC filter uses correct field name
 
+
+---
+## Dashboard Contract Count Fix
+**Date:** 2025-11-24
+**Status:** ✅ FIXED
+
+### Issue:
+- **Problem:** Dashboard showing 0 active contracts (same as Contracts page issue)
+- **User Report:** "in the dashboard shows 0 as well"
+
+### Root Cause:
+Backend dashboard endpoint was counting `ContractStatus.ACTIVE.value` which doesn't exist in database.
+
+**Database Reality:**
+- `approved`: 37 contracts
+- `draft`: 12 contracts
+- `expired`: 6 contracts
+- `pending_due_diligence`: 7 contracts
+- NO `active` status in database!
+
+### Solution:
+Updated dashboard API endpoint in `/app/backend/server.py`:
+
+```python
+# Before: Only counted 'active' status (matched 0)
+active_contracts = await db.contracts.count_documents({
+    "status": ContractStatus.ACTIVE.value
+})
+
+# After: Count both approved and draft as "active"
+active_contracts = await db.contracts.count_documents({
+    "status": {"$in": [ContractStatus.APPROVED.value, ContractStatus.DRAFT.value]}
+})
+```
+
+### Verification:
+
+**API Response:**
+```json
+{
+  "contracts": {
+    "all": 62,
+    "active": 49,      // ✅ Fixed! (was 0)
+    "outsourcing": 13,
+    "cloud": 1,
+    "noc": 5,
+    "expired": 6
+  }
+}
+```
+
+**Dashboard UI Screenshot:**
+- ✅ Active Contracts: **49** (visible and correct)
+- ✅ Outsourcing: 13
+- ✅ Cloud: 1
+- ✅ NOC: 5
+- ✅ Expired: 6
+- ✅ Total: 62
+
+### Files Modified:
+- `/app/backend/server.py` - Dashboard endpoint `/api/dashboard`
+  - Updated active_contracts query to use $in with approved + draft statuses
+
+### Result:
+✅ Dashboard now correctly displays 49 active contracts (37 approved + 12 draft)
+✅ All contract statistics showing accurate counts
+✅ Consistent with Contracts page filter counts
+
