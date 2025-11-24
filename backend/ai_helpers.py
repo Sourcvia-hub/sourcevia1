@@ -9,6 +9,28 @@ import re
 # Emergent Universal Key
 EMERGENT_LLM_KEY = "sk-emergent-e9d7eEd061b2fCeDbB"
 
+def extract_json_from_response(response: str) -> dict:
+    """
+    Extract JSON from LLM response, handling markdown code blocks
+    """
+    # Try to extract JSON from markdown code blocks
+    json_match = re.search(r'```json\s*(.*?)\s*```', response, re.DOTALL)
+    if json_match:
+        json_str = json_match.group(1)
+    else:
+        # Try to find JSON without markdown
+        json_match = re.search(r'\{.*\}', response, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(0)
+        else:
+            json_str = response
+    
+    try:
+        return json.loads(json_str)
+    except json.JSONDecodeError:
+        # If all parsing fails, return None
+        return None
+
 async def analyze_vendor_scoring(vendor_data: dict) -> dict:
     """
     AI analyzes vendor data and suggests risk scores with reasoning
