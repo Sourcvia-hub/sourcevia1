@@ -2697,3 +2697,35 @@ Replace auto-login with traditional login screen and add registration functional
 - `/app/frontend/src/App.js` - Removed auto-login, added login route
 - `/app/frontend/src/pages/Login.js` - Created new login/registration page
 
+
+---
+
+## Production User Setup - Nov 24, 2025
+
+### Issue:
+Users couldn't login or register on deployed app because:
+1. Sandbox database users don't exist in production (MongoDB Atlas)
+2. Registration was failing for already-existing emails
+
+### Solution:
+Created test users directly in production database via API.
+
+### Test Accounts Created:
+
+**Account 1:**
+- Email: admin@sourcevia.com
+- Password: admin123
+- Name: Admin User
+- Role: Procurement Officer
+
+**Account 2:**
+- Email: test@test.com
+- Password: test123
+- Name: Test User
+- Role: Procurement Officer
+
+### Usage Instructions:
+1. Go to: https://attachmate-3.preview.emergentagent.com
+2. Use either of the above credentials to login
+3. Or register a new account with any email/password
+
