@@ -99,9 +99,9 @@ const Invoices = () => {
 
   const handleContractOrPOSelect = (value) => {
     // Check if it's a contract or PO (format: "contract-{id}" or "po-{id}")
-    const [type, id] = value.split('-');
-    
-    if (type === 'contract') {
+    // Use substring instead of split to handle IDs with hyphens
+    if (value.startsWith('contract-')) {
+      const id = value.substring(9); // Remove "contract-" prefix
       const selectedContract = contracts.find(c => c.id === id);
       if (selectedContract) {
         setFormData({
@@ -116,7 +116,8 @@ const Invoices = () => {
         setFilteredContracts(vendorContracts);
         setFilteredPOs(vendorPOs);
       }
-    } else if (type === 'po') {
+    } else if (value.startsWith('po-')) {
+      const id = value.substring(3); // Remove "po-" prefix
       const selectedPO = purchaseOrders.find(po => po.id === id);
       if (selectedPO) {
         setFormData({
