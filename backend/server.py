@@ -50,6 +50,9 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# ==================== HELPER FUNCTIONS ====================
+def calculate_vendor_registration_score(vendor_data: dict) -> dict:
+    """
     Calculate vendor registration score based on 15 Yes/No questions.
     1 point for each "Yes" answer.
     Returns: dict with score, percentage, and risk_category
