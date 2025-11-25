@@ -51,6 +51,27 @@ const VendorDetail = () => {
     }
   };
 
+  const fetchRelatedData = async () => {
+    try {
+      // Fetch related tenders
+      const tendersRes = await axios.get(`${API}/tenders`, { withCredentials: true });
+      const vendorTenders = tendersRes.data.filter(t => t.vendor_id === id);
+      setRelatedTenders(vendorTenders);
+
+      // Fetch related contracts
+      const contractsRes = await axios.get(`${API}/contracts`, { withCredentials: true });
+      const vendorContracts = contractsRes.data.filter(c => c.vendor_id === id);
+      setRelatedContracts(vendorContracts);
+
+      // Fetch related purchase orders
+      const posRes = await axios.get(`${API}/purchase-orders`, { withCredentials: true });
+      const vendorPOs = posRes.data.filter(po => po.vendor_id === id);
+      setRelatedPOs(vendorPOs);
+    } catch (error) {
+      console.error('Error fetching related data:', error);
+    }
+  };
+
   const fetchAuditLog = async () => {
     try {
       const response = await axios.get(`${API}/vendors/${id}/audit-log`, { withCredentials: true });
