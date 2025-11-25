@@ -3009,3 +3009,38 @@ Utilities:
 
 **Status:** ✅ Backend Complete - Ready for Frontend
 
+
+---
+
+## Asset Form Enhancement - Vendor-Filtered Dropdowns - Nov 25, 2025
+
+### Enhancement:
+Added smart filtering for AMC Contracts and PO Numbers based on selected vendor.
+
+### Changes:
+1. **AMC Contract Dropdown:**
+   - Disabled until vendor is selected
+   - Shows only contracts linked to selected vendor
+   - Auto-clears if vendor changes
+   - Shows helpful message if no contracts found
+
+2. **PO Number Dropdown:**
+   - Changed from text input to dropdown
+   - Disabled until vendor is selected
+   - Shows only POs from selected vendor
+   - Displays PO number and amount
+   - Shows helpful message if no POs found
+
+3. **Auto-Clear Logic:**
+   - Contract selection clears if vendor changes
+   - Prevents invalid vendor-contract combinations
+
+### User Experience:
+- Clear visual indication (disabled state) when vendor not selected
+- Helpful placeholder text
+- Prevents data inconsistency
+- Easier selection with filtered options
+
+### Files Modified:
+- `/app/frontend/src/pages/AssetForm.js`
+
