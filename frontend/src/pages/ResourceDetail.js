@@ -555,6 +555,71 @@ const ResourceDetail = () => {
                 </div>
               </div>
             )}
+
+            {/* Related Contract Summary */}
+            {contract && (
+              <div className="bg-white rounded-xl shadow-lg p-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Related Contract</h3>
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h4 className="font-medium text-gray-900 text-lg">Contract #{contract.contract_number}</h4>
+                      <p className="text-gray-600 mt-1">{contract.title}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        contract.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        contract.status === 'active' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {contract.status.toUpperCase()}
+                      </span>
+                      <Link
+                        to={`/contracts/${contract.id}`}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        View Contract
+                      </Link>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Contract Value</p>
+                      <p className="font-medium text-gray-900">${contract.value?.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Start Date</p>
+                      <p className="font-medium text-gray-900">{new Date(contract.start_date).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">End Date</p>
+                      <p className="font-medium text-gray-900">{new Date(contract.end_date).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Duration</p>
+                      <p className="font-medium text-gray-900">
+                        {Math.ceil((new Date(contract.end_date) - new Date(contract.start_date)) / (1000 * 60 * 60 * 24))} days
+                      </p>
+                    </div>
+                  </div>
+                  {contract.classification && (
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <strong>Classification:</strong> {contract.classification}
+                        {contract.noc_required && <span className="ml-2 text-orange-600">• NOC Required</span>}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                {contract.status !== 'approved' && contract.status !== 'active' && (
+                  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-yellow-800">
+                      <strong>⚠️ Note:</strong> Resource requests are only applicable for approved or active contracts.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
