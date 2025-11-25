@@ -13,6 +13,7 @@ const PurchaseOrderDetail = () => {
   const [po, setPO] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [tender, setTender] = useState(null);
   const [editFormData, setEditFormData] = useState({
     delivery_time: '',
     items: []
