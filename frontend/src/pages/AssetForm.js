@@ -417,15 +417,25 @@ const AssetForm = () => {
                   name="contract_id"
                   value={formData.contract_id}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  disabled={!formData.vendor_id}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                 >
-                  <option value="">No AMC Contract</option>
-                  {contracts.map(contract => (
-                    <option key={contract.id} value={contract.id}>
-                      {contract.contract_number} - {contract.title}
-                    </option>
-                  ))}
+                  <option value="">
+                    {formData.vendor_id ? 'No AMC Contract' : 'Select vendor first'}
+                  </option>
+                  {contracts
+                    .filter(contract => contract.vendor_id === formData.vendor_id)
+                    .map(contract => (
+                      <option key={contract.id} value={contract.id}>
+                        {contract.contract_number} - {contract.title}
+                      </option>
+                    ))}
                 </select>
+                {formData.vendor_id && contracts.filter(c => c.vendor_id === formData.vendor_id).length === 0 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    No contracts found for selected vendor
+                  </p>
+                )}
               </div>
             </div>
           </div>
