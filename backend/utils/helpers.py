@@ -9,6 +9,9 @@ async def generate_number(entity_type: str) -> str:
     Generate sequential number for entities in format: {Type}-{YY}-{NNNN}
     Examples: Vendor-25-0001, Tender-25-0002, Contract-25-0001
     """
+    # Import here to avoid circular dependency
+    from utils.database import db
+    
     current_year = datetime.now(timezone.utc).year
     year_suffix = str(current_year)[-2:]  # Last 2 digits of year
     
