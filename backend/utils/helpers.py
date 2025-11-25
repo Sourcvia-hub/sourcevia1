@@ -4,7 +4,7 @@ General helper functions
 from datetime import datetime, timezone
 
 
-async def generate_number(entity_type: str, db) -> str:
+async def generate_number(entity_type: str) -> str:
     """
     Generate sequential number for entities in format: {Type}-{YY}-{NNNN}
     Examples: Vendor-25-0001, Tender-25-0002, Contract-25-0001
