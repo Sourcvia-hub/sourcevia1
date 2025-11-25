@@ -216,6 +216,7 @@ import Resources from './pages/Resources';
 import ResourceDetail from './pages/ResourceDetail';
 import Assets from './pages/Assets';
 import AssetForm from './pages/AssetForm';
+import AssetDetail from './pages/AssetDetail';
 
 // ==================== MAIN APP ====================
 const AppRoutes = () => {
