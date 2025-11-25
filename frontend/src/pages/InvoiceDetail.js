@@ -35,6 +35,34 @@ const InvoiceDetail = () => {
         description: response.data.description,
         milestone_reference: response.data.milestone_reference || '',
       });
+      
+      // Fetch related entities
+      if (response.data.vendor_id) {
+        try {
+          const vendorRes = await axios.get(`${API}/vendors/${response.data.vendor_id}`, { withCredentials: true });
+          setVendor(vendorRes.data);
+        } catch (err) {
+          console.log('Could not fetch vendor info');
+        }
+      }
+      
+      if (response.data.contract_id) {
+        try {
+          const contractRes = await axios.get(`${API}/contracts/${response.data.contract_id}`, { withCredentials: true });
+          setContract(contractRes.data);
+        } catch (err) {
+          console.log('Could not fetch contract info');
+        }
+      }
+      
+      if (response.data.po_id) {
+        try {
+          const poRes = await axios.get(`${API}/purchase-orders/${response.data.po_id}`, { withCredentials: true });
+          setPO(poRes.data);
+        } catch (err) {
+          console.log('Could not fetch PO info');
+        }
+      }
     } catch (error) {
       console.error('Error fetching invoice:', error);
       alert('Invoice not found');
