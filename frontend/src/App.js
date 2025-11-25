@@ -399,6 +399,30 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/osr"
+        element={
+          <ProtectedRoute>
+            <OSRList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/osr/new"
+        element={
+          <ProtectedRoute>
+            <OSRForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/osr/:id"
+        element={
+          <ProtectedRoute>
+            <OSRDetail />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };
