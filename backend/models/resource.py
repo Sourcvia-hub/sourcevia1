@@ -16,6 +16,7 @@ class ResourceStatus(str, Enum):
     INACTIVE = "inactive"
     TERMINATED = "terminated"
 
+
 class Relative(BaseModel):
     name: str
     position: str
