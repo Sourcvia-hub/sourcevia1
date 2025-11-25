@@ -3959,7 +3959,7 @@ async def delete_floor(floor_id: str, request: Request):
 async def get_asset_categories(request: Request):
     """Get all asset categories"""
     await require_auth(request)
-    categories = await db.asset_categories.find({"_id": 0}).to_list(1000)
+    categories = await db.asset_categories.find({}, {"_id": 0}).to_list(1000)
     return categories
 
 @api_router.post("/asset-categories")
