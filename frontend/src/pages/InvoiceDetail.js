@@ -13,6 +13,9 @@ const InvoiceDetail = () => {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [vendor, setVendor] = useState(null);
+  const [contract, setContract] = useState(null);
+  const [po, setPO] = useState(null);
   const [formData, setFormData] = useState({
     amount: '',
     description: '',
