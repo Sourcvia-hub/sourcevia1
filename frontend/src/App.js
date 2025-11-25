@@ -379,6 +379,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/assets/:id"
+        element={
+          <ProtectedRoute>
+            <AssetDetail />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };
