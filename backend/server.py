@@ -90,6 +90,42 @@ class InvoiceStatus(str, Enum):
     PAID = "paid"
     REJECTED = "rejected"
 
+# Facilities Management Enums
+class AssetStatus(str, Enum):
+    ACTIVE = "active"
+    UNDER_MAINTENANCE = "under_maintenance"
+    OUT_OF_SERVICE = "out_of_service"
+    REPLACED = "replaced"
+    DECOMMISSIONED = "decommissioned"
+
+class AssetCondition(str, Enum):
+    GOOD = "good"
+    FAIR = "fair"
+    POOR = "poor"
+
+class OSRType(str, Enum):
+    ASSET_RELATED = "asset_related"
+    GENERAL_REQUEST = "general_request"
+
+class OSRCategory(str, Enum):
+    MAINTENANCE = "maintenance"
+    CLEANING = "cleaning"
+    RELOCATION = "relocation"
+    SAFETY = "safety"
+    OTHER = "other"
+
+class OSRStatus(str, Enum):
+    OPEN = "open"
+    ASSIGNED = "assigned"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+class OSRPriority(str, Enum):
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+
 # ==================== MODELS ====================
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore", populate_by_name=True)
