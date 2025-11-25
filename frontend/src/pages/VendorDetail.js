@@ -458,6 +458,101 @@ const VendorDetail = () => {
             </div>
           </div>
         )}
+
+        {/* Related Tenders */}
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Related Tenders ({relatedTenders.length})</h3>
+          {relatedTenders.length > 0 ? (
+            <div className="space-y-3">
+              {relatedTenders.map((tender) => (
+                <div key={tender.id} className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{tender.title}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{tender.description}</p>
+                      <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                        <span>Budget: ${tender.budget?.toLocaleString()}</span>
+                        <span>Deadline: {new Date(tender.deadline).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <a
+                      href={`/tenders/${tender.id}`}
+                      className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                    >
+                      View
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No tenders found for this vendor</p>
+          )}
+        </div>
+
+        {/* Related Contracts */}
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Related Contracts ({relatedContracts.length})</h3>
+          {relatedContracts.length > 0 ? (
+            <div className="space-y-3">
+              {relatedContracts.map((contract) => (
+                <div key={contract.id} className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium text-gray-900">Contract #{contract.contract_number}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{contract.title}</p>
+                      <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                        <span>Value: ${contract.value?.toLocaleString()}</span>
+                        <span>Status: {contract.status}</span>
+                        <span>Start: {new Date(contract.start_date).toLocaleDateString()}</span>
+                        <span>End: {new Date(contract.end_date).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <a
+                      href={`/contracts/${contract.id}`}
+                      className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                    >
+                      View
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No contracts found for this vendor</p>
+          )}
+        </div>
+
+        {/* Related Purchase Orders */}
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Related Purchase Orders ({relatedPOs.length})</h3>
+          {relatedPOs.length > 0 ? (
+            <div className="space-y-3">
+              {relatedPOs.map((po) => (
+                <div key={po.id} className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium text-gray-900">PO #{po.po_number}</h4>
+                      <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                        <span>Amount: ${po.total_amount?.toLocaleString()}</span>
+                        <span>Status: {po.status}</span>
+                        <span>Created: {new Date(po.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <a
+                      href={`/purchase-orders/${po.id}`}
+                      className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+                    >
+                      View
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No purchase orders found for this vendor</p>
+          )}
+        </div>
       </div>
 
       {/* Edit Modal */}
