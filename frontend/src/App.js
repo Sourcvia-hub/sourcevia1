@@ -218,6 +218,9 @@ import Assets from './pages/Assets';
 import AssetForm from './pages/AssetForm';
 import AssetDetail from './pages/AssetDetail';
 import FacilitiesSettings from './pages/FacilitiesSettings';
+import OSRList from './pages/OSRList';
+import OSRForm from './pages/OSRForm';
+import OSRDetail from './pages/OSRDetail';
 
 // ==================== MAIN APP ====================
 const AppRoutes = () => {
