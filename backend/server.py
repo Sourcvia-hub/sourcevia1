@@ -3342,14 +3342,14 @@ async def delete_asset(asset_id: str, request: Request):
     return {"message": "Asset deleted successfully"}
 
 # OSR (Operating Service Requests)
-@api_router.get("/osr")
+@api_router.get("/osrs")
 async def get_osrs(request: Request):
     """Get all OSRs"""
     await require_auth(request)
     osrs = await db.osr.find({"_id": 0}).to_list(10000)
     return osrs
 
-@api_router.get("/osr/{osr_id}")
+@api_router.get("/osrs/{osr_id}")
 async def get_osr(osr_id: str, request: Request):
     """Get single OSR"""
     await require_auth(request)
@@ -3358,7 +3358,7 @@ async def get_osr(osr_id: str, request: Request):
         raise HTTPException(status_code=404, detail="OSR not found")
     return osr
 
-@api_router.post("/osr")
+@api_router.post("/osrs")
 async def create_osr(request: Request, osr: OSR):
     """Create a new OSR"""
     user = await require_auth(request)
@@ -3391,7 +3391,7 @@ async def create_osr(request: Request, osr: OSR):
     await db.osr.insert_one(osr_dict)
     return {"message": "OSR created successfully", "osr": osr_dict}
 
-@api_router.put("/osr/{osr_id}")
+@api_router.put("/osrs/{osr_id}")
 async def update_osr(osr_id: str, request: Request, update_data: dict):
     """Update OSR"""
     await require_auth(request)
@@ -3419,7 +3419,7 @@ async def update_osr(osr_id: str, request: Request, update_data: dict):
     await db.osr.update_one({"id": osr_id}, {"$set": update_data})
     return {"message": "OSR updated successfully"}
 
-@api_router.delete("/osr/{osr_id}")
+@api_router.delete("/osrs/{osr_id}")
 async def delete_osr(osr_id: str, request: Request):
     """Delete OSR"""
     await require_auth(request)
