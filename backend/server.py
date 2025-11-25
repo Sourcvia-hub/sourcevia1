@@ -2,18 +2,20 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends, Response, Reques
 from fastapi.responses import JSONResponse, StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from passlib.context import CryptContext
 import os
 import logging
 from pathlib import Path
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
 import aiohttp
+from enum import Enum
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from io import BytesIO
-
-# Import AI helpers
 from ai_helpers import (
     analyze_vendor_scoring,
     analyze_tender_proposal,
@@ -22,27 +24,17 @@ from ai_helpers import (
     match_invoice_to_milestone
 )
 
-# Import all models from the models package
-from models import (
-    User, UserSession, UserRole, LoginRequest, RegisterRequest,
-    Vendor, VendorType, VendorStatus, RiskCategory,
-    Tender, TenderStatus, EvaluationCriteria, Proposal, ProposalStatus, ProposalEvaluationRequest,
-    Contract, ContractStatus,
-    Invoice, InvoiceStatus,
-    PurchaseOrder, POItem, POStatus,
-    Resource, ResourceStatus, WorkType, Relative,
-    Asset, AssetStatus, AssetCondition, Building, Floor, AssetCategory,
-    OSR, OSRType, OSRCategory, OSRStatus, OSRPriority,
-    Notification, AuditLog
-)
-
-# Import utilities
-from utils.database import db, client
-from utils.auth import hash_password, verify_password, get_current_user, require_auth, require_role
-from utils.helpers import generate_number, determine_outsourcing_classification, determine_noc_requirement
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# MongoDB connection
+mongo_url = os.environ['MONGO_URL']
+client = AsyncIOMotorClient(mongo_url)
+db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -50,7 +42,831 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# ==================== HELPER FUNCTIONS ====================
+# ==================== ENUMS ====================
+class UserRole(str, Enum):
+    REQUESTER = "requester"
+    PD_OFFICER = "pd_officer"
+    PD_MANAGER = "pd_manager"
+    ADMIN = "admin"
+    # Legacy roles (keeping for backwards compatibility)
+    PROCUREMENT_OFFICER = "procurement_officer"
+    PROJECT_MANAGER = "project_manager"
+    SYSTEM_ADMIN = "system_admin"
+
+class VendorType(str, Enum):
+    LOCAL = "local"
+    INTERNATIONAL = "international"
+
+class VendorStatus(str, Enum):
+    PENDING = "pending"
+    PENDING_DUE_DILIGENCE = "pending_due_diligence"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    BLACKLISTED = "blacklisted"
+
+class RiskCategory(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+class TenderStatus(str, Enum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    CLOSED = "closed"
+    AWARDED = "awarded"
+
+class ContractStatus(str, Enum):
+    DRAFT = "draft"
+    UNDER_REVIEW = "under_review"
+    PENDING_DUE_DILIGENCE = "pending_due_diligence"
+    APPROVED = "approved"
+    ACTIVE = "active"
+    EXPIRED = "expired"
+
+class InvoiceStatus(str, Enum):
+    PENDING = "pending"
+    VERIFIED = "verified"
+    APPROVED = "approved"
+    PAID = "paid"
+    REJECTED = "rejected"
+
+# Facilities Management Enums
+class AssetStatus(str, Enum):
+    ACTIVE = "active"
+    UNDER_MAINTENANCE = "under_maintenance"
+    OUT_OF_SERVICE = "out_of_service"
+    REPLACED = "replaced"
+    DECOMMISSIONED = "decommissioned"
+
+class AssetCondition(str, Enum):
+    GOOD = "good"
+    FAIR = "fair"
+    POOR = "poor"
+
+class OSRType(str, Enum):
+    ASSET_RELATED = "asset_related"
+    GENERAL_REQUEST = "general_request"
+
+class OSRCategory(str, Enum):
+    MAINTENANCE = "maintenance"
+    CLEANING = "cleaning"
+    RELOCATION = "relocation"
+    SAFETY = "safety"
+    OTHER = "other"
+
+class OSRStatus(str, Enum):
+    OPEN = "open"
+    ASSIGNED = "assigned"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+class OSRPriority(str, Enum):
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+
+# ==================== MODELS ====================
+class User(BaseModel):
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: EmailStr
+    name: str
+    password: Optional[str] = None  # Hashed password
+    role: UserRole = UserRole.PROCUREMENT_OFFICER
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class UserSession(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    session_token: str
+    expires_at: datetime
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Vendor(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    vendor_number: Optional[str] = None  # Auto-generated (e.g., Vendor-25-0001)
+    vendor_type: VendorType = VendorType.LOCAL  # International or Local
+    
+    # Company Information
+    name_english: str
+    commercial_name: str
+    entity_type: str
+    vat_number: str
+    unified_number: Optional[str] = None  # For Saudi entities
+    cr_number: str
+    cr_expiry_date: datetime
+    cr_country_city: str
+    license_number: Optional[str] = None
+    license_expiry_date: Optional[datetime] = None
+    activity_description: str
+    number_of_employees: int
+    
+    # Address and Contact
+    street: str
+    building_no: str
+    city: str
+    district: str
+    country: str
+    mobile: str
+    landline: Optional[str] = None
+    fax: Optional[str] = None
+    email: EmailStr
+    
+    # Representative Information
+    representative_name: str
+    representative_designation: str
+    representative_id_type: str
+    representative_id_number: str
+    representative_nationality: str
+    representative_mobile: str
+    representative_residence_tel: Optional[str] = None
+    representative_phone_area_code: Optional[str] = None
+    representative_email: EmailStr
+    
+    # Bank Account Information
+    bank_account_name: str
+    bank_name: str
+    bank_branch: str
+    bank_country: str
+    iban: str
+    currency: str
+    swift_code: str
+    
+    # Owners/Partners/Managers (stored as JSON)
+    owners_managers: List[Dict[str, Any]] = []
+    
+    # Authorization
+    authorized_persons: List[Dict[str, Any]] = []
+    
+    # Documents
+    documents: List[str] = []
+    
+    # System fields
+    risk_score: float = 0.0
+    risk_category: RiskCategory = RiskCategory.LOW
+    risk_assessment_details: Dict[str, Any] = {}  # Breakdown of risk calculation
+    status: VendorStatus = VendorStatus.APPROVED  # Auto-approved
+    evaluation_notes: Optional[str] = None
+    created_by: Optional[str] = None  # User ID who created
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
+    # Due Diligence Questionnaire (required for high risk vendors or outsourcing/cloud contracts)
+    dd_required: bool = False  # Set to true when due diligence is needed
+    dd_completed: bool = False
+    dd_completed_by: Optional[str] = None
+    dd_completed_at: Optional[datetime] = None
+    dd_approved_by: Optional[str] = None
+    dd_approved_at: Optional[datetime] = None
+    
+    # Ownership Structure / General
+    dd_ownership_change_last_year: Optional[bool] = None
+    dd_location_moved_or_closed: Optional[bool] = None
+    dd_new_branches_opened: Optional[bool] = None
+    dd_financial_obligations_default: Optional[bool] = None
+    dd_shareholding_in_bank: Optional[bool] = None
+    
+    # Business Continuity (27 questions)
+    dd_bc_rely_on_third_parties: Optional[bool] = None
+    dd_bc_intend_to_outsource: Optional[bool] = None
+    dd_bc_business_stopped_over_week: Optional[bool] = None
+    dd_bc_alternative_locations: Optional[bool] = None
+    dd_bc_site_readiness_test_frequency: Optional[str] = None
+    dd_bc_certified_standard: Optional[bool] = None
+    dd_bc_staff_assigned: Optional[bool] = None
+    dd_bc_risks_assessed: Optional[bool] = None
+    dd_bc_threats_identified: Optional[bool] = None
+    dd_bc_essential_activities_identified: Optional[bool] = None
+    dd_bc_strategy_exists: Optional[bool] = None
+    dd_bc_emergency_responders_engaged: Optional[bool] = None
+    dd_bc_arrangements_updated: Optional[bool] = None
+    dd_bc_documented_strategy: Optional[bool] = None
+    dd_bc_can_provide_exercise_info: Optional[bool] = None
+    dd_bc_exercise_results_used: Optional[bool] = None
+    dd_bc_management_trained: Optional[bool] = None
+    dd_bc_staff_aware: Optional[bool] = None
+    dd_bc_it_continuity_plan: Optional[bool] = None
+    dd_bc_critical_data_backed_up: Optional[bool] = None
+    dd_bc_vital_documents_offsite: Optional[bool] = None
+    dd_bc_critical_suppliers_identified: Optional[bool] = None
+    dd_bc_suppliers_consulted: Optional[bool] = None
+    dd_bc_communication_method: Optional[bool] = None
+    dd_bc_public_relations_capability: Optional[bool] = None
+    
+    # Anti-Fraud
+    dd_fraud_whistle_blowing_mechanism: Optional[bool] = None
+    dd_fraud_prevention_procedures: Optional[bool] = None
+    dd_fraud_internal_last_year: Optional[bool] = None
+    dd_fraud_burglary_theft_last_year: Optional[bool] = None
+    
+    # Operational Risks
+    dd_op_criminal_cases_last_3years: Optional[bool] = None
+    dd_op_financial_issues_last_3years: Optional[bool] = None
+    dd_op_documented_procedures: Optional[bool] = None
+    dd_op_internal_audit: Optional[bool] = None
+    dd_op_specific_license_required: Optional[bool] = None
+    dd_op_services_outside_ksa: Optional[bool] = None
+    dd_op_conflict_of_interest_policy: Optional[bool] = None
+    dd_op_complaint_handling_procedures: Optional[bool] = None
+    dd_op_customer_complaints_last_year: Optional[bool] = None
+    dd_op_insurance_contracts: Optional[bool] = None
+    
+    # Cyber Security
+    dd_cyber_cloud_services: Optional[bool] = None
+    dd_cyber_data_outside_ksa: Optional[bool] = None
+    dd_cyber_remote_access_outside_ksa: Optional[bool] = None
+    dd_cyber_digital_channels: Optional[bool] = None
+    dd_cyber_card_payments: Optional[bool] = None
+    dd_cyber_third_party_access: Optional[bool] = None
+    
+    # Safety and Security
+    dd_safety_procedures_exist: Optional[bool] = None
+    dd_safety_security_24_7: Optional[bool] = None
+    dd_safety_security_equipment: Optional[bool] = None
+    dd_safety_equipment: Optional[bool] = None
+    
+    # Human Resources
+    dd_hr_localization_policy: Optional[bool] = None
+    dd_hr_hiring_standards: Optional[bool] = None
+    dd_hr_background_investigation: Optional[bool] = None
+    dd_hr_academic_verification: Optional[bool] = None
+    
+    # Judicial / Legal
+    dd_legal_formal_representation: Optional[bool] = None
+    
+    # Regulatory Authorities
+    dd_reg_regulated_by_authority: Optional[bool] = None
+    dd_reg_audited_by_independent: Optional[bool] = None
+    
+    # Conflict of Interest
+    dd_coi_relationship_with_bank: Optional[bool] = None
+    
+    # Data Management
+    dd_data_customer_data_policy: Optional[bool] = None
+    
+    # Financial Consumer Protection
+    dd_fcp_read_and_understood: Optional[bool] = None
+    dd_fcp_will_comply: Optional[bool] = None
+    
+    # Additional Details
+    dd_additional_details: Optional[str] = None
+    
+    # Final Checklist
+    dd_checklist_supporting_documents: Optional[bool] = None
+    dd_checklist_related_party_checked: Optional[bool] = None
+    dd_checklist_sanction_screening: Optional[bool] = None
+
+class Tender(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tender_number: Optional[str] = None  # Auto-generated (e.g., TND-2025-0001)
+    title: str
+    description: str
+    project_name: str
+    requirements: str
+    budget: float
+    deadline: datetime
+    invited_vendors: List[str] = []  # vendor IDs
+    status: TenderStatus = TenderStatus.DRAFT
+    created_by: Optional[str] = None  # user ID who created
+    awarded_to: Optional[str] = None  # vendor ID
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class EvaluationCriteria(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    vendor_reliability_stability: float = 0.0  # Score 1-5
+    delivery_warranty_backup: float = 0.0  # Score 1-5
+    technical_experience: float = 0.0  # Score 1-5
+    cost_score: float = 0.0  # Score 1-5
+    meets_requirements: float = 0.0  # Score 1-5 (NEW)
+    
+    # Calculated fields
+    vendor_reliability_weighted: float = 0.0  # 20% weight
+    delivery_warranty_weighted: float = 0.0  # 20% weight
+    technical_experience_weighted: float = 0.0  # 10% weight
+    cost_weighted: float = 0.0  # 10% weight
+    meets_requirements_weighted: float = 0.0  # 40% weight (NEW)
+    total_score: float = 0.0  # Sum of weighted scores (100% total)
+    
+class ProposalStatus(str, Enum):
+    SUBMITTED = "submitted"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+class Proposal(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    proposal_number: Optional[str] = None  # Auto-generated (e.g., PRO-2025-0001)
+    tender_id: Optional[str] = None  # Set automatically by endpoint
+    vendor_id: str
+    technical_proposal: str
+    financial_proposal: float
+    status: ProposalStatus = ProposalStatus.APPROVED  # Auto-approved
+    
+    # Evaluation scores
+    evaluation: Optional[EvaluationCriteria] = None
+    evaluated_by: Optional[str] = None  # User ID who evaluated
+    evaluated_at: Optional[datetime] = None
+    
+    # Legacy fields (kept for compatibility)
+    technical_score: float = 0.0
+    financial_score: float = 0.0
+    final_score: float = 0.0
+    
+    documents: List[str] = []
+    submitted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Contract(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    contract_number: Optional[str] = None  # Auto-generated (e.g., Contract-25-0001)
+    tender_id: str  # Required - must select approved tender
+    vendor_id: str
+    title: str
+    sow: str  # Statement of Work
+    sla: str  # Service Level Agreement
+    milestones: List[Dict[str, Any]] = []
+    value: float
+    start_date: datetime
+    end_date: datetime
+    is_outsourcing: bool = False
+    is_noc: bool = False  # NOC (No Objection Certificate) required
+    status: ContractStatus = ContractStatus.DRAFT
+    terminated: bool = False
+    terminated_by: Optional[str] = None
+    terminated_at: Optional[datetime] = None
+    termination_reason: Optional[str] = None
+    created_by: Optional[str] = None  # user ID who created
+    approved_by: Optional[str] = None  # user ID
+    documents: List[str] = []
+    
+    # Outsourcing Assessment Questionnaire
+    # Section A: Outsourcing Determination
+    a1_continuing_basis: Optional[bool] = None
+    a1_period: Optional[str] = None
+    a2_could_be_undertaken_by_bank: Optional[bool] = None
+    a3_is_insourcing_contract: Optional[bool] = None
+    a4_market_data_providers: Optional[bool] = None
+    a4_clearing_settlement: Optional[bool] = None
+    a4_correspondent_banking: Optional[bool] = None
+    a4_utilities: Optional[bool] = None
+    a5_cloud_hosted: Optional[bool] = None
+    
+    # Calculated classification based on Section A
+    outsourcing_classification: Optional[str] = None  # "not_outsourcing", "outsourcing", "insourcing", "exempted", "cloud_computing"
+    
+    # Section B: Materiality Determination
+    b1_material_impact_if_disrupted: Optional[bool] = None
+    b2_financial_impact: Optional[bool] = None
+    b3_reputational_impact: Optional[bool] = None
+    b4_outside_ksa: Optional[bool] = None
+    b5_difficult_alternative: Optional[bool] = None
+    b6_data_transfer: Optional[bool] = None
+    b7_affiliation_relationship: Optional[bool] = None
+    b8_regulated_activity: Optional[bool] = None
+    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Invoice(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    invoice_number: Optional[str] = None  # User-provided or auto-generated (e.g., Invoice-25-0001)
+    contract_id: str
+    vendor_id: str
+    amount: float
+    description: str
+    milestone_reference: Optional[str] = None
+    status: InvoiceStatus = InvoiceStatus.PENDING
+    submitted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    verified_at: Optional[datetime] = None
+    approved_at: Optional[datetime] = None
+    paid_at: Optional[datetime] = None
+    verified_by: Optional[str] = None  # user ID
+    approved_by: Optional[str] = None  # user ID
+    documents: List[str] = []
+
+class POStatus(str, Enum):
+    DRAFT = "draft"
+    ISSUED = "issued"
+    CONVERTED_TO_CONTRACT = "converted_to_contract"
+    CANCELLED = "cancelled"
+
+class POItem(BaseModel):
+    name: str
+    description: str
+    quantity: float
+    price: float
+    total: float
+
+class PurchaseOrder(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    po_number: Optional[str] = None  # Auto-generated (e.g., PO-25-0001)
+    tender_id: Optional[str] = None  # Optional tender selection
+    vendor_id: str
+    items: List[POItem] = []
+    total_amount: float = 0.0
+    delivery_time: Optional[str] = None
+    
+    # Risk Assessment Questions
+    risk_level: str  # From vendor risk
+    has_data_access: bool = False
+    has_onsite_presence: bool = False
+    has_implementation: bool = False
+    duration_more_than_year: bool = False
+    amount_over_million: bool = False  # Auto-calculated
+    
+    requires_contract: bool = False  # True if any risk question is yes
+    converted_to_contract: bool = False
+    contract_id: Optional[str] = None
+    
+    status: POStatus = POStatus.DRAFT
+    created_by: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class WorkType(str, Enum):
+    ON_PREMISES = "on_premises"
+    OFFSHORE = "offshore"
+
+class ResourceStatus(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    TERMINATED = "terminated"
+
+class Relative(BaseModel):
+    name: str
+    position: str
+    department: str
+    relation: str
+
+class Resource(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    resource_number: Optional[str] = None  # Auto-generated
+    
+    # Contract & Vendor Info
+    contract_id: str
+    vendor_id: str
+    contract_name: Optional[str] = None
+    scope: Optional[str] = None
+    sla: Optional[str] = None
+    contract_duration: Optional[str] = None
+    vendor_name: Optional[str] = None
+    
+    # Resource Details
+    name: str
+    photo: Optional[str] = None  # URL or path
+    nationality: str
+    id_number: str
+    education_qualification: str
+    years_of_experience: float
+    work_type: WorkType
+    
+    # Duration
+    start_date: datetime
+    end_date: datetime
+    
+    # Requested Access
+    access_development: bool = False
+    access_production: bool = False
+    access_uat: bool = False
+    
+    # Scope of Work
+    scope_of_work: str
+    
+    # Relatives Declaration
+    has_relatives: bool = False
+    relatives: List[Relative] = []
+    
+    status: ResourceStatus = ResourceStatus.ACTIVE
+    created_by: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Notification(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    title: str
+    message: str
+    type: str  # "approval", "alert", "info"
+    read: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AuditLog(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    entity_type: str  # "vendor", "tender", "contract", etc.
+    entity_id: str
+    action: str  # "created", "updated", "deleted"
+    user_id: str
+    user_name: str
+    changes: Dict[str, Any] = {}  # What changed
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Facilities Management Models
+class Building(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    code: Optional[str] = None
+    address: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Floor(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    building_id: str
+    name: str  # e.g., "Ground Floor", "1st Floor", "Basement"
+    number: Optional[int] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AssetCategory(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Asset(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    asset_number: Optional[str] = None  # Auto-generated
+    
+    # Basic Information
+    name: str
+    category_id: str  # Links to AssetCategory
+    category_name: Optional[str] = None  # Denormalized for display
+    model: Optional[str] = None
+    serial_number: Optional[str] = None
+    manufacturer: Optional[str] = None
+    
+    # Location
+    building_id: str
+    building_name: Optional[str] = None  # Denormalized
+    floor_id: str
+    floor_name: Optional[str] = None  # Denormalized
+    room_area: Optional[str] = None  # Free text
+    custodian: Optional[str] = None  # Free text for MVP
+    
+    # Procurement & Contract
+    vendor_id: Optional[str] = None
+    vendor_name: Optional[str] = None  # Denormalized
+    purchase_date: Optional[datetime] = None
+    cost: Optional[float] = None
+    po_number: Optional[str] = None
+    contract_id: Optional[str] = None  # AMC Contract
+    contract_number: Optional[str] = None  # Denormalized
+    
+    # Warranty
+    warranty_start_date: Optional[datetime] = None
+    warranty_end_date: Optional[datetime] = None
+    warranty_status: Optional[str] = None  # Auto-calculated: "in_warranty" or "out_of_warranty"
+    
+    # Lifecycle
+    installation_date: Optional[datetime] = None
+    last_maintenance_date: Optional[datetime] = None
+    next_maintenance_due: Optional[datetime] = None
+    status: AssetStatus = AssetStatus.ACTIVE
+    condition: Optional[AssetCondition] = None
+    
+    # Attachments
+    attachments: List[Dict[str, Any]] = []
+    
+    # Metadata
+    notes: Optional[str] = None
+    created_by: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: Optional[datetime] = None
+
+class OSR(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    osr_number: Optional[str] = None  # Auto-generated (e.g., OSR-2025-0001)
+    
+    # Request Details
+    title: str
+    request_type: OSRType
+    category: OSRCategory
+    priority: OSRPriority = OSRPriority.NORMAL
+    description: str
+    
+    # Location
+    building_id: str
+    building_name: Optional[str] = None
+    floor_id: str
+    floor_name: Optional[str] = None
+    room_area: Optional[str] = None
+    
+    # Asset-Related (conditional)
+    asset_id: Optional[str] = None
+    asset_name: Optional[str] = None
+    asset_warranty_status: Optional[str] = None
+    asset_contract_id: Optional[str] = None
+    asset_contract_number: Optional[str] = None
+    
+    # Assignment
+    assigned_to_type: Optional[str] = None  # "internal" or "vendor"
+    assigned_to_vendor_id: Optional[str] = None
+    assigned_to_vendor_name: Optional[str] = None
+    assigned_to_internal: Optional[str] = None  # Team/Person name
+    assigned_date: Optional[datetime] = None
+    
+    # Status & Resolution
+    status: OSRStatus = OSRStatus.OPEN
+    resolution_notes: Optional[str] = None
+    closed_date: Optional[datetime] = None
+    
+    # Attachments
+    attachments: List[Dict[str, Any]] = []
+    
+    # Metadata
+    created_by: str
+    created_by_name: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: Optional[datetime] = None
+
+# ==================== AUTH HELPERS ====================
+def hash_password(password: str) -> str:
+    """Hash password using bcrypt"""
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify password against bcrypt hash"""
+    return pwd_context.verify(plain_password, hashed_password)
+
+async def get_current_user(request: Request) -> Optional[User]:
+    """Get current user from session token"""
+    # Try to get token from cookie first
+    session_token = request.cookies.get("session_token")
+    
+    # Fallback to Authorization header
+    if not session_token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            session_token = auth_header.split(" ")[1]
+    
+    if not session_token:
+        return None
+    
+    # Check if session exists and is valid
+    session = await db.user_sessions.find_one({
+        "session_token": session_token,
+        "expires_at": {"$gt": datetime.now(timezone.utc).isoformat()}
+    })
+    
+    if not session:
+        return None
+    
+    # Get user
+    user_doc = await db.users.find_one({"id": session["user_id"]})
+    if not user_doc:
+        return None
+    
+    # Convert datetime strings back to datetime objects
+    if isinstance(user_doc.get('created_at'), str):
+        user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
+    
+    return User(**user_doc)
+
+async def require_auth(request: Request) -> User:
+    """Require authentication"""
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return user
+
+async def require_role(request: Request, allowed_roles: List[UserRole]) -> User:
+    """Require specific role"""
+    user = await require_auth(request)
+    if user.role not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return user
+
+# ==================== NUMBER GENERATION HELPERS ====================
+async def generate_number(entity_type: str) -> str:
+    """
+    Generate sequential number for entities in format: {Type}-{YY}-{NNNN}
+    Examples: Vendor-25-0001, Tender-25-0002, Contract-25-0001
+    """
+    current_year = datetime.now(timezone.utc).year
+    year_suffix = str(current_year)[-2:]  # Last 2 digits of year
+    
+    # Get or create counter for this entity type and year
+    counter_id = f"{entity_type}_{current_year}"
+    
+    # Use findOneAndUpdate with upsert to atomically increment
+    result = await db.counters.find_one_and_update(
+        {"_id": counter_id},
+        {"$inc": {"sequence": 1}},
+        upsert=True,
+        return_document=True
+    )
+    
+    sequence = result.get("sequence", 1)
+    
+    # Format: Type-YY-NNNN (e.g., Vendor-25-0001)
+    return f"{entity_type}-{year_suffix}-{sequence:04d}"
+
+def determine_outsourcing_classification(contract_data: dict) -> str:
+    """
+    Determine outsourcing classification based on Section A questionnaire responses.
+    
+    Priority order:
+    1. If A5 = YES → "cloud_computing"
+    2. If any A4 checkbox = YES → "exempted"
+    3. If A3 = YES → "insourcing"
+    4. If A1 = YES AND A2 = YES → "outsourcing"
+    5. If all Section A = NO → "not_outsourcing"
+    """
+    # Priority 1: Cloud Computing (overrides everything)
+    if contract_data.get('a5_cloud_hosted') is True:
+        return "cloud_computing"
+    
+    # Priority 2: Exempted (any A4 checkbox is True)
+    if (contract_data.get('a4_market_data_providers') is True or
+        contract_data.get('a4_clearing_settlement') is True or
+        contract_data.get('a4_correspondent_banking') is True or
+        contract_data.get('a4_utilities') is True):
+        return "exempted"
+    
+    # Priority 3: Insourcing (overrides A1 and A2)
+    if contract_data.get('a3_is_insourcing_contract') is True:
+        return "insourcing"
+    
+    # Priority 4: Outsourcing (A1 AND A2 both YES)
+    if (contract_data.get('a1_continuing_basis') is True and
+        contract_data.get('a2_could_be_undertaken_by_bank') is True):
+        return "outsourcing"
+    
+    # Default: Not outsourcing
+    return "not_outsourcing"
+
+def determine_noc_requirement(contract_data: dict, vendor_type: str) -> bool:
+    """
+    Determine if NOC (No Objection Certificate) is required for a contract.
+    
+    NOC required when:
+    1. Outsourcing contract with ANY yes on Section B assessment, OR
+    2. Cloud computing contract, OR  
+    3. Outsourcing contract with international vendor only
+    """
+    classification = contract_data.get('outsourcing_classification', '')
+    
+    # Check if cloud computing - always requires NOC
+    if classification == 'cloud_computing':
+        return True
+    
+    # For outsourcing contracts
+    if classification == 'outsourcing':
+        # Check if vendor is international
+        if vendor_type == 'international':
+            return True
+        
+        # Check if ANY Section B question is YES
+        section_b_fields = [
+            'b1_material_impact_if_disrupted',
+            'b2_financial_impact',
+            'b3_reputational_impact',
+            'b4_outside_ksa',
+            'b5_difficult_alternative',
+            'b6_data_transfer',
+            'b7_affiliation_relationship',
+            'b8_regulated_activity'
+        ]
+        
+        for field in section_b_fields:
+            if contract_data.get(field) is True:
+                return True
+    
+    return False
+
 def calculate_vendor_registration_score(vendor_data: dict) -> dict:
     """
     Calculate vendor registration score based on 15 Yes/No questions.
@@ -220,6 +1036,20 @@ def calculate_dd_risk_adjustment(vendor_data: dict) -> float:
     # Higher percentage = lower risk score
     risk_score = 100 - dd_result['percentage']
     
+    return risk_score
+
+# ==================== AUTH ENDPOINTS ====================
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    role: UserRole
+
+@api_router.post("/auth/register")
 async def register(register_data: RegisterRequest):
     """Register a new user (admin only endpoint for creating users)"""
     # Check if user already exists
