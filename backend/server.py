@@ -4083,7 +4083,10 @@ async def create_asset(request: Request, asset: Asset):
     asset_dict["created_at"] = datetime.now(timezone.utc)
     
     await db.assets.insert_one(asset_dict)
-    return {"message": "Asset created successfully", "asset": asset_dict}
+    
+    # Remove _id for response to avoid serialization issues
+    response_asset = {k: v for k, v in asset_dict.items() if k != "_id"}
+    return {"message": "Asset created successfully", "asset": response_asset}
 
 @api_router.put("/assets/{asset_id}")
 async def update_asset(asset_id: str, request: Request, asset: Asset):
