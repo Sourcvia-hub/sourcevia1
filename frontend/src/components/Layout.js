@@ -15,7 +15,7 @@ const Layout = ({ children }) => {
 
   const navigation = [
     { name: 'Dashboard', path: '/dashboard', icon: '📊', roles: ['all'] },
-    { name: 'Vendors', path: '/vendors', icon: '🏢', roles: ['procurement_officer', 'system_admin'] },
+    { name: 'Vendors', path: '/vendors', icon: '🏢', roles: ['all'] },
     { name: 'Tenders', path: '/tenders', icon: '📋', roles: ['all'] },
     { name: 'Contracts', path: '/contracts', icon: '📄', roles: ['all'] },
     { name: 'Purchase Orders', path: '/purchase-orders', icon: '📝', roles: ['all'] },
