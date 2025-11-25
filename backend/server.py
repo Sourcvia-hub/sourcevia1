@@ -3392,29 +3392,31 @@ async def create_osr(request: Request, osr: OSR):
     return {"message": "OSR created successfully", "osr": osr_dict}
 
 @api_router.put("/osr/{osr_id}")
-async def update_osr(osr_id: str, request: Request, osr: OSR):
+async def update_osr(osr_id: str, request: Request, update_data: dict):
     """Update OSR"""
     await require_auth(request)
     
-    osr_dict = osr.model_dump()
-    osr_dict["updated_at"] = datetime.now(timezone.utc)
+    update_data["updated_at"] = datetime.now(timezone.utc)
     
-    # If status changed to completed and it's an asset-related maintenance OSR
+    # Get existing OSR
     existing_osr = await db.osr.find_one({"id": osr_id}, {"_id": 0})
-    if (osr.status == OSRStatus.COMPLETED and 
-        existing_osr.get("status") != OSRStatus.COMPLETED and
-        osr.request_type == OSRType.ASSET_RELATED and
-        osr.category == OSRCategory.MAINTENANCE and
-        osr.asset_id):
+    if not existing_osr:
+        raise HTTPException(status_code=404, detail="OSR not found")
+    
+    # If status changed to completed and it's an asset-related OSR
+    if (update_data.get("status") == "completed" and 
+        existing_osr.get("status") != "completed" and
+        existing_osr.get("request_type") == "asset_related" and
+        existing_osr.get("asset_id")):
         
         # Update asset's last_maintenance_date
-        osr_dict["closed_date"] = datetime.now(timezone.utc)
+        update_data["closed_date"] = datetime.now(timezone.utc)
         await db.assets.update_one(
-            {"id": osr.asset_id},
-            {"$set": {"last_maintenance_date": osr_dict["closed_date"]}}
+            {"id": existing_osr["asset_id"]},
+            {"$set": {"last_maintenance_date": update_data["closed_date"]}}
         )
     
-    await db.osr.update_one({"id": osr_id}, {"$set": osr_dict})
+    await db.osr.update_one({"id": osr_id}, {"$set": update_data})
     return {"message": "OSR updated successfully"}
 
 @api_router.delete("/osr/{osr_id}")
