@@ -2789,3 +2789,35 @@ Add comprehensive related information summaries to detail pages across all modul
 - Added missing `Link` import to `/app/frontend/src/pages/ResourceDetail.js`
 - Error: "Link is not defined" - RESOLVED
 
+
+---
+
+## Vendor Ranked #1 Evaluations - Nov 24, 2025
+
+### Enhancement:
+Added a new section to Vendor Detail page showing tenders where the vendor was ranked #1 in evaluations.
+
+### Implementation:
+- Fetches all proposals for the vendor
+- Filters proposals with rank = 1
+- Displays tenders with rank #1 proposals in a special highlighted section
+- Shows evaluation score if available
+- Uses green color scheme to highlight top-ranked status
+
+### UI Features:
+- "TOP RANKED" badge next to section title
+- Green-themed cards with "RANK #1" badge
+- Shows tender title, description, budget, deadline
+- Displays evaluation score (e.g., "Score: 85/100")
+- "View" button links to full tender details
+
+### Data Flow:
+1. Fetch all proposals via `/api/proposals`
+2. Filter proposals where `vendor_id` matches current vendor
+3. Filter further for `rank === 1`
+4. Match proposals to tenders
+5. Display with evaluation score
+
+### Files Modified:
+- `/app/frontend/src/pages/VendorDetail.js`
+
