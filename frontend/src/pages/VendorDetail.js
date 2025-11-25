@@ -20,10 +20,14 @@ const VendorDetail = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFormData, setEditFormData] = useState(null);
   const [showDueDiligenceModal, setShowDueDiligenceModal] = useState(false);
+  const [relatedTenders, setRelatedTenders] = useState([]);
+  const [relatedContracts, setRelatedContracts] = useState([]);
+  const [relatedPOs, setRelatedPOs] = useState([]);
 
   useEffect(() => {
     fetchVendor();
     fetchAuditLog();
+    fetchRelatedData();
   }, [id]);
 
   const fetchVendor = async () => {
