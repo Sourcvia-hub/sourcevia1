@@ -388,6 +388,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/facilities-settings"
+        element={
+          <ProtectedRoute>
+            <FacilitiesSettings />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };
