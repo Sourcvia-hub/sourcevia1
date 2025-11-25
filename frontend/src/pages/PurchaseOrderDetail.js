@@ -31,6 +31,16 @@ const PurchaseOrderDetail = () => {
         delivery_time: response.data.delivery_time || '',
         items: response.data.items || []
       });
+      
+      // Fetch related tender if applicable
+      if (response.data.tender_id) {
+        try {
+          const tenderRes = await axios.get(`${API}/tenders/${response.data.tender_id}`, { withCredentials: true });
+          setTender(tenderRes.data);
+        } catch (err) {
+          console.log('Could not fetch tender info');
+        }
+      }
     } catch (error) {
       console.error('Error fetching PO:', error);
       alert('Purchase Order not found');
