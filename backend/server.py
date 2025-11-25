@@ -3885,6 +3885,254 @@ async def download_file(module: str, entity_id: str, filename: str, request: Req
         filename=filename.split("_", 1)[1] if "_" in filename else filename  # Remove timestamp prefix
     )
 
+# ==================== FACILITIES MANAGEMENT ENDPOINTS ====================
+
+# Buildings
+@api_router.get("/buildings")
+async def get_buildings(request: Request):
+    """Get all buildings"""
+    await require_auth(request)
+    buildings = await db.buildings.find({"_id": 0}).to_list(1000)
+    return buildings
+
+@api_router.post("/buildings")
+async def create_building(request: Request, building: Building):
+    """Create a new building"""
+    await require_auth(request)
+    building_dict = building.model_dump()
+    await db.buildings.insert_one(building_dict)
+    return {"message": "Building created successfully", "building": building_dict}
+
+@api_router.put("/buildings/{building_id}")
+async def update_building(building_id: str, request: Request, building: Building):
+    """Update building"""
+    await require_auth(request)
+    building_dict = building.model_dump()
+    building_dict["updated_at"] = datetime.now(timezone.utc)
+    await db.buildings.update_one({"id": building_id}, {"$set": building_dict})
+    return {"message": "Building updated successfully"}
+
+@api_router.delete("/buildings/{building_id}")
+async def delete_building(building_id: str, request: Request):
+    """Delete building"""
+    await require_auth(request)
+    await db.buildings.delete_one({"id": building_id})
+    return {"message": "Building deleted successfully"}
+
+# Floors
+@api_router.get("/floors")
+async def get_floors(request: Request, building_id: Optional[str] = None):
+    """Get all floors, optionally filtered by building"""
+    await require_auth(request)
+    query = {}
+    if building_id:
+        query["building_id"] = building_id
+    floors = await db.floors.find(query, {"_id": 0}).to_list(1000)
+    return floors
+
+@api_router.post("/floors")
+async def create_floor(request: Request, floor: Floor):
+    """Create a new floor"""
+    await require_auth(request)
+    floor_dict = floor.model_dump()
+    await db.floors.insert_one(floor_dict)
+    return {"message": "Floor created successfully", "floor": floor_dict}
+
+@api_router.put("/floors/{floor_id}")
+async def update_floor(floor_id: str, request: Request, floor: Floor):
+    """Update floor"""
+    await require_auth(request)
+    floor_dict = floor.model_dump()
+    floor_dict["updated_at"] = datetime.now(timezone.utc)
+    await db.floors.update_one({"id": floor_id}, {"$set": floor_dict})
+    return {"message": "Floor updated successfully"}
+
+@api_router.delete("/floors/{floor_id}")
+async def delete_floor(floor_id: str, request: Request):
+    """Delete floor"""
+    await require_auth(request)
+    await db.floors.delete_one({"id": floor_id})
+    return {"message": "Floor deleted successfully"}
+
+# Asset Categories
+@api_router.get("/asset-categories")
+async def get_asset_categories(request: Request):
+    """Get all asset categories"""
+    await require_auth(request)
+    categories = await db.asset_categories.find({"_id": 0}).to_list(1000)
+    return categories
+
+@api_router.post("/asset-categories")
+async def create_asset_category(request: Request, category: AssetCategory):
+    """Create a new asset category"""
+    await require_auth(request)
+    category_dict = category.model_dump()
+    await db.asset_categories.insert_one(category_dict)
+    return {"message": "Asset category created successfully", "category": category_dict}
+
+@api_router.put("/asset-categories/{category_id}")
+async def update_asset_category(category_id: str, request: Request, category: AssetCategory):
+    """Update asset category"""
+    await require_auth(request)
+    category_dict = category.model_dump()
+    category_dict["updated_at"] = datetime.now(timezone.utc)
+    await db.asset_categories.update_one({"id": category_id}, {"$set": category_dict})
+    return {"message": "Asset category updated successfully"}
+
+@api_router.delete("/asset-categories/{category_id}")
+async def delete_asset_category(category_id: str, request: Request):
+    """Delete asset category"""
+    await require_auth(request)
+    await db.asset_categories.delete_one({"id": category_id})
+    return {"message": "Asset category deleted successfully"}
+
+# Assets
+@api_router.get("/assets")
+async def get_assets(request: Request):
+    """Get all assets"""
+    await require_auth(request)
+    assets = await db.assets.find({"_id": 0}).to_list(10000)
+    return assets
+
+@api_router.get("/assets/{asset_id}")
+async def get_asset(asset_id: str, request: Request):
+    """Get single asset"""
+    await require_auth(request)
+    asset = await db.assets.find_one({"id": asset_id}, {"_id": 0})
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    return asset
+
+@api_router.post("/assets")
+async def create_asset(request: Request, asset: Asset):
+    """Create a new asset"""
+    await require_auth(request)
+    
+    # Generate asset number
+    count = await db.assets.count_documents({})
+    asset.asset_number = f"ASSET-{datetime.now().year}-{str(count + 1).zfill(4)}"
+    
+    # Calculate warranty status
+    if asset.warranty_end_date:
+        if datetime.now(timezone.utc) <= asset.warranty_end_date:
+            asset.warranty_status = "in_warranty"
+        else:
+            asset.warranty_status = "out_of_warranty"
+    
+    asset_dict = asset.model_dump()
+    asset_dict["created_at"] = datetime.now(timezone.utc)
+    
+    await db.assets.insert_one(asset_dict)
+    return {"message": "Asset created successfully", "asset": asset_dict}
+
+@api_router.put("/assets/{asset_id}")
+async def update_asset(asset_id: str, request: Request, asset: Asset):
+    """Update asset"""
+    await require_auth(request)
+    
+    # Recalculate warranty status
+    if asset.warranty_end_date:
+        if datetime.now(timezone.utc) <= asset.warranty_end_date:
+            asset.warranty_status = "in_warranty"
+        else:
+            asset.warranty_status = "out_of_warranty"
+    
+    asset_dict = asset.model_dump()
+    asset_dict["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.assets.update_one({"id": asset_id}, {"$set": asset_dict})
+    return {"message": "Asset updated successfully"}
+
+@api_router.delete("/assets/{asset_id}")
+async def delete_asset(asset_id: str, request: Request):
+    """Delete asset"""
+    await require_auth(request)
+    await db.assets.delete_one({"id": asset_id})
+    return {"message": "Asset deleted successfully"}
+
+# OSR (Operating Service Requests)
+@api_router.get("/osr")
+async def get_osrs(request: Request):
+    """Get all OSRs"""
+    await require_auth(request)
+    osrs = await db.osr.find({"_id": 0}).to_list(10000)
+    return osrs
+
+@api_router.get("/osr/{osr_id}")
+async def get_osr(osr_id: str, request: Request):
+    """Get single OSR"""
+    await require_auth(request)
+    osr = await db.osr.find_one({"id": osr_id}, {"_id": 0})
+    if not osr:
+        raise HTTPException(status_code=404, detail="OSR not found")
+    return osr
+
+@api_router.post("/osr")
+async def create_osr(request: Request, osr: OSR):
+    """Create a new OSR"""
+    user = await require_auth(request)
+    
+    # Generate OSR number
+    count = await db.osr.count_documents({})
+    osr.osr_number = f"OSR-{datetime.now().year}-{str(count + 1).zfill(4)}"
+    
+    osr.created_by = user.id
+    osr.created_by_name = user.name
+    
+    # If asset-related, fetch asset details
+    if osr.request_type == OSRType.ASSET_RELATED and osr.asset_id:
+        asset = await db.assets.find_one({"id": osr.asset_id}, {"_id": 0})
+        if asset:
+            osr.asset_name = asset.get("name")
+            osr.asset_warranty_status = asset.get("warranty_status")
+            osr.asset_contract_id = asset.get("contract_id")
+            osr.asset_contract_number = asset.get("contract_number")
+            
+            # Auto-suggest AMC vendor if maintenance request
+            if osr.category == OSRCategory.MAINTENANCE and asset.get("vendor_id"):
+                osr.assigned_to_type = "vendor"
+                osr.assigned_to_vendor_id = asset.get("vendor_id")
+                osr.assigned_to_vendor_name = asset.get("vendor_name")
+    
+    osr_dict = osr.model_dump()
+    osr_dict["created_at"] = datetime.now(timezone.utc)
+    
+    await db.osr.insert_one(osr_dict)
+    return {"message": "OSR created successfully", "osr": osr_dict}
+
+@api_router.put("/osr/{osr_id}")
+async def update_osr(osr_id: str, request: Request, osr: OSR):
+    """Update OSR"""
+    await require_auth(request)
+    
+    osr_dict = osr.model_dump()
+    osr_dict["updated_at"] = datetime.now(timezone.utc)
+    
+    # If status changed to completed and it's an asset-related maintenance OSR
+    existing_osr = await db.osr.find_one({"id": osr_id}, {"_id": 0})
+    if (osr.status == OSRStatus.COMPLETED and 
+        existing_osr.get("status") != OSRStatus.COMPLETED and
+        osr.request_type == OSRType.ASSET_RELATED and
+        osr.category == OSRCategory.MAINTENANCE and
+        osr.asset_id):
+        
+        # Update asset's last_maintenance_date
+        osr_dict["closed_date"] = datetime.now(timezone.utc)
+        await db.assets.update_one(
+            {"id": osr.asset_id},
+            {"$set": {"last_maintenance_date": osr_dict["closed_date"]}}
+        )
+    
+    await db.osr.update_one({"id": osr_id}, {"$set": osr_dict})
+    return {"message": "OSR updated successfully"}
+
+@api_router.delete("/osr/{osr_id}")
+async def delete_osr(osr_id: str, request: Request):
+    """Delete OSR"""
+    await require_auth(request)
+    await db.osr.delete_one({"id": osr_id})
+    return {"message": "OSR deleted successfully"}
+
 # ==================== APP SETUP ====================
 # Configure CORS middleware (must be before including router)
 app.add_middleware(
