@@ -4034,6 +4034,33 @@ async def get_asset(asset_id: str, request: Request):
     asset = await db.assets.find_one({"id": asset_id}, {"_id": 0})
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
+    
+    # Enrich asset with denormalized data
+    if asset.get("category_id"):
+        category = await db.asset_categories.find_one({"id": asset["category_id"]}, {"_id": 0})
+        if category:
+            asset["category_name"] = category.get("name")
+    
+    if asset.get("building_id"):
+        building = await db.buildings.find_one({"id": asset["building_id"]}, {"_id": 0})
+        if building:
+            asset["building_name"] = building.get("name")
+    
+    if asset.get("floor_id"):
+        floor = await db.floors.find_one({"id": asset["floor_id"]}, {"_id": 0})
+        if floor:
+            asset["floor_name"] = floor.get("name")
+    
+    if asset.get("vendor_id"):
+        vendor = await db.vendors.find_one({"id": asset["vendor_id"]}, {"_id": 0})
+        if vendor:
+            asset["vendor_name"] = vendor.get("name_english")
+    
+    if asset.get("contract_id"):
+        contract = await db.contracts.find_one({"id": asset["contract_id"]}, {"_id": 0})
+        if contract:
+            asset["contract_number"] = contract.get("contract_number")
+    
     return asset
 
 @api_router.post("/assets")
