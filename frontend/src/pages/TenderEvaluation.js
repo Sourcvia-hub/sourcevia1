@@ -29,12 +29,27 @@ const TenderEvaluation = () => {
 
   const fetchData = async () => {
     try {
-      const [tenderRes, evalRes] = await Promise.all([
+      const [tenderRes, evalRes, vendorsRes] = await Promise.all([
         axios.get(`${API}/tenders/${id}`, { withCredentials: true }),
         axios.post(`${API}/tenders/${id}/evaluate`, {}, { withCredentials: true }),
+        axios.get(`${API}/vendors`, { withCredentials: true }),
       ]);
       setTender(tenderRes.data);
-      setEvaluationData(evalRes.data);
+      
+      // Map vendor names to proposals
+      const vendors = vendorsRes.data;
+      const evaluationWithNames = {
+        ...evalRes.data,
+        proposals: evalRes.data.proposals.map(proposal => {
+          const vendor = vendors.find(v => v.id === proposal.vendor_id);
+          return {
+            ...proposal,
+            vendor_name: vendor ? vendor.name : proposal.vendor_id
+          };
+        })
+      };
+      
+      setEvaluationData(evaluationWithNames);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
