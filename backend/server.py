@@ -4194,6 +4194,23 @@ async def delete_osr(osr_id: str, request: Request):
     return {"message": "OSR deleted successfully"}
 
 # Seed Master Data
+@api_router.get("/facilities/master-data")
+async def get_master_data(request: Request):
+    """Get all master data for facilities management"""
+    await require_auth(request)
+    
+    buildings = await db.buildings.find({}, {"_id": 0}).to_list(1000)
+    floors = await db.floors.find({}, {"_id": 0}).to_list(1000)
+    asset_categories = await db.asset_categories.find({}, {"_id": 0}).to_list(1000)
+    osr_categories = await db.osr_categories.find({}, {"_id": 0}).to_list(1000)
+    
+    return {
+        "buildings": buildings,
+        "floors": floors,
+        "asset_categories": asset_categories,
+        "osr_categories": osr_categories
+    }
+
 @api_router.post("/facilities/seed-data")
 async def seed_facilities_data(request: Request):
     """Seed initial master data for facilities management"""
@@ -4214,6 +4231,20 @@ async def seed_facilities_data(request: Request):
     existing_categories = await db.asset_categories.count_documents({})
     if existing_categories == 0:
         await db.asset_categories.insert_many(categories)
+    
+    # Seed OSR Categories
+    osr_cats = [
+        {"id": str(uuid.uuid4()), "name": "Maintenance", "description": "Asset maintenance and repairs", "is_active": True, "created_at": datetime.now(timezone.utc)},
+        {"id": str(uuid.uuid4()), "name": "Cleaning", "description": "Cleaning services", "is_active": True, "created_at": datetime.now(timezone.utc)},
+        {"id": str(uuid.uuid4()), "name": "Relocation", "description": "Moving and relocation services", "is_active": True, "created_at": datetime.now(timezone.utc)},
+        {"id": str(uuid.uuid4()), "name": "Installation", "description": "New equipment installation", "is_active": True, "created_at": datetime.now(timezone.utc)},
+        {"id": str(uuid.uuid4()), "name": "Inspection", "description": "Safety and quality inspections", "is_active": True, "created_at": datetime.now(timezone.utc)},
+        {"id": str(uuid.uuid4()), "name": "Other", "description": "Other service requests", "is_active": True, "created_at": datetime.now(timezone.utc)},
+    ]
+    
+    existing_osr_cats = await db.osr_categories.count_documents({})
+    if existing_osr_cats == 0:
+        await db.osr_categories.insert_many(osr_cats)
     
     # Seed Sample Buildings
     buildings = [
