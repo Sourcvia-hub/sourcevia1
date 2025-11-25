@@ -2729,3 +2729,58 @@ Created test users directly in production database via API.
 2. Use either of the above credentials to login
 3. Or register a new account with any email/password
 
+
+---
+
+## Enhanced Detail Pages with Related Information - Nov 24, 2025
+
+### Objective:
+Add comprehensive related information summaries to detail pages across all modules.
+
+### Changes Made:
+
+**1. Vendor Detail Page:**
+- Added "Related Tenders" section showing all tenders for this vendor
+- Added "Related Contracts" section with contract summaries
+- Added "Related Purchase Orders" section with PO details
+- Each section shows count and provides "View" links to details
+
+**2. Purchase Order Detail Page:**
+- Added "Financial Summary" section with:
+  - Total Amount
+  - Total Items count
+  - Average Item Value calculation
+- Added "Related Tender" section (if applicable) showing:
+  - Tender title, description
+  - Budget, deadline, status
+  - Proposals count
+  - Link to view tender
+
+**3. Resource Detail Page:**
+- Added "Related Contract Summary" section with:
+  - Contract number, title, value
+  - Start date, end date, **duration in days**
+  - Status badge
+  - Classification and NOC requirement
+- Added warning note: "Resource requests only applicable for approved/active contracts"
+
+**4. Invoice Detail Page:**
+- Added "Vendor Information" section
+- Added "Related Contract" section
+- Added "Related Purchase Order" section
+- Shows relevant entity based on what's linked to the invoice
+- Each section has "View" link to full details
+
+### Technical Implementation:
+- Used React useEffect to fetch related data on component mount
+- Added state variables for related entities
+- Implemented try-catch for graceful error handling
+- Added responsive grid layouts for summary cards
+- Used Link components for navigation
+
+### Files Modified:
+- `/app/frontend/src/pages/VendorDetail.js`
+- `/app/frontend/src/pages/PurchaseOrderDetail.js`
+- `/app/frontend/src/pages/ResourceDetail.js`
+- `/app/frontend/src/pages/InvoiceDetail.js`
+
