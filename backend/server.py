@@ -1810,8 +1810,9 @@ async def verify_invoice(invoice_id: str, request: Request):
 
 @api_router.put("/invoices/{invoice_id}/approve")
 async def approve_invoice(invoice_id: str, request: Request):
-    """Approve invoice (Project Manager)"""
-    user = await require_role(request, [UserRole.PROJECT_MANAGER])
+    """Approve invoice - RBAC: requires approve permission"""
+    from utils.auth import require_approve_permission
+    user = await require_approve_permission(request, "invoices")
     
     result = await db.invoices.update_one(
         {"id": invoice_id},
