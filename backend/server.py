@@ -1766,8 +1766,9 @@ async def get_invoice(invoice_id: str, request: Request):
 
 @api_router.put("/invoices/{invoice_id}")
 async def update_invoice(invoice_id: str, invoice_data: dict, request: Request):
-    """Update invoice details"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
+    """Update invoice details - RBAC: requires edit permission"""
+    from utils.auth import require_edit_permission
+    user = await require_edit_permission(request, "invoices")
     
     invoice = await db.invoices.find_one({"id": invoice_id})
     if not invoice:
