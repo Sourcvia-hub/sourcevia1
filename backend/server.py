@@ -991,8 +991,10 @@ async def approve_vendor_due_diligence(vendor_id: str, request: Request):
 
 @api_router.post("/vendors/{vendor_id}/blacklist")
 async def blacklist_vendor(vendor_id: str, request: Request):
-    """Blacklist a vendor - PD Officer or Admin only"""
-    user = await require_role(request, [UserRole.PD_OFFICER, UserRole.ADMIN, UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
+    """Blacklist a vendor - RBAC: requires controller permission"""
+    from utils.auth import require_permission
+    from utils.permissions import Permission
+    user = await require_permission(request, "vendors", Permission.CONTROLLER)
     
     vendor = await db.vendors.find_one({"id": vendor_id})
     if not vendor:
