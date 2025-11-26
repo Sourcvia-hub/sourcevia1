@@ -418,7 +418,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "RBAC Vendors Module Testing"
+    - "RBAC Assets Module Testing" 
+    - "RBAC OSR Module Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
