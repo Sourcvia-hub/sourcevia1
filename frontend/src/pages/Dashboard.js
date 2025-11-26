@@ -396,6 +396,128 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Assets Section */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <span className="text-3xl">🏗️</span>
+              <h2 className="text-2xl font-bold text-gray-900">Assets</h2>
+            </div>
+            <button
+              onClick={() => handleExport('assets')}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <span>📥</span>
+              <span className="font-medium">Export to Excel</span>
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <StatCard
+              icon="📊"
+              label="Total Assets"
+              value={stats?.assets?.total || 0}
+              color="bg-blue-50 border-blue-200"
+              link="/assets"
+            />
+            <StatCard
+              icon="✅"
+              label="Active"
+              value={stats?.assets?.active || 0}
+              color="bg-green-50 border-green-200"
+              link="/assets"
+            />
+            <StatCard
+              icon="🔧"
+              label="Under Maintenance"
+              value={stats?.assets?.under_maintenance || 0}
+              color="bg-yellow-50 border-yellow-200"
+              link="/assets"
+            />
+            <StatCard
+              icon="⚠️"
+              label="Out of Service"
+              value={stats?.assets?.out_of_service || 0}
+              color="bg-red-50 border-red-200"
+              link="/assets"
+            />
+            <StatCard
+              icon="✔️"
+              label="In Warranty"
+              value={stats?.assets?.in_warranty || 0}
+              color="bg-purple-50 border-purple-200"
+              link="/assets"
+            />
+            <StatCard
+              icon="⏰"
+              label="Warranty Expiring"
+              value={stats?.assets?.warranty_expiring || 0}
+              color="bg-orange-50 border-orange-200"
+              link="/assets"
+            />
+          </div>
+        </div>
+
+        {/* Service Requests (OSR) Section */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <span className="text-3xl">🔧</span>
+              <h2 className="text-2xl font-bold text-gray-900">Service Requests</h2>
+            </div>
+            <button
+              onClick={() => handleExport('osr')}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <span>📥</span>
+              <span className="font-medium">Export to Excel</span>
+            </button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <StatCard
+              icon="📊"
+              label="Total"
+              value={stats?.osr?.total || 0}
+              color="bg-blue-50 border-blue-200"
+              link="/osr"
+            />
+            <StatCard
+              icon="🆕"
+              label="Open"
+              value={stats?.osr?.open || 0}
+              color="bg-yellow-50 border-yellow-200"
+              link="/osr"
+            />
+            <StatCard
+              icon="👤"
+              label="Assigned"
+              value={stats?.osr?.assigned || 0}
+              color="bg-blue-50 border-blue-200"
+              link="/osr"
+            />
+            <StatCard
+              icon="⚙️"
+              label="In Progress"
+              value={stats?.osr?.in_progress || 0}
+              color="bg-purple-50 border-purple-200"
+              link="/osr"
+            />
+            <StatCard
+              icon="✅"
+              label="Completed"
+              value={stats?.osr?.completed || 0}
+              color="bg-green-50 border-green-200"
+              link="/osr"
+            />
+            <StatCard
+              icon="🔴"
+              label="High Priority"
+              value={stats?.osr?.high_priority || 0}
+              color="bg-red-50 border-red-200"
+              link="/osr"
+            />
+          </div>
+        </div>
+
         {/* Quick Actions */}
         {(user?.role === 'procurement_officer' || user?.role === 'requester' || user?.role === 'pd_officer') && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg p-6 border-2 border-blue-200">
