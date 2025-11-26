@@ -953,8 +953,9 @@ async def update_vendor_due_diligence(vendor_id: str, dd_data: dict, request: Re
 
 @api_router.post("/vendors/{vendor_id}/due-diligence/approve")
 async def approve_vendor_due_diligence(vendor_id: str, request: Request):
-    """Approve vendor due diligence and change status back to approved"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
+    """Approve vendor due diligence - RBAC: requires approve permission on vendor_dd"""
+    from utils.auth import require_approve_permission
+    user = await require_approve_permission(request, "vendor_dd")
     
     vendor = await db.vendors.find_one({"id": vendor_id})
     if not vendor:
