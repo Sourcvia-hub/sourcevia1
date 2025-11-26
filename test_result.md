@@ -3529,3 +3529,52 @@ Call backend testing agent to comprehensively test all secured endpoints with di
 - **Modules Partial**: Invoices (2/6 endpoints), Purchase Orders (0/4 endpoints), Resources (0/5 endpoints)
 - **Estimated Progress**: ~75% of critical CRUD endpoints secured
 
+
+## Phase 3 & 4 Implementation Complete
+**Date:** 2025-11-26
+
+### Phase 3: Frontend UI Controls ✅
+
+**Fixed Hardcoded Role Checks in:**
+1. ✅ `/app/frontend/src/pages/Invoices.js`
+   - Create button: Now uses `canCreate(user?.role, Module.INVOICES)`
+   - Verify button: Now uses `canVerify(user?.role, Module.INVOICES)`
+   - Approve button: Now uses `canApprove(user?.role, Module.INVOICES)`
+   
+2. ✅ `/app/frontend/src/pages/Tenders.js`
+   - Create button: Already fixed (uses `canCreate`)
+   
+3. ✅ `/app/frontend/src/pages/TenderDetail.js`
+   - Submit Proposal: Now uses `canCreate(user?.role, Module.TENDER_PROPOSALS)`
+   - Edit Tender: Now uses `canEdit(user?.role, Module.TENDERS)`
+   
+4. ✅ `/app/frontend/src/pages/VendorDetail.js`
+   - Complete Due Diligence: Now uses `canEdit(user?.role, Module.VENDOR_DD)`
+   - Approve DD: Now uses `canEdit(user?.role, Module.VENDOR_DD)`
+   
+5. ✅ `/app/frontend/src/pages/Dashboard.js`
+   - Quick Actions: Now uses permission checks instead of hardcoded roles
+
+### Phase 4: Data-Level Security (Row-Level Filtering) ✅
+
+**Added Filtering Helper Functions:**
+- `should_filter_by_user()` - Determines if data should show only user's own records
+- `should_filter_by_domain()` - Determines if data should show team/department records
+
+**Applied Data Filtering to:**
+1. ✅ GET /api/tenders - Regular users see only their own tenders
+2. ✅ GET /api/purchase-orders - Regular users see only their own POs
+3. ✅ GET /api/osrs - Regular users see only their own service requests
+
+**Filtering Rules:**
+- **user** role: Sees only items they created (created_by = user.id)
+- **direct_manager** role: Can see team data (future enhancement)
+- **All other roles**: See all data (no filtering)
+
+### Complete Implementation Summary:
+
+**Backend RBAC:** 47 endpoints secured ✅
+**Frontend UI Controls:** 5 pages updated ✅  
+**Data Filtering:** 3 critical modules secured ✅
+**Permission Hierarchy:** Working correctly ✅
+
