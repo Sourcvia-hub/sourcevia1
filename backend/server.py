@@ -583,8 +583,9 @@ async def get_dashboard_stats(request: Request):
 # ==================== VENDOR ENDPOINTS ====================
 @api_router.post("/vendors")
 async def create_vendor(vendor: Vendor, request: Request):
-    """Create a new vendor (Procurement Officer only) - Auto-approved"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
+    """Create a new vendor - RBAC: requires create permission"""
+    from utils.auth import require_create_permission
+    user = await require_create_permission(request, "vendors")
     
     # Calculate detailed risk assessment
     risk_details = {}
