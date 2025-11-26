@@ -30,10 +30,11 @@ const Tenders = () => {
 
   useEffect(() => {
     fetchTenders();
-    if (user?.role === 'procurement_officer') {
+    // Fetch vendors if user can create tenders
+    if (canCreate(user?.role, Module.TENDERS)) {
       fetchVendors();
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const debounce = setTimeout(() => {
