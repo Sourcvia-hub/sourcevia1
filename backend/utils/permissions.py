@@ -251,23 +251,3 @@ def should_filter_by_domain(user_role: str, module: str) -> bool:
         return True
     
     return False
-
-
-def should_filter_by_user(user_role: str, module: str) -> bool:
-    """
-    Check if data should be filtered to show only user's own items
-    Returns True for User role on Dashboard (show only their requests)
-    """
-    if user_role == "user" and module == Module.DASHBOARD:
-        return True
-    return False
-
-
-def should_filter_by_domain(user_role: str, module: str) -> bool:
-    """
-    Check if data should be filtered by domain
-    Returns True for Direct Manager on Dashboard (show only their domain)
-    """
-    if user_role == "direct_manager" and module == Module.DASHBOARD:
-        return True
-    return False
