@@ -1453,8 +1453,10 @@ async def create_contract(contract: Contract, request: Request):
 
 @api_router.get("/contracts")
 async def get_contracts(request: Request, status: Optional[ContractStatus] = None, search: Optional[str] = None):
-    """Get all contracts with optional search by contract_number or title"""
-    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER, UserRole.SYSTEM_ADMIN])
+    """Get all contracts - RBAC: requires viewer permission"""
+    from utils.auth import require_permission
+    from utils.permissions import Permission
+    await require_permission(request, "contracts", Permission.VIEWER)
     
     query = {}
     if status:
