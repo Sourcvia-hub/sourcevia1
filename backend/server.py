@@ -1030,8 +1030,9 @@ async def blacklist_vendor(vendor_id: str, request: Request):
 # ==================== TENDER ENDPOINTS ====================
 @api_router.post("/tenders")
 async def create_tender(tender: Tender, request: Request):
-    """Create new tender - Auto-approved with generated number"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER])
+    """Create new tender - RBAC: requires create permission"""
+    from utils.auth import require_create_permission
+    user = await require_create_permission(request, "tenders")
     
     tender.created_by = user.id
     
