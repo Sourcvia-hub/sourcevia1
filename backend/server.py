@@ -3430,8 +3430,9 @@ async def get_osr(osr_id: str, request: Request):
 
 @api_router.post("/osrs")
 async def create_osr(request: Request, osr: OSR):
-    """Create a new OSR"""
-    user = await require_auth(request)
+    """Create a new OSR - RBAC: requires create permission"""
+    from utils.auth import require_create_permission
+    user = await require_create_permission(request, "service_requests")
     
     # Generate OSR number
     count = await db.osr.count_documents({})
