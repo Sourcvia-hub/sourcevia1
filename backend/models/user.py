@@ -9,12 +9,16 @@ import uuid
 
 
 class UserRole(str, Enum):
+    USER = "user"  # Regular user (requester)
+    DIRECT_MANAGER = "direct_manager"
+    PROCUREMENT_OFFICER = "procurement_officer"
+    SENIOR_MANAGER = "senior_manager"
+    PROCUREMENT_MANAGER = "procurement_manager"
+    ADMIN = "admin"
+    # Legacy roles (keeping for backwards compatibility)
     REQUESTER = "requester"
     PD_OFFICER = "pd_officer"
     PD_MANAGER = "pd_manager"
-    ADMIN = "admin"
-    # Legacy roles (keeping for backwards compatibility)
-    PROCUREMENT_OFFICER = "procurement_officer"
     PROJECT_MANAGER = "project_manager"
     SYSTEM_ADMIN = "system_admin"
 
