@@ -3245,3 +3245,56 @@ Added smart filtering for AMC Contracts and PO Numbers based on selected vendor.
 ### Files Modified:
 - `/app/frontend/src/pages/AssetForm.js`
 
+
+## Testing Session - RBAC Implementation (Phase 1)
+**Date:** 2025-11-26
+**Agent:** Fork Agent (E1)
+**Focus:** Fix vendor creation blocker and validate RBAC framework
+
+### Issue Fixed: Vendor Creation 500 Error ✅
+
+**Problem:** 
+- Vendor creation endpoint was failing with 500 Internal Server Error
+- Root cause: Missing RBAC permission check and incorrect AuditLog field usage
+
+**Solution:**
+1. Created new permission-checking functions in `/app/backend/utils/auth.py`:
+   - `require_permission()` - Generic permission check
+   - `require_create_permission()` - Check create permissions
+   - `require_edit_permission()` - Check edit permissions
+   - `require_delete_permission()` - Check delete permissions
+   - `require_verify_permission()` - Check verify permissions
+   - `require_approve_permission()` - Check approve permissions
+
+2. Updated `/app/backend/server.py` vendor creation endpoint:
+   - Replaced `require_role()` with `require_create_permission(request, "vendors")`
+   - Fixed AuditLog creation to use correct `details` field (string) instead of `changes` (dict)
+
+**Testing Results:**
+✅ **Procurement Officer** can create vendors (has REQUESTER permission)
+✅ **Admin** can create vendors (has CONTROLLER permission)
+❌ **Regular User** correctly blocked from creating vendors (HTTP 403)
+
+**Test Commands Used:**
+```bash
+# Procurement Officer (Success)
+curl -X POST $API_URL/vendors -b cookies.txt -d '{...}'
+# Result: HTTP 200, Vendor created
+
+# Regular User (Forbidden)
+curl -X POST $API_URL/vendors -b user_cookies.txt -d '{...}'
+# Result: HTTP 403, "You do not have permission to create items in vendors"
+
+# Admin (Success)
+curl -X POST $API_URL/vendors -b admin_cookies.txt -d '{...}'
+# Result: HTTP 200, Vendor created
+```
+
+### RBAC Framework Validated ✅
+The permission system in `utils/permissions.py` is working correctly and can be applied to all other endpoints.
+
+### Next Steps:
+1. Apply RBAC permission checks to ALL remaining API endpoints in server.py
+2. Use backend testing agent to systematically verify all endpoints
+3. Move to UI-level controls (hiding buttons based on permissions)
+
