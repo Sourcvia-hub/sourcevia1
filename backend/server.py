@@ -1581,8 +1581,9 @@ async def terminate_contract(contract_id: str, request: Request, reason: str = "
 
 @api_router.put("/contracts/{contract_id}")
 async def update_contract(contract_id: str, contract_data: dict, request: Request):
-    """Update contract details"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN, UserRole.PD_OFFICER, UserRole.ADMIN])
+    """Update contract details - RBAC: requires edit permission"""
+    from utils.auth import require_edit_permission
+    user = await require_edit_permission(request, "contracts")
     
     contract = await db.contracts.find_one({"id": contract_id})
     if not contract:
