@@ -1374,8 +1374,9 @@ async def award_tender(tender_id: str, vendor_id: str, request: Request):
 # ==================== CONTRACT ENDPOINTS ====================
 @api_router.post("/contracts")
 async def create_contract(contract: Contract, request: Request):
-    """Create new contract - Auto-approved with generated number"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER])
+    """Create new contract - RBAC: requires create permission"""
+    from utils.auth import require_create_permission
+    user = await require_create_permission(request, "contracts")
     
     # Verify tender exists
     tender = await db.tenders.find_one({"id": contract.tender_id})
