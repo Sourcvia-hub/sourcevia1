@@ -3318,8 +3318,10 @@ async def get_assets(request: Request):
 
 @api_router.get("/assets/{asset_id}")
 async def get_asset(asset_id: str, request: Request):
-    """Get single asset"""
-    await require_auth(request)
+    """Get single asset - RBAC: requires viewer permission"""
+    from utils.auth import require_permission
+    from utils.permissions import Permission
+    await require_permission(request, "assets", Permission.VIEWER)
     asset = await db.assets.find_one({"id": asset_id}, {"_id": 0})
     if not asset:
         raise HTTPException(status_code=404, detail="Asset not found")
