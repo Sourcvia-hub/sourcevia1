@@ -59,10 +59,11 @@ const Layout = ({ children }) => {
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-4 border-b">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">S</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">Sourcevia</span>
+              <img 
+                src="/logo.png" 
+                alt="Sourcevia Logo" 
+                className="h-10 w-auto"
+              />
             </div>
           </div>
 
