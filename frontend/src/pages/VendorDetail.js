@@ -372,7 +372,7 @@ const VendorDetail = () => {
                       <p className="text-sm text-gray-600 mt-2">
                         Completed on {new Date(vendor.dd_completed_at).toLocaleDateString()}
                       </p>
-                      {user?.role === 'procurement_officer' && (
+                      {canEdit(user?.role, Module.VENDOR_DD) && (
                         <button
                           onClick={handleApproveDueDiligence}
                           className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
