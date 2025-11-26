@@ -3480,11 +3480,18 @@ async def delete_asset(asset_id: str, request: Request):
 # OSR (Operating Service Requests)
 @api_router.get("/osrs")
 async def get_osrs(request: Request):
-    """Get all OSRs - RBAC: requires viewer permission"""
+    """Get all OSRs - RBAC: requires viewer permission with data filtering"""
     from utils.auth import require_permission
-    from utils.permissions import Permission
-    await require_permission(request, "service_requests", Permission.VIEWER)
-    osrs = await db.osr.find({"_id": 0}).to_list(10000)
+    from utils.permissions import Permission, should_filter_by_user
+    user = await require_permission(request, "service_requests", Permission.VIEWER)
+    user_role_str = user.role.value.lower()
+    
+    query = {"_id": 0}
+    # Apply row-level security: regular users see only their own OSRs
+    if should_filter_by_user(user_role_str, "service_requests"):
+        query["created_by"] = user.id
+    
+    osrs = await db.osr.find(query).to_list(10000)
     return osrs
 
 @api_router.get("/osrs/{osr_id}")
