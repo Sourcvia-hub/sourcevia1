@@ -222,11 +222,14 @@ def should_filter_by_user(user_role: str, module: str) -> bool:
     Returns True for roles that should only see their own data:
     - user: sees only their own created items
     """
-    if user_role == "admin":
+    # Normalize role string (handle both enum values and plain strings)
+    role_normalized = user_role.lower().strip()
+    
+    if role_normalized == "admin":
         return False
     
     # Regular users should only see their own data
-    if user_role == "user":
+    if role_normalized == "user":
         return True
     
     # All other roles can see broader data
