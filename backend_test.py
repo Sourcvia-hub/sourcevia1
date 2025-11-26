@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-Backend Testing Script for Sourcevia Procurement Management System
-Tests auto-numbering system and search functionality
+Backend RBAC Testing Script for Sourcevia Procurement Management System
+Tests Role-Based Access Control (RBAC) for Phase 1 Modules:
+- Vendors Module (/api/vendors)
+- Assets Module (/api/assets) 
+- Service Requests/OSR Module (/api/osrs)
 """
 
 import requests
@@ -11,6 +14,18 @@ import sys
 
 # Configuration
 BASE_URL = "https://sourcevia-admin.preview.emergentagent.com/api"
+
+# RBAC Test Users (all with password: "password")
+RBAC_TEST_USERS = {
+    "user": {"email": "user@test.com", "password": "password", "role": "user"},
+    "direct_manager": {"email": "manager@test.com", "password": "password", "role": "direct_manager"},
+    "procurement_officer": {"email": "officer@test.com", "password": "password", "role": "procurement_officer"},
+    "senior_manager": {"email": "senior@test.com", "password": "password", "role": "senior_manager"},
+    "procurement_manager": {"email": "procmgr@test.com", "password": "password", "role": "procurement_manager"},
+    "admin": {"email": "admin@test.com", "password": "password", "role": "admin"}
+}
+
+# Legacy test users for backward compatibility
 TEST_USERS = {
     "procurement": {"email": "procurement@test.com", "password": "password"},
     "manager": {"email": "manager@test.com", "password": "password"}
