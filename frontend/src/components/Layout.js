@@ -58,7 +58,7 @@ const Layout = ({ children }) => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-4 border-b">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <img 
                 src={`${process.env.PUBLIC_URL}/logo.png`}
                 alt="Sourcevia Logo" 
@@ -68,6 +68,7 @@ const Layout = ({ children }) => {
                   e.target.style.display = 'none';
                 }}
               />
+              <span className="text-xl font-bold text-gray-900">Sourcevia</span>
             </div>
           </div>
 
