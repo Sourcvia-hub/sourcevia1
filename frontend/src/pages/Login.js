@@ -65,7 +65,7 @@ const Login = () => {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: 'procurement_officer' // Default role
+        role: formData.role // Use selected role from form
       });
 
       // Auto-login after registration
