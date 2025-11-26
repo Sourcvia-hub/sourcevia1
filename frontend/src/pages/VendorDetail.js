@@ -225,7 +225,7 @@ const VendorDetail = () => {
           </div>
           <div className="flex gap-3">
             {/* Due Diligence Button - Only show if required and not completed */}
-            {vendor.dd_required && !vendor.dd_completed && user?.role === 'procurement_officer' && (
+            {vendor.dd_required && !vendor.dd_completed && canEdit(user?.role, Module.VENDOR_DD) && (
               <button
                 onClick={() => setShowDueDiligenceModal(true)}
                 className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center gap-2"
