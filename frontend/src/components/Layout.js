@@ -91,18 +91,11 @@ const Layout = ({ children }) => {
 
           {/* User Info */}
           <div className="border-t p-4">
-            <div className="flex items-center">
-              <img
-                src={user?.picture || 'https://via.placeholder.com/40'}
-                alt={user?.name}
-                className="w-10 h-10 rounded-full"
-              />
-              <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded ${getRoleBadgeColor(user?.role)}`}>
-                  {getRoleLabel(user?.role)}
-                </span>
-              </div>
+            <div className="flex flex-col">
+              <p className="text-sm font-medium text-gray-900 mb-1">{user?.name}</p>
+              <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded self-start ${getRoleBadgeColor(user?.role)}`}>
+                {getRoleLabel(user?.role)}
+              </span>
             </div>
             <button
               onClick={handleLogout}
