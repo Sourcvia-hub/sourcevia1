@@ -3493,8 +3493,9 @@ async def update_osr(osr_id: str, request: Request, update_data: dict):
 
 @api_router.delete("/osrs/{osr_id}")
 async def delete_osr(osr_id: str, request: Request):
-    """Delete OSR"""
-    await require_auth(request)
+    """Delete OSR - RBAC: requires delete permission"""
+    from utils.auth import require_delete_permission
+    await require_delete_permission(request, "service_requests")
     await db.osr.delete_one({"id": osr_id})
     return {"message": "OSR deleted successfully"}
 
