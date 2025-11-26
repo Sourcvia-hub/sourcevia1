@@ -1508,8 +1508,10 @@ async def get_contracts(request: Request, status: Optional[ContractStatus] = Non
 
 @api_router.get("/contracts/{contract_id}")
 async def get_contract(contract_id: str, request: Request):
-    """Get contract by ID"""
-    await require_auth(request)
+    """Get contract by ID - RBAC: requires viewer permission"""
+    from utils.auth import require_permission
+    from utils.permissions import Permission
+    await require_permission(request, "contracts", Permission.VIEWER)
     
     contract = await db.contracts.find_one({"id": contract_id})
     if not contract:
