@@ -217,6 +217,41 @@ def can_approve(user_role: str, module: str) -> bool:
 
 def should_filter_by_user(user_role: str, module: str) -> bool:
     """
+    Determine if data should be filtered to show only user's own records
+    
+    Returns True for roles that should only see their own data:
+    - user: sees only their own created items
+    """
+    if user_role == "admin":
+        return False
+    
+    # Regular users should only see their own data
+    if user_role == "user":
+        return True
+    
+    # All other roles can see broader data
+    return False
+
+
+def should_filter_by_domain(user_role: str, module: str) -> bool:
+    """
+    Determine if data should be filtered by domain/team
+    
+    Returns True for roles that should see team/department data:
+    - direct_manager: sees their team's data
+    """
+    if user_role == "admin":
+        return False
+    
+    # Managers should see team data
+    if user_role == "direct_manager":
+        return True
+    
+    return False
+
+
+def should_filter_by_user(user_role: str, module: str) -> bool:
+    """
     Check if data should be filtered to show only user's own items
     Returns True for User role on Dashboard (show only their requests)
     """
