@@ -491,6 +491,37 @@ async def get_dashboard_stats(request: Request):
     pos = await db.purchase_orders.find({}).to_list(1000)
     total_po_value = sum(po.get('total_amount', 0) for po in pos)
     
+    # Asset Statistics
+    all_assets = await db.assets.count_documents({})
+    active_assets = await db.assets.count_documents({"status": "active"})
+    under_maintenance_assets = await db.assets.count_documents({"status": "under_maintenance"})
+    out_of_service_assets = await db.assets.count_documents({"status": "out_of_service"})
+    
+    # Warranty statistics
+    current_date = datetime.now(timezone.utc)
+    in_warranty_assets = 0
+    warranty_expiring_assets = 0
+    
+    assets_with_warranty = await db.assets.find({"warranty_end_date": {"$exists": True, "$ne": None}}, {"_id": 0}).to_list(10000)
+    for asset in assets_with_warranty:
+        warranty_end = asset.get("warranty_end_date")
+        if warranty_end:
+            if isinstance(warranty_end, str):
+                warranty_end = datetime.fromisoformat(warranty_end)
+            if warranty_end > current_date:
+                in_warranty_assets += 1
+                days_to_expiry = (warranty_end - current_date).days
+                if days_to_expiry <= 90:  # Expiring in 90 days
+                    warranty_expiring_assets += 1
+    
+    # OSR Statistics
+    all_osr = await db.osr.count_documents({})
+    open_osr = await db.osr.count_documents({"status": "open"})
+    assigned_osr = await db.osr.count_documents({"status": "assigned"})
+    in_progress_osr = await db.osr.count_documents({"status": "in_progress"})
+    completed_osr = await db.osr.count_documents({"status": "completed"})
+    high_priority_osr = await db.osr.count_documents({"priority": "high"})
+    
     return {
         "vendors": {
             "all": all_vendors,
@@ -530,6 +561,22 @@ async def get_dashboard_stats(request: Request):
             "issued": issued_pos,
             "converted": converted_pos,
             "total_value": total_po_value
+        },
+        "assets": {
+            "total": all_assets,
+            "active": active_assets,
+            "under_maintenance": under_maintenance_assets,
+            "out_of_service": out_of_service_assets,
+            "in_warranty": in_warranty_assets,
+            "warranty_expiring": warranty_expiring_assets
+        },
+        "osr": {
+            "total": all_osr,
+            "open": open_osr,
+            "assigned": assigned_osr,
+            "in_progress": in_progress_osr,
+            "completed": completed_osr,
+            "high_priority": high_priority_osr
         }
     }
 
