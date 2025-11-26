@@ -121,6 +121,9 @@ def has_permission(user_role: str, module: str, required_permission: str) -> boo
     """
     Check if a user role has a specific permission for a module
     
+    Permission Hierarchy:
+    CONTROLLER > APPROVER > VERIFIER > REQUESTER > VIEWER
+    
     Args:
         user_role: The user's role (e.g., "user", "procurement_officer")
         module: The module to check (e.g., "vendors", "tenders")
@@ -137,7 +140,7 @@ def has_permission(user_role: str, module: str, required_permission: str) -> boo
     role_perms = ROLE_PERMISSIONS.get(user_role, {})
     module_perms = role_perms.get(module, [Permission.NO_ACCESS])
     
-    # Check if required permission is in the list
+    # Check if NO_ACCESS
     if Permission.NO_ACCESS in module_perms:
         return False
     
@@ -145,7 +148,24 @@ def has_permission(user_role: str, module: str, required_permission: str) -> boo
     if Permission.CONTROLLER in module_perms:
         return True
     
-    return required_permission in module_perms
+    # Define permission hierarchy (higher permissions include lower ones)
+    permission_hierarchy = {
+        Permission.CONTROLLER: [Permission.APPROVER, Permission.VERIFIER, Permission.REQUESTER, Permission.VIEWER],
+        Permission.APPROVER: [Permission.VERIFIER, Permission.REQUESTER, Permission.VIEWER],
+        Permission.VERIFIER: [Permission.REQUESTER, Permission.VIEWER],
+        Permission.REQUESTER: [Permission.VIEWER],
+        Permission.VIEWER: []
+    }
+    
+    # Check if user has the exact permission or a higher permission
+    for perm in module_perms:
+        if perm == required_permission:
+            return True
+        # Check if this permission is higher in hierarchy
+        if perm in permission_hierarchy and required_permission in permission_hierarchy.get(perm, []):
+            return True
+    
+    return False
 
 
 def can_access_module(user_role: str, module: str) -> bool:
