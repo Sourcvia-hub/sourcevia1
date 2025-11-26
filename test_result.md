@@ -3298,3 +3298,49 @@ The permission system in `utils/permissions.py` is working correctly and can be 
 2. Use backend testing agent to systematically verify all endpoints
 3. Move to UI-level controls (hiding buttons based on permissions)
 
+
+## RBAC Backend Implementation - Phase 2 Progress
+**Date:** 2025-11-26 (Continued)
+
+### Modules Secured with RBAC ✅
+
+1. **Vendors Module** (100% Complete)
+   - ✅ POST /api/vendors - Create (requires REQUESTER)
+   - ✅ GET /api/vendors - List (requires VIEWER)
+   - ✅ GET /api/vendors/{id} - Detail (requires VIEWER)
+   - ✅ PUT /api/vendors/{id} - Update (requires EDIT)
+   - ✅ GET /api/vendors/{id}/audit-log - Audit (requires VIEWER)
+   - ✅ PUT /api/vendors/{id}/due-diligence - DD Update (requires REQUESTER on vendor_dd)
+   - ✅ POST /api/vendors/{id}/due-diligence/approve - DD Approve (requires APPROVER on vendor_dd)
+   - ✅ POST /api/vendors/{id}/blacklist - Blacklist (requires CONTROLLER)
+
+2. **Assets Module** (100% Complete)
+   - ✅ POST /api/assets - Create (requires REQUESTER)
+   - ✅ GET /api/assets - List (requires VIEWER)
+   - ✅ GET /api/assets/{id} - Detail (requires VIEWER)
+   - ✅ PUT /api/assets/{id} - Update (requires EDIT)
+   - ✅ DELETE /api/assets/{id} - Delete (requires DELETE)
+
+3. **Service Requests (OSR) Module** (100% Complete)
+   - ✅ POST /api/osrs - Create (requires REQUESTER)
+   - ✅ GET /api/osrs - List (requires VIEWER)
+   - ✅ GET /api/osrs/{id} - Detail (requires VIEWER)
+   - ✅ PUT /api/osrs/{id} - Update (requires EDIT)
+   - ✅ DELETE /api/osrs/{id} - Delete (requires DELETE)
+
+4. **Tenders Module** (Partial - CREATE secured)
+   - ✅ POST /api/tenders - Create (requires REQUESTER)
+   - ⏳ Other tender endpoints pending
+
+### Remaining Modules to Secure
+- Contracts (create, approve, update, terminate)
+- Purchase Orders (create, list, detail, convert)
+- Resources (create, list, detail, update, terminate)
+- Invoices (create, list, detail, update, verify, approve)
+- Tender remaining operations (list, update, publish, evaluate, award)
+- Admin category endpoints
+- Upload/Download/Export endpoints
+
+### Next Step:
+Call backend testing agent to comprehensively test all secured endpoints with different user roles.
+
