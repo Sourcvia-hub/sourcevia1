@@ -3382,8 +3382,9 @@ async def create_asset(request: Request, asset: Asset):
 
 @api_router.put("/assets/{asset_id}")
 async def update_asset(asset_id: str, request: Request, asset: Asset):
-    """Update asset"""
-    await require_auth(request)
+    """Update asset - RBAC: requires edit permission"""
+    from utils.auth import require_edit_permission
+    await require_edit_permission(request, "assets")
     
     # Recalculate warranty status
     if asset.warranty_end_date:
