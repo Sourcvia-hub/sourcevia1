@@ -31,10 +31,6 @@ const Layout = ({ children }) => {
     canAccessModule(user?.role, item.module)
   );
 
-  const filteredNavigation = navigation.filter(
-    item => item.roles.includes('all') || item.roles.includes(user?.role)
-  );
-
   const getRoleBadgeColor = (role) => {
     const colors = {
       procurement_officer: 'bg-blue-100 text-blue-800',
