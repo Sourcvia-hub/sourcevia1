@@ -365,7 +365,9 @@ const AppRoutes = () => {
         path="/assets"
         element={
           <ProtectedRoute>
-            <Assets />
+            <ProtectedModule module={Module.ASSETS}>
+              <Assets />
+            </ProtectedModule>
           </ProtectedRoute>
         }
       />
@@ -373,7 +375,9 @@ const AppRoutes = () => {
         path="/assets/new"
         element={
           <ProtectedRoute>
-            <AssetForm />
+            <ProtectedModule module={Module.ASSETS}>
+              <AssetForm />
+            </ProtectedModule>
           </ProtectedRoute>
         }
       />
@@ -381,7 +385,9 @@ const AppRoutes = () => {
         path="/assets/:id/edit"
         element={
           <ProtectedRoute>
-            <AssetForm />
+            <ProtectedModule module={Module.ASSETS}>
+              <AssetForm />
+            </ProtectedModule>
           </ProtectedRoute>
         }
       />
@@ -389,7 +395,9 @@ const AppRoutes = () => {
         path="/assets/:id"
         element={
           <ProtectedRoute>
-            <AssetDetail />
+            <ProtectedModule module={Module.ASSETS}>
+              <AssetDetail />
+            </ProtectedModule>
           </ProtectedRoute>
         }
       />
