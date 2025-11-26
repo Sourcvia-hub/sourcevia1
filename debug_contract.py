@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BASE_URL = "https://assetrack.preview.emergentagent.com/api"
+BASE_URL = "https://sourcevia-admin.preview.emergentagent.com/api"
 TEST_USER = {"email": "procurement@test.com", "password": "password"}
 
 def login():
