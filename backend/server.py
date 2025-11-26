@@ -2110,8 +2110,9 @@ async def update_resource(resource_id: str, resource_data: dict, request: Reques
 
 @api_router.post("/resources/{resource_id}/terminate")
 async def terminate_resource(resource_id: str, request: Request, reason: str = "Manual termination"):
-    """Terminate a resource"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN, UserRole.PD_OFFICER, UserRole.ADMIN])
+    """Terminate a resource - RBAC: requires delete permission"""
+    from utils.auth import require_delete_permission
+    user = await require_delete_permission(request, "resources")
     
     resource = await db.resources.find_one({"id": resource_id})
     if not resource:
