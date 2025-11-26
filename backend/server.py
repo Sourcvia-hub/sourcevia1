@@ -1612,8 +1612,10 @@ async def update_contract(contract_id: str, contract_data: dict, request: Reques
 
 @api_router.get("/contracts/expiring")
 async def get_expiring_contracts(request: Request, days: int = 30):
-    """Get contracts expiring soon"""
-    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER])
+    """Get contracts expiring soon - RBAC: requires viewer permission"""
+    from utils.auth import require_permission
+    from utils.permissions import Permission
+    await require_permission(request, "contracts", Permission.VIEWER)
     
     expiry_date = datetime.now(timezone.utc) + timedelta(days=days)
     
