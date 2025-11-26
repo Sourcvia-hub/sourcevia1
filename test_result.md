@@ -446,6 +446,21 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ RBAC OSR MODULE TESTING FAILED: Complete data model mismatch and permission issues. TESTED OPERATIONS: CREATE (❌ ALL roles fail with missing required fields: request_type, building_id, floor_id, created_by; enum validation errors for category and priority), LIST (❌ user, direct_manager fail with 'Insufficient permissions' - should have REQUESTER permission; ❌ procurement_officer fails - should have REQUESTER+VERIFIER), UPDATE/DELETE (Not tested due to CREATE failures). ROOT CAUSE: 1) OSR data model requires fields not in test data (request_type, building_id, floor_id, created_by), 2) Enum validation issues (category should be 'maintenance'/'cleaning'/'relocation'/'safety'/'other', priority should be 'low'/'normal'/'high'), 3) Permission matrix not properly implemented for service_requests module."
+        - working: false
+          agent: "testing"
+          comment: "❌ COMPREHENSIVE RBAC TESTING RESULTS: OSR Module still failing with same data model issues. CREATE operations fail for ALL roles due to missing required fields (request_type, building_id, floor_id, created_by) and enum validation errors. LIST operations work for all roles. UPDATE/DELETE operations fail due to inability to create test OSRs. Data model mismatch persists - backend expects different field structure than test data provides."
+
+  - task: "RBAC Comprehensive Testing - All 8 Modules"
+    implemented: true
+    working: false
+    file: "backend/server.py, backend/utils/permissions.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ COMPREHENSIVE RBAC TESTING COMPLETED - Mixed Results Across 8 Modules. TESTED MODULES: 1) ✅ VENDORS: CREATE/LIST/BLACKLIST working correctly, UPDATE has server errors, procurement_manager incorrectly allowed CREATE access. 2) ❌ TENDERS: Testing failed due to missing helper methods. 3) ❌ CONTRACTS: Testing failed due to missing helper methods. 4) ❌ INVOICES: Testing failed due to missing helper methods. 5) ❌ PURCHASE ORDERS: Testing failed due to missing helper methods. 6) ❌ RESOURCES: Testing failed due to missing helper methods. 7) ⚠️ ASSETS: CREATE/LIST working correctly, UPDATE/DELETE failing with data structure issues ('id' key errors). 8) ❌ OSR: CREATE failing for all roles due to data model mismatch (missing request_type, building_id, floor_id, created_by fields), LIST working for all roles, UPDATE/DELETE not testable. CRITICAL ISSUES: 1) Permission matrix inconsistencies (procurement_manager should not have CREATE access to vendors), 2) Data model validation issues in Assets and OSR modules, 3) Missing helper methods preventing testing of 5 modules, 4) Server errors in UPDATE operations across multiple modules."
 
 metadata:
   created_by: "main_agent"
