@@ -1556,8 +1556,9 @@ async def approve_contract(contract_id: str, request: Request):
 
 @api_router.post("/contracts/{contract_id}/terminate")
 async def terminate_contract(contract_id: str, request: Request, reason: str = "Manual termination"):
-    """Terminate a contract - PD Officer or Admin only"""
-    user = await require_role(request, [UserRole.PD_OFFICER, UserRole.ADMIN, UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
+    """Terminate a contract - RBAC: requires delete permission"""
+    from utils.auth import require_delete_permission
+    user = await require_delete_permission(request, "contracts")
     
     contract = await db.contracts.find_one({"id": contract_id})
     if not contract:
