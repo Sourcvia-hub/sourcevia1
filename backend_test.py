@@ -2973,6 +2973,39 @@ class RBACTester:
             return False
 
 if __name__ == "__main__":
-    tester = ProcurementTester()
-    success = tester.run_all_tests()
-    sys.exit(0 if success else 1)
+    import sys
+    
+    # Check if RBAC testing is requested
+    if len(sys.argv) > 1 and sys.argv[1] == "rbac":
+        print("🔐 Running RBAC Testing Suite...")
+        tester = RBACTester()
+        success = tester.run_rbac_tests()
+        sys.exit(0 if success else 1)
+    else:
+        print("📋 Running Full Backend Testing Suite...")
+        print("💡 Use 'python backend_test.py rbac' for RBAC-only testing")
+        
+        # Run RBAC tests first
+        print("\n" + "="*80)
+        print("PHASE 1: RBAC TESTING")
+        print("="*80)
+        rbac_tester = RBACTester()
+        rbac_success = rbac_tester.run_rbac_tests()
+        
+        # Run comprehensive tests
+        print("\n" + "="*80)
+        print("PHASE 2: COMPREHENSIVE TESTING")
+        print("="*80)
+        tester = ProcurementTester()
+        comprehensive_success = tester.run_all_tests()
+        
+        # Overall result
+        overall_success = rbac_success and comprehensive_success
+        print(f"\n" + "="*80)
+        print("FINAL RESULTS")
+        print("="*80)
+        print(f"RBAC Testing: {'✅ PASSED' if rbac_success else '❌ FAILED'}")
+        print(f"Comprehensive Testing: {'✅ PASSED' if comprehensive_success else '❌ FAILED'}")
+        print(f"Overall: {'🎉 ALL TESTS PASSED' if overall_success else '⚠️ SOME TESTS FAILED'}")
+        
+        sys.exit(0 if overall_success else 1)
