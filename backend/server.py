@@ -3401,8 +3401,9 @@ async def update_asset(asset_id: str, request: Request, asset: Asset):
 
 @api_router.delete("/assets/{asset_id}")
 async def delete_asset(asset_id: str, request: Request):
-    """Delete asset"""
-    await require_auth(request)
+    """Delete asset - RBAC: requires delete permission"""
+    from utils.auth import require_delete_permission
+    await require_delete_permission(request, "assets")
     await db.assets.delete_one({"id": asset_id})
     return {"message": "Asset deleted successfully"}
 
