@@ -71,13 +71,43 @@ const AssetForm = () => {
 
   const fetchMasterData = async () => {
     try {
-      const [buildingsRes, categoriesRes, vendorsRes, contractsRes, posRes] = await Promise.all([
-        axios.get(`${API}/buildings`, { withCredentials: true }),
-        axios.get(`${API}/asset-categories`, { withCredentials: true }),
-        axios.get(`${API}/vendors`, { withCredentials: true }),
-        axios.get(`${API}/contracts`, { withCredentials: true }),
-        axios.get(`${API}/purchase-orders`, { withCredentials: true })
-      ]);
+      // Fetch data separately to handle individual errors gracefully
+      let buildingsRes, categoriesRes, vendorsRes, contractsRes, posRes;
+      
+      try {
+        buildingsRes = await axios.get(`${API}/buildings`, { withCredentials: true });
+      } catch (err) {
+        console.error('Error fetching buildings:', err);
+        buildingsRes = { data: [] };
+      }
+      
+      try {
+        categoriesRes = await axios.get(`${API}/asset-categories`, { withCredentials: true });
+      } catch (err) {
+        console.error('Error fetching asset categories:', err);
+        categoriesRes = { data: [] };
+      }
+      
+      try {
+        vendorsRes = await axios.get(`${API}/vendors`, { withCredentials: true });
+      } catch (err) {
+        console.error('Error fetching vendors:', err);
+        vendorsRes = { data: [] };
+      }
+      
+      try {
+        contractsRes = await axios.get(`${API}/contracts`, { withCredentials: true });
+      } catch (err) {
+        console.error('Error fetching contracts:', err);
+        contractsRes = { data: [] };
+      }
+      
+      try {
+        posRes = await axios.get(`${API}/purchase-orders`, { withCredentials: true });
+      } catch (err) {
+        console.error('Error fetching purchase orders:', err);
+        posRes = { data: [] };
+      }
       
       setBuildings(buildingsRes.data);
       setCategories(categoriesRes.data);
