@@ -2065,8 +2065,9 @@ async def get_resource(resource_id: str, request: Request):
 
 @api_router.put("/resources/{resource_id}")
 async def update_resource(resource_id: str, resource_data: dict, request: Request):
-    """Update resource details"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN, UserRole.PD_OFFICER, UserRole.ADMIN])
+    """Update resource details - RBAC: requires edit permission"""
+    from utils.auth import require_edit_permission
+    user = await require_edit_permission(request, "resources")
     
     resource = await db.resources.find_one({"id": resource_id})
     if not resource:
