@@ -1534,8 +1534,9 @@ async def get_contract(contract_id: str, request: Request):
 
 @api_router.put("/contracts/{contract_id}/approve")
 async def approve_contract(contract_id: str, request: Request):
-    """Approve contract"""
-    user = await require_role(request, [UserRole.PROJECT_MANAGER])
+    """Approve contract - RBAC: requires approve permission"""
+    from utils.auth import require_approve_permission
+    user = await require_approve_permission(request, "contracts")
     
     result = await db.contracts.update_one(
         {"id": contract_id},
