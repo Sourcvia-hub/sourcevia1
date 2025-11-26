@@ -776,8 +776,9 @@ async def get_vendor(vendor_id: str, request: Request):
 
 @api_router.put("/vendors/{vendor_id}")
 async def update_vendor(vendor_id: str, vendor_update: Vendor, request: Request):
-    """Update vendor information"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN])
+    """Update vendor information - RBAC: requires edit permission"""
+    from utils.auth import require_edit_permission
+    user = await require_edit_permission(request, "vendors")
     
     # Get existing vendor
     existing_vendor = await db.vendors.find_one({"id": vendor_id})
