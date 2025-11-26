@@ -1061,22 +1061,33 @@ async def create_tender(tender: Tender, request: Request):
 
 @api_router.get("/tenders")
 async def get_tenders(request: Request, status: Optional[TenderStatus] = None, search: Optional[str] = None):
-    """Get all tenders - RBAC: requires viewer permission"""
+    """Get all tenders - RBAC: requires viewer permission with data filtering"""
     from utils.auth import require_permission
-    from utils.permissions import Permission
+    from utils.permissions import Permission, should_filter_by_user
     user = await require_permission(request, "tenders", Permission.VIEWER)
+    user_role_str = user.role.value.lower()
     
     query = {}
+    
+    # Apply row-level security: regular users see only their own tenders
+    if should_filter_by_user(user_role_str, "tenders"):
+        query["created_by"] = user.id
+    
     if status:
         query["status"] = status.value
     
     # Add search functionality
     if search:
-        query["$or"] = [
+        search_conditions = [
             {"tender_number": {"$regex": search, "$options": "i"}},
             {"title": {"$regex": search, "$options": "i"}},
             {"project_name": {"$regex": search, "$options": "i"}}
         ]
+        if "$or" in query:
+            query["$and"] = [{"$or": search_conditions}, {"$or": query["$or"]}]
+            del query["$or"]
+        else:
+            query["$or"] = search_conditions
     
     tenders = await db.tenders.find(query).to_list(1000)
     
