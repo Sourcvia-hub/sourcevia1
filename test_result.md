@@ -3427,3 +3427,41 @@ The permission system in `utils/permissions.py` is working correctly and can be 
 ### Next Step:
 Call backend testing agent to comprehensively test all secured endpoints with different user roles.
 
+
+## RBAC Phase 2 - Backend Implementation Progress (Continued)
+**Date:** 2025-11-26
+
+### Additional Modules Secured:
+
+**4. Tenders Module (Completed)**
+- ✅ POST /api/tenders - Create
+- ✅ GET /api/tenders - List  
+- ✅ GET /api/tenders/{id} - Detail
+- ✅ GET /api/tenders/approved/list - Approved list
+- ✅ PUT /api/tenders/{id} - Update
+- ✅ PUT /api/tenders/{id}/publish - Publish
+- ✅ POST /api/tenders/{id}/proposals - Submit proposal
+
+**5. Contracts Module (Completed)**
+- ✅ POST /api/contracts - Create
+- ✅ GET /api/contracts - List
+- ✅ GET /api/contracts/{id} - Detail
+- ✅ PUT /api/contracts/{id} - Update
+- ✅ PUT /api/contracts/{id}/approve - Approve
+- ✅ POST /api/contracts/{id}/terminate - Terminate
+- ✅ GET /api/contracts/expiring - Expiring contracts
+
+**6. Invoices Module (Partial)**
+- ✅ POST /api/invoices - Create
+- ✅ GET /api/invoices - List
+- ⏳ Remaining invoice endpoints pending
+
+### Frontend Permission Fixes:
+- ✅ Fixed `/app/frontend/src/pages/Tenders.js` to use `canCreate()` instead of hardcoded role check
+- ✅ Regular users can now see and use "Create Tender" button
+
+### Summary:
+- **Modules 100% Complete**: Vendors (8 endpoints), Assets (5 endpoints), OSR (5 endpoints), Tenders (7 endpoints), Contracts (7 endpoints)
+- **Modules Partial**: Invoices (2/6 endpoints), Purchase Orders (0/4 endpoints), Resources (0/5 endpoints)
+- **Estimated Progress**: ~75% of critical CRUD endpoints secured
+
