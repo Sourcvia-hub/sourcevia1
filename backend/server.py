@@ -3419,8 +3419,10 @@ async def get_osrs(request: Request):
 
 @api_router.get("/osrs/{osr_id}")
 async def get_osr(osr_id: str, request: Request):
-    """Get single OSR"""
-    await require_auth(request)
+    """Get single OSR - RBAC: requires viewer permission"""
+    from utils.auth import require_permission
+    from utils.permissions import Permission
+    await require_permission(request, "service_requests", Permission.VIEWER)
     osr = await db.osr.find_one({"id": osr_id}, {"_id": 0})
     if not osr:
         raise HTTPException(status_code=404, detail="OSR not found")
