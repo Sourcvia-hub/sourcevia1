@@ -1833,8 +1833,9 @@ async def approve_invoice(invoice_id: str, request: Request):
 # ==================== PURCHASE ORDER ENDPOINTS ====================
 @api_router.post("/purchase-orders")
 async def create_purchase_order(po: PurchaseOrder, request: Request):
-    """Create new purchase order with risk assessment"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.SYSTEM_ADMIN, UserRole.PD_OFFICER, UserRole.ADMIN, UserRole.REQUESTER])
+    """Create new purchase order - RBAC: requires create permission"""
+    from utils.auth import require_create_permission
+    user = await require_create_permission(request, "purchase_orders")
     
     # Generate PO number
     year = datetime.now(timezone.utc).strftime('%y')
