@@ -100,10 +100,9 @@ const OSRForm = () => {
       setLoading(true);
       
       // Prepare OSR data
+      // Note: created_by and created_by_name are set automatically by the backend
       const osrData = {
-        ...formData,
-        created_by: user?.id,
-        created_by_name: user?.name
+        ...formData
       };
       
       const response = await axios.post(`${API}/osrs`, osrData, { withCredentials: true });
