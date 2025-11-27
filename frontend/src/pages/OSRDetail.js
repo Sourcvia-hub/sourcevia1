@@ -76,7 +76,20 @@ const OSRDetail = () => {
       navigate('/osr');
     } catch (error) {
       console.error('Error deleting OSR:', error);
-      alert(error.response?.data?.detail || 'Error deleting service request');
+      
+      let errorMessage = 'Error deleting service request';
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        if (typeof errorData.detail === 'string') {
+          errorMessage = errorData.detail;
+        } else if (typeof errorData.detail === 'object') {
+          errorMessage = JSON.stringify(errorData.detail, null, 2);
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      }
+      
+      alert(errorMessage);
     }
   };
 
