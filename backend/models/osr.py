@@ -74,7 +74,7 @@ class OSR(BaseModel):
     attachments: List[Dict[str, Any]] = []
     
     # Metadata
-    created_by: str
+    created_by: Optional[str] = None  # Set automatically by backend
     created_by_name: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: Optional[datetime] = None
