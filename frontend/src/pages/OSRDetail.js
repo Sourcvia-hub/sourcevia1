@@ -86,8 +86,12 @@ const OSRDetail = () => {
         const errorData = error.response.data;
         if (typeof errorData.detail === 'string') {
           errorMessage = errorData.detail;
+        } else if (Array.isArray(errorData.detail)) {
+          errorMessage = 'Validation errors:\n' + errorData.detail.map(err => 
+            `- ${err.loc.join('.')}: ${err.msg}`
+          ).join('\n');
         } else if (typeof errorData.detail === 'object') {
-          errorMessage = JSON.stringify(errorData.detail, null, 2);
+          errorMessage = 'Error: ' + JSON.stringify(errorData.detail, null, 2);
         } else if (errorData.message) {
           errorMessage = errorData.message;
         }
