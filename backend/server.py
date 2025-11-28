@@ -1038,6 +1038,30 @@ async def blacklist_vendor(vendor_id: str, request: Request):
     
     return {"message": "Vendor blacklisted and all active contracts terminated"}
 
+@api_router.put("/vendors/{vendor_id}/approve")
+async def approve_vendor(vendor_id: str, request: Request):
+    """Approve a vendor - RBAC: requires approve permission"""
+    from utils.auth import require_approve_permission
+    user = await require_approve_permission(request, "vendors")
+    
+    vendor = await db.vendors.find_one({"id": vendor_id})
+    if not vendor:
+        raise HTTPException(status_code=404, detail="Vendor not found")
+    
+    # Update vendor status to approved
+    await db.vendors.update_one(
+        {"id": vendor_id},
+        {"$set": {
+            "status": VendorStatus.APPROVED.value,
+            "approved_by": user.id,
+            "approved_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    updated_vendor = await db.vendors.find_one({"id": vendor_id}, {"_id": 0})
+    return updated_vendor
+
 # ==================== TENDER ENDPOINTS ====================
 @api_router.post("/tenders")
 async def create_tender(tender: Tender, request: Request):
