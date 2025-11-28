@@ -239,6 +239,7 @@ class RBACCompleteTester:
                 print(f"✅ Created OSR: {osr['title']}")
             else:
                 print(f"❌ Failed to create OSR: {response.text}")
+                # Continue without OSR for testing
         
         # Step 3: Test data filtering as test_user
         print(f"\n--- Step 3: Testing data filtering as test_user ---")
