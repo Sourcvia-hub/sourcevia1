@@ -8,7 +8,7 @@ import json
 import sys
 
 # Configuration
-BASE_URL = "https://sourcevia-admin.preview.emergentagent.com/api"
+BASE_URL = "https://sourcevia-secure.preview.emergentagent.com/api"
 TEST_CREDENTIALS = {"email": "procurement@test.com", "password": "password"}
 
 class DebugVendorsTest:

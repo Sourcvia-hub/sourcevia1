@@ -7,7 +7,7 @@ import requests
 import tempfile
 import os
 
-BASE_URL = "https://sourcevia-admin.preview.emergentagent.com/api"
+BASE_URL = "https://sourcevia-secure.preview.emergentagent.com/api"
 TEST_USER = {"email": "procurement@test.com", "password": "password"}
 
 def test_simple_upload():
