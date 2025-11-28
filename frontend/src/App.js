@@ -3,8 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// Use environment variable or fallback to current origin for deployed app
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
 const API = `${BACKEND_URL}/api`;
+
+// Log for debugging in production
+console.log('App.js - Backend URL:', BACKEND_URL);
+console.log('App.js - API URL:', API);
 
 // ==================== AUTH CONTEXT ====================
 const AuthContext = React.createContext(null);
