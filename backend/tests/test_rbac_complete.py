@@ -170,7 +170,7 @@ class RBACCompleteTester:
                 "description": "Test OSR created by user",
                 "request_type": "general_request",
                 "category": "maintenance",
-                "priority": "medium",
+                "priority": "normal",  # Changed from "medium" to "normal"
                 "building_id": "test-building-1",
                 "floor_id": "test-floor-1",
                 "created_by": "user-id"
@@ -187,6 +187,7 @@ class RBACCompleteTester:
                 print(f"✅ Created OSR: {osr['title']}")
             else:
                 print(f"❌ Failed to create OSR: {response.text}")
+                # Continue without OSR for testing
         
         # Step 2: Create test data as test_po
         print(f"\n--- Step 2: Creating test data as test_po ---")
