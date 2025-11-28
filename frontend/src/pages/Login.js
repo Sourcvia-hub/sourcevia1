@@ -2,14 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
 import axios from 'axios';
+import { API_URL } from '../config/api';
 
-// Use environment variable or fallback to current origin for deployed app
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-const API = `${BACKEND_URL}/api`;
-
-// Log for debugging in production
-console.log('Backend URL:', BACKEND_URL);
-console.log('API URL:', API);
+const API = API_URL;
 
 const Login = () => {
   const navigate = useNavigate();
