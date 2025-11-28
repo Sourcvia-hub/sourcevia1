@@ -66,15 +66,26 @@ const Login = () => {
         email: formData.email,
         password: formData.password,
         role: formData.role // Use selected role from form
+      }, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       // Auto-login after registration
       await login(formData.email, formData.password);
       navigate('/dashboard');
     } catch (err) {
+      console.error('Registration error:', err);
       const errorDetail = err.response?.data?.detail;
       if (errorDetail === 'User already exists') {
         setError('This email is already registered. Please login instead or use a different email.');
+      } else if (err.response?.status === 422) {
+        // Validation error
+        setError('Please check all fields are filled correctly.');
+      } else if (err.message === 'Network Error') {
+        setError('Cannot connect to server. Please check your internet connection.');
       } else {
         setError(errorDetail || 'Registration failed. Please try again.');
       }
