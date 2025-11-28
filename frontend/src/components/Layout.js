@@ -114,6 +114,34 @@ const Layout = ({ children }) => {
                 </Link>
               );
             })}
+
+            {/* Special Links Section (Manager/Admin Only) */}
+            {filteredSpecialLinks.length > 0 && (
+              <>
+                <div className="pt-4 pb-2">
+                  <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Security & Access
+                  </p>
+                </div>
+                {filteredSpecialLinks.map((item) => {
+                  const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        isActive
+                          ? 'bg-purple-50 text-purple-700'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <span className="mr-3 text-xl">{item.icon}</span>
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </>
+            )}
           </nav>
 
           {/* User Info */}
