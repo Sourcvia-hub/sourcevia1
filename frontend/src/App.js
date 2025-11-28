@@ -221,6 +221,8 @@ import FacilitiesSettings from './pages/FacilitiesSettings';
 import OSRList from './pages/OSRList';
 import OSRForm from './pages/OSRForm';
 import OSRDetail from './pages/OSRDetail';
+import CCTVLiveView from './pages/CCTVLiveView';
+import AccessManagement from './pages/AccessManagement';
 import ProtectedModule from './components/ProtectedModule';
 import { Module } from './utils/permissions';
 
