@@ -58,9 +58,12 @@ else:
     MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME', 'procurement_db')
     print(f"ℹ️  Using database name from MONGO_DB_NAME or default: {MONGO_DB_NAME}")
 
+print(f"\n{'='*60}")
 print(f"🔗 MongoDB Configuration:")
-print(f"   URL: {MONGO_URL[:50]}...")
+print(f"   URL: {MONGO_URL[:60]}...")
 print(f"   Database: {MONGO_DB_NAME}")
+print(f"   Source: {'URL' if db_name_from_url else 'Environment Variable or Default'}")
+print(f"{'='*60}\n")
 
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[MONGO_DB_NAME]
