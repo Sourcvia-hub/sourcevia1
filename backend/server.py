@@ -3590,6 +3590,30 @@ async def delete_osr(osr_id: str, request: Request):
     await db.osr.delete_one({"id": osr_id})
     return {"message": "OSR deleted successfully"}
 
+@api_router.put("/osrs/{osr_id}/approve")
+async def approve_osr(osr_id: str, request: Request):
+    """Approve OSR - RBAC: requires approve permission"""
+    from utils.auth import require_approve_permission
+    user = await require_approve_permission(request, "service_requests")
+    
+    osr = await db.osr.find_one({"id": osr_id})
+    if not osr:
+        raise HTTPException(status_code=404, detail="OSR not found")
+    
+    # Update status to approved/assigned
+    update_data = {
+        "status": "assigned",
+        "approved_by": user.id,
+        "approved_by_name": user.name,
+        "approved_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.osr.update_one({"id": osr_id}, {"$set": update_data})
+    
+    updated_osr = await db.osr.find_one({"id": osr_id}, {"_id": 0})
+    return updated_osr
+
 # Seed Master Data
 @api_router.get("/facilities/master-data")
 async def get_master_data(request: Request):
