@@ -33,7 +33,7 @@ TEST_USERS = {
     "direct_manager": {"email": "test_dm@test.com", "password": "password", "role": "direct_manager"},
     "procurement_officer": {"email": "test_po@test.com", "password": "password", "role": "procurement_officer"},
     "procurement_manager": {"email": "test_pm@test.com", "password": "password", "role": "procurement_manager"},
-    "controller": {"email": "test_controller@test.com", "password": "password", "role": "controller"},
+    "controller": {"email": "test_controller@test.com", "password": "password", "role": "senior_manager"},  # Using senior_manager as controller equivalent
     "admin": {"email": "test_admin@test.com", "password": "password", "role": "admin"}
 }
 
