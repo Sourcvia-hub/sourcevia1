@@ -231,7 +231,8 @@ class RBACCompleteTester:
             
             response = self.session.post(f"{BASE_URL}/osrs", json=osr_data)
             if response.status_code == 200:
-                osr = response.json()
+                response_data = response.json()
+                osr = response_data.get('osr', response_data)  # Handle nested response
                 self.created_entities['osrs'].append({
                     'id': osr['id'],
                     'created_by': 'procurement_officer',
