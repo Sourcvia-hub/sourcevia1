@@ -74,12 +74,26 @@ else:
     MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME', 'procurement_db')
     print(f"\n✅ [DECISION] No database in URL, using MONGO_DB_NAME or default: '{MONGO_DB_NAME}'")
 
-print(f"\n{'='*60}")
-print(f"🔗 MongoDB Configuration:")
-print(f"   URL: {MONGO_URL[:60]}...")
-print(f"   Database: {MONGO_DB_NAME}")
+print(f"\n{'='*80}")
+print(f"🔗 FINAL MongoDB Configuration:")
+print(f"   URL: {MONGO_URL[:70]}...")
+print(f"   Database: '{MONGO_DB_NAME}'")
 print(f"   Source: {'URL' if db_name_from_url else 'Environment Variable or Default'}")
-print(f"{'='*60}\n")
+print(f"{'='*80}")
 
+# CRITICAL VALIDATION: Check for common misconfigurations
+if 'mongodb+srv://' in MONGO_URL and MONGO_DB_NAME == 'procurement_db' and not db_name_from_url:
+    print(f"\n⚠️  WARNING: Possible misconfiguration detected!")
+    print(f"   - You're using MongoDB Atlas (mongodb+srv://)")
+    print(f"   - But database name is 'procurement_db' (likely from env var)")
+    print(f"   - And no database name was found in the URL")
+    print(f"   - This may cause authentication errors!")
+    print(f"   - Solution: Add database name to MONGO_URL after cluster address")
+    print(f"   - Example: mongodb+srv://user:pass@cluster.net/your_db_name?options")
+    print(f"\n")
+
+print(f"\n[DB Init] Creating MongoDB client...")
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[MONGO_DB_NAME]
+print(f"[DB Init] Database client created successfully")
+print(f"[DB Init] Will connect to database: '{MONGO_DB_NAME}'\n")
