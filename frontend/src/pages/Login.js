@@ -33,6 +33,9 @@ const Login = () => {
     setLoading(true);
     setError('');
 
+    console.log('🔐 Attempting login to:', `${API_URL}/auth/login`);
+    console.log('📧 Email:', formData.email);
+
     try {
       const response = await axios.post(`${API_URL}/auth/login`, {
         email: formData.email,
@@ -42,6 +45,8 @@ const Login = () => {
         headers: { 'Content-Type': 'application/json' }
       });
 
+      console.log('✅ Login successful:', response.data);
+
       if (response.data.user) {
         // Store user info if needed
         localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -49,13 +54,21 @@ const Login = () => {
         navigate('/dashboard');
       }
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('❌ Login error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        config: err.config
+      });
+      
       if (err.response?.status === 401) {
         setError('Invalid email or password');
-      } else if (err.message === 'Network Error') {
-        setError('Cannot connect to server');
+      } else if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+        setError('Cannot connect to server. Please check your internet connection or try again later.');
+      } else if (err.response?.status === 500) {
+        setError('Server error. Please try again later.');
       } else {
-        setError(err.response?.data?.detail || 'Login failed');
+        setError(err.response?.data?.detail || 'Login failed. Please try again.');
       }
     } finally {
       setLoading(false);
