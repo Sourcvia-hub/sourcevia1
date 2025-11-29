@@ -29,11 +29,19 @@ def extract_db_name_from_url(mongo_url):
         # Remove leading slash and query parameters
         if path and len(path) > 1:
             db_name = path.lstrip('/').split('?')[0]
-            if db_name:
-                return db_name
+            if db_name and db_name.strip():
+                print(f"[DB Extract] Found database name in URL: '{db_name}'")
+                return db_name.strip()
+            else:
+                print(f"[DB Extract] Path found but empty: '{path}'")
+        else:
+            print(f"[DB Extract] No path in URL (path='{path}')")
     except Exception as e:
-        print(f"Warning: Could not parse database name from URL: {e}")
+        print(f"[DB Extract] ERROR parsing URL: {e}")
+        import traceback
+        traceback.print_exc()
     
+    print(f"[DB Extract] Returning None - no database name found")
     return None
 
 # MongoDB connection
