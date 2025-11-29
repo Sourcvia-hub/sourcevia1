@@ -4,11 +4,6 @@ import { useAuth } from '../App';
 import axios from 'axios';
 import { API_URL } from '../config/api';
 
-const API = API_URL;
-
-// DEV MODE: Set to true to skip validation and bypass backend
-const DEV_MODE_SKIP_VALIDATION = process.env.REACT_APP_DEV_MODE === 'true';
-
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -17,126 +12,134 @@ const Login = () => {
     email: '',
     password: '',
     name: '',
-    role: 'user'  // Default role
+    role: 'user'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Handle input changes
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    setError('');
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setError(''); // Clear error when user types
   };
 
+  // Handle Login
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // DEV MODE: Skip backend login
-    if (DEV_MODE_SKIP_VALIDATION) {
-      console.warn('🔧 DEV MODE: Skipping login validation');
-      
-      // Set fake auth token
-      localStorage.setItem('dev_token', 'DEV_MODE_TOKEN');
-      localStorage.setItem('dev_user', JSON.stringify({
-        email: formData.email || 'dev@test.com',
-        name: 'Dev User',
-        role: 'admin'
-      }));
-      
-      // Navigate directly to dashboard
-      setTimeout(() => {
-        navigate('/dashboard');
-        setLoading(false);
-      }, 500);
-      return;
-    }
-
-    // Normal login flow
     try {
-      await login(formData.email, formData.password);
-      navigate('/dashboard');
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        email: formData.email,
+        password: formData.password
+      }, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (response.data.user) {
+        // Store user info if needed
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        // Navigate to dashboard
+        navigate('/dashboard');
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+      console.error('Login error:', err);
+      if (err.response?.status === 401) {
+        setError('Invalid email or password');
+      } else if (err.message === 'Network Error') {
+        setError('Cannot connect to server');
+      } else {
+        setError(err.response?.data?.detail || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle Registration
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // DEV MODE: Skip all validation and backend calls
-    if (DEV_MODE_SKIP_VALIDATION) {
-      console.warn('🔧 DEV MODE: Skipping validation and backend calls');
-      
-      // Set fake auth token
-      localStorage.setItem('dev_token', 'DEV_MODE_TOKEN');
-      localStorage.setItem('dev_user', JSON.stringify({
-        email: formData.email || 'dev@test.com',
-        name: formData.name || 'Dev User',
-        role: formData.role || 'admin'
-      }));
-      
-      // Navigate directly to dashboard
-      setTimeout(() => {
-        navigate('/dashboard');
-        setLoading(false);
-      }, 500); // Small delay to show loading state
-      return;
-    }
-
-    // Normal validation flow
-    if (!formData.name || !formData.email || !formData.password) {
-      setError('All fields are required');
+    // Basic validation
+    if (!formData.name.trim()) {
+      setError('Name is required');
       setLoading(false);
       return;
     }
 
-    if (formData.password.length < 6) {
+    if (!formData.email.trim()) {
+      setError('Email is required');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.password || formData.password.length < 6) {
       setError('Password must be at least 6 characters');
       setLoading(false);
       return;
     }
 
     try {
-      // Register the user
-      await axios.post(`${API}/auth/register`, {
-        name: formData.name,
-        email: formData.email,
+      // Step 1: Register the user
+      const registerResponse = await axios.post(`${API_URL}/auth/register`, {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
         password: formData.password,
-        role: formData.role // Use selected role from form
+        role: formData.role
       }, {
         withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       });
 
-      // Auto-login after registration
-      await login(formData.email, formData.password);
-      navigate('/dashboard');
+      console.log('Registration successful:', registerResponse.data);
+
+      // Step 2: Auto-login after successful registration
+      const loginResponse = await axios.post(`${API_URL}/auth/login`, {
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password
+      }, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (loginResponse.data.user) {
+        localStorage.setItem('user', JSON.stringify(loginResponse.data.user));
+        navigate('/dashboard');
+      }
     } catch (err) {
       console.error('Registration error:', err);
-      const errorDetail = err.response?.data?.detail;
-      if (errorDetail === 'User already exists') {
-        setError('This email is already registered. Please login instead or use a different email.');
+      if (err.response?.data?.detail === 'User already exists') {
+        setError('This email is already registered. Please login instead.');
       } else if (err.response?.status === 422) {
-        // Validation error
-        setError('Please check all fields are filled correctly.');
+        setError('Please check all fields are filled correctly');
       } else if (err.message === 'Network Error') {
-        setError('Cannot connect to server. Please check your internet connection.');
+        setError('Cannot connect to server');
       } else {
-        setError(errorDetail || 'Registration failed. Please try again.');
+        setError(err.response?.data?.detail || 'Registration failed');
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  // Toggle between login and registration
+  const toggleMode = () => {
+    setIsRegistering(!isRegistering);
+    setError('');
+    setFormData({
+      email: '',
+      password: '',
+      name: '',
+      role: 'user'
+    });
   };
 
   return (
@@ -144,39 +147,33 @@ const Login = () => {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <img 
-              src={`${process.env.PUBLIC_URL}/logo.png`}
-              alt="Sourcevia Logo" 
-              className="h-16 w-auto"
-              onError={(e) => {
-                console.error('Logo failed to load on login page');
-                e.target.style.display = 'none';
-              }}
-            />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
+            <span className="text-white text-2xl font-bold">S</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Sourcevia</h1>
           <p className="text-gray-600 mt-2">Procurement Management System</p>
         </div>
 
-        {/* Toggle between Login and Register */}
-        <div className="flex gap-2 mb-6">
+        {/* Tab Buttons */}
+        <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
           <button
-            onClick={() => setIsRegistering(false)}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+            type="button"
+            onClick={() => !isRegistering && toggleMode()}
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
               !isRegistering
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-white text-blue-600 shadow'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             Login
           </button>
           <button
-            onClick={() => setIsRegistering(true)}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+            type="button"
+            onClick={() => isRegistering && toggleMode()}
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
               isRegistering
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-white text-blue-600 shadow'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             Register
@@ -191,85 +188,93 @@ const Login = () => {
         )}
 
         {/* Form */}
-        <form onSubmit={isRegistering ? handleRegister : handleLogin} className="space-y-4">
+        <form onSubmit={isRegistering ? handleRegister : handleLogin}>
+          {/* Name Field (Registration Only) */}
           {isRegistering && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required={isRegistering}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your full name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Role *
-                </label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  required={isRegistering}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                >
-                  <option value="user">User (Regular Employee)</option>
-                  <option value="direct_manager">Direct Manager</option>
-                  <option value="procurement_officer">Procurement Officer</option>
-                  <option value="senior_manager">Senior Manager</option>
-                  <option value="procurement_manager">Procurement Manager</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <p className="text-xs text-gray-500 mt-1">Select your role for testing purposes</p>
-              </div>
-            </>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter your full name"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required={isRegistering}
+              />
+            </div>
           )}
 
-          <div>
+          {/* Email Field */}
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email *
+              Email <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter your email"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
             />
           </div>
 
-          <div>
+          {/* Password Field */}
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password *
+              Password <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              required
-              minLength={6}
+              placeholder={isRegistering ? 'Create a password (min 6 characters)' : 'Enter your password'}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your password"
+              required
+              minLength={isRegistering ? 6 : undefined}
             />
-            {isRegistering && (
-              <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
-            )}
           </div>
 
+          {/* Role Selection (Registration Only) */}
+          {isRegistering && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Role <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="user">User</option>
+                <option value="direct_manager">Direct Manager</option>
+                <option value="procurement_officer">Procurement Officer</option>
+                <option value="procurement_manager">Procurement Manager</option>
+                <option value="senior_manager">Senior Manager</option>
+                <option value="admin">Admin</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Select your role in the organization
+              </p>
+            </div>
+          )}
+
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-all ${
+              loading
+                ? 'bg-blue-400 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 active:scale-95'
+            }`}
           >
             {loading ? (
               <span className="flex items-center justify-center">
@@ -277,7 +282,7 @@ const Login = () => {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                {isRegistering ? 'Creating Account...' : 'Logging in...'}
+                {isRegistering ? 'Creating Account...' : 'Logging In...'}
               </span>
             ) : (
               isRegistering ? 'Create Account' : 'Login'
@@ -285,30 +290,17 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Additional Info */}
+        {/* Toggle Link */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            {isRegistering ? (
-              <>
-                Already have an account?{' '}
-                <button
-                  onClick={() => setIsRegistering(false)}
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  Login here
-                </button>
-              </>
-            ) : (
-              <>
-                Don't have an account?{' '}
-                <button
-                  onClick={() => setIsRegistering(true)}
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  Register here
-                </button>
-              </>
-            )}
+            {isRegistering ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <button
+              type="button"
+              onClick={toggleMode}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              {isRegistering ? 'Login here' : 'Register here'}
+            </button>
           </p>
         </div>
       </div>
