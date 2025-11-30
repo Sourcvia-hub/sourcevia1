@@ -11,6 +11,7 @@ const Login = () => {
   const [role, setRole] = useState('admin');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('checking'); // checking, connected, error
 
   // Import API configuration
   const API_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
