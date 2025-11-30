@@ -25,14 +25,14 @@ const Login = () => {
   // Test backend connection on mount
   React.useEffect(() => {
     console.log('🔧 Login Page Loaded');
-    console.log('  Backend URL:', API_URL);
+    console.log('  Backend URL:', BACKEND_URL);
     console.log('  process.env.REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
-    console.log('  window.location.origin:', window.location.origin);
+    console.log('  window.APP_CONFIG?.BACKEND_URL:', window.APP_CONFIG?.BACKEND_URL);
     
     // Test connection
     const testConnection = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/auth/login`, {
+        const response = await axios.get(`${BACKEND_URL}/api/health`, {
           timeout: 5000,
           validateStatus: () => true // Accept any status
         });
@@ -46,7 +46,7 @@ const Login = () => {
     };
     
     testConnection();
-  }, []);
+  }, [BACKEND_URL]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
