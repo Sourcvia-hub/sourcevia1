@@ -93,6 +93,12 @@ else:
             MONGO_DB_NAME = env_db_name
         print(f"\n✅ [DECISION] Local MongoDB, using database: '{MONGO_DB_NAME}'")
 
+# CRITICAL SAFETY CHECK: NEVER allow 'procurement_db'
+if MONGO_DB_NAME == 'procurement_db':
+    print(f"\n🚨 [CRITICAL ERROR] Database name is 'procurement_db' - this will cause authorization errors!")
+    print(f"   FORCING override to 'sourcevia'")
+    MONGO_DB_NAME = 'sourcevia'
+
 print(f"\n{'='*80}")
 print(f"🔗 FINAL MongoDB Configuration:")
 print(f"   URL: {MONGO_URL[:70]}...")
@@ -107,6 +113,10 @@ if ('mongodb+srv://' in MONGO_URL or 'mongodb.net' in MONGO_URL) and not db_name
     print(f"   For production, please update MONGO_URL to include database name:")
     print(f"   Example: mongodb+srv://user:pass@cluster.net/sourcevia?options")
     print(f"\n")
+
+# Final assertion to guarantee we never use wrong database
+assert MONGO_DB_NAME != 'procurement_db', "FATAL: Cannot use 'procurement_db' database!"
+assert MONGO_DB_NAME == 'sourcevia' or 'mongodb://' in MONGO_URL, "Database name must be 'sourcevia' for Atlas!"
 
 print(f"\n[DB Init] Creating MongoDB client...")
 client = AsyncIOMotorClient(MONGO_URL)
