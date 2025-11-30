@@ -142,17 +142,24 @@ const Login = () => {
     } catch (err) {
       console.error('❌ Registration error:', err);
       
+      // Better error messages
+      let errorMessage = '';
+      
       if (err.code === 'ECONNABORTED') {
-        setError('Request timeout. Server is not responding.');
+        errorMessage = 'Request timed out. Please try again.';
       } else if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
-        setError(`Cannot reach server at ${API_URL}. Please check if backend is running.`);
+        errorMessage = 'Connection error. Please check your internet connection.';
       } else if (err.response?.status === 400 && err.response?.data?.detail === 'User already exists') {
-        setError('This email is already registered. Please login instead.');
+        errorMessage = 'This email is already registered. Please login instead.';
       } else if (err.response?.status === 500) {
-        setError('Server error. Backend may have database issues.');
+        errorMessage = 'Server error. Please try again later.';
+      } else if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
       } else {
-        setError(err.response?.data?.detail || err.message || 'Registration failed');
+        errorMessage = 'Registration failed. Please try again.';
       }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
