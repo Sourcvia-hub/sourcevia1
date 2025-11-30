@@ -271,28 +271,34 @@ async def api_health_check():
 @api_router.post("/auth/register")
 async def register(register_data: RegisterRequest):
     """Register a new user (admin only endpoint for creating users)"""
-    # Check if user already exists
-    existing_user = await db.users.find_one({"email": register_data.email})
-    if existing_user:
-        raise HTTPException(status_code=400, detail="User already exists")
-    
-    # Create new user
-    user = User(
-        email=register_data.email,
-        name=register_data.name,
-        password=hash_password(register_data.password),
-        role=register_data.role
-    )
-    
-    user_doc = user.model_dump()
-    user_doc["created_at"] = user_doc["created_at"].isoformat()
-    await db.users.insert_one(user_doc)
-    
-    # Remove password from response
-    user_dict = user.model_dump()
-    user_dict.pop('password', None)
-    
-    return {"message": "User created successfully", "user": user_dict}
+    try:
+        # Check if user already exists
+        existing_user = await db.users.find_one({"email": register_data.email}, {"_id": 0})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="User already exists")
+        
+        # Create new user
+        user = User(
+            email=register_data.email,
+            name=register_data.name,
+            password=hash_password(register_data.password),
+            role=register_data.role
+        )
+        
+        user_doc = user.model_dump()
+        user_doc["created_at"] = user_doc["created_at"].isoformat()
+        await db.users.insert_one(user_doc)
+        
+        # Remove password from response
+        user_dict = user.model_dump()
+        user_dict.pop('password', None)
+        
+        return {"message": "User created successfully", "user": user_dict}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @api_router.post("/auth/login")
 async def login(login_data: LoginRequest, response: Response):
