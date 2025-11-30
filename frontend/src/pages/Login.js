@@ -12,29 +12,15 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Get backend URL - try multiple sources
-  const getBackendUrl = () => {
-    // Try environment variable first
-    if (process.env.REACT_APP_BACKEND_URL) {
-      return process.env.REACT_APP_BACKEND_URL;
-    }
-    // Try runtime config
-    if (window.APP_CONFIG?.BACKEND_URL) {
-      return window.APP_CONFIG.BACKEND_URL;
-    }
-    // Default to same origin
-    return window.location.origin;
-  };
+  // Import API configuration
+  const API_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
 
-  const API_URL = getBackendUrl();
-
-  // Log configuration for debugging
+  // Log configuration on mount
   React.useEffect(() => {
-    console.log('🔧 Login Page Configuration:');
+    console.log('🔧 Login Page Loaded');
     console.log('  Backend URL:', API_URL);
-    console.log('  Current Origin:', window.location.origin);
-    console.log('  Env Variable:', process.env.REACT_APP_BACKEND_URL);
-  }, [API_URL]);
+    console.log('  Ready to connect');
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
