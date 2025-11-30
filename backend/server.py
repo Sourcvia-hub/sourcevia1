@@ -3752,6 +3752,36 @@ app.add_middleware(
 # Include the router in the main app (must be after all endpoints are defined)
 app.include_router(api_router)
 
+# Add root health check endpoint (not under /api prefix)
+@app.get("/")
+async def root():
+    """Root endpoint - API health check"""
+    return {
+        "status": "ok",
+        "message": "Sourcevia Procurement API",
+        "version": "1.0",
+        "endpoints": {
+            "auth": "/api/auth/login",
+            "health": "/api/health"
+        }
+    }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    try:
+        # Test database connection
+        await db.command('ping')
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    
+    return {
+        "status": "ok",
+        "database": db_status,
+        "api_version": "1.0"
+    }
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
