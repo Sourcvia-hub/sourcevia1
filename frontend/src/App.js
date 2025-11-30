@@ -70,9 +70,13 @@ const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
-      setUser(null);
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      // Always clear local state and storage, even if API call fails
+      setUser(null);
+      localStorage.removeItem('user');
+      localStorage.clear(); // Clear all localStorage for complete session cleanup
     }
   };
 
