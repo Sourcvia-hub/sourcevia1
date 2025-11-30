@@ -48,13 +48,15 @@ def extract_db_name_from_url(mongo_url):
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/')
 
 # Database name priority (CRITICAL for Atlas compatibility):
-# 1. Database name extracted from MONGO_URL (ALWAYS takes priority for Atlas)
-# 2. Explicitly set MONGO_DB_NAME environment variable (for local development)
-# 3. Default fallback to 'procurement_db'
+# 1. Database name extracted from MONGO_URL (ALWAYS takes priority)
+# 2. If Atlas URL without DB name: Default to 'sourcevia' (NOT 'procurement_db')
+# 3. If local MongoDB: Use MONGO_DB_NAME environment variable or default to 'sourcevia'
 #
 # IMPORTANT: If MONGO_URL contains a database name (e.g., Atlas connection string),
 # that database name MUST be used, regardless of MONGO_DB_NAME environment variable.
 # This ensures authentication works correctly with MongoDB Atlas.
+#
+# CRITICAL FIX: Never use 'procurement_db' as default for Atlas to avoid authorization errors.
 
 print(f"\n{'='*80}")
 print(f"[DB Config] Starting database configuration...")
