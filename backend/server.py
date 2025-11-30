@@ -303,20 +303,26 @@ async def register(register_data: RegisterRequest):
 @api_router.post("/auth/login")
 async def login(login_data: LoginRequest, response: Response):
     """Login with email and password"""
-    # Find user
-    user_doc = await db.users.find_one({"email": login_data.email})
-    if not user_doc:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    # Verify password
-    if not verify_password(login_data.password, user_doc.get("password", "")):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    # Convert datetime strings
-    if isinstance(user_doc.get('created_at'), str):
-        user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
-    
-    user = User(**user_doc)
+    try:
+        # Find user (exclude _id to avoid serialization issues)
+        user_doc = await db.users.find_one({"email": login_data.email}, {"_id": 0})
+        if not user_doc:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Verify password
+        if not verify_password(login_data.password, user_doc.get("password", "")):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Convert datetime strings
+        if isinstance(user_doc.get('created_at'), str):
+            user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
+        
+        user = User(**user_doc)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
     
     # Create session
     session_token = str(uuid.uuid4()) + str(uuid.uuid4())
