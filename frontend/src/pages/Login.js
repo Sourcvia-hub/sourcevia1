@@ -158,7 +158,7 @@ const Login = () => {
       console.log('✅ Registration successful!', response.data);
 
       // Auto-login after registration
-      const loginResponse = await axios.post(`${API_URL}/api/auth/login`,
+      const loginResponse = await axios.post(`${BACKEND_URL.replace(/\/+$/, "")}/api/auth/login`,
         { email, password },
         {
           withCredentials: true,
