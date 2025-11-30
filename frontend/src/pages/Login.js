@@ -60,12 +60,23 @@ const Login = () => {
     setLoading(true);
     setError('');
 
+    const loginUrl = `${API_URL}/api/auth/login`;
+    
     console.log('🔐 Attempting login...');
-    console.log('  URL:', `${API_URL}/api/auth/login`);
+    console.log('  Full URL:', loginUrl);
+    console.log('  Backend:', API_URL);
     console.log('  Email:', email);
 
+    // Validation check
+    if (loginUrl.includes('REACT_APP_BACKEND_URL=')) {
+      setError('Configuration error: Backend URL is malformed. Please contact support.');
+      setLoading(false);
+      console.error('❌ Malformed URL detected:', loginUrl);
+      return;
+    }
+
     try {
-      const response = await axios.post(`${API_URL}/api/auth/login`, 
+      const response = await axios.post(loginUrl, 
         { email, password },
         {
           withCredentials: true,
