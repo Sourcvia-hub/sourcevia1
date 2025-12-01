@@ -15,9 +15,9 @@ const Login = () => {
 
   // Get backend URL with proper fallback and remove trailing slashes
   const BACKEND_URL = (
-    window.APP_CONFIG?.BACKEND_URL ||
-    process.env.REACT_APP_BACKEND_URL ||
-    "https://sourcevia-secure.emergent.host"
+    process.env.REACT_APP_BACKEND_URL ||      // 1) Read from .env first
+    window.APP_CONFIG?.BACKEND_URL ||         // 2) Use APP_CONFIG if empty
+    "https://sourcevia-secure.emergent.host"  // 3) Safe fallback
   ).replace(/\/+$/, "");
 
   const API_URL = BACKEND_URL;
