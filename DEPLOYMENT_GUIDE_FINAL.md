@@ -223,8 +223,8 @@ After successful deployment:
 ## 💡 Development vs Production
 
 **Development Environment (This Workspace)**
-- Backend: `https://sourcevia-app.preview.emergentagent.com`
-- Frontend: `https://sourcevia-app.preview.emergentagent.com`
+- Backend: `https://sourcevia-proc.preview.emergentagent.com`
+- Frontend: `https://sourcevia-proc.preview.emergentagent.com`
 - MongoDB: Local MongoDB (`mongodb://localhost:27017/sourcevia`)
 - All features tested and working ✅
 
