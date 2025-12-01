@@ -116,7 +116,7 @@ const Login = () => {
       return;
     }
 
-    const registerUrl = `${BACKEND_URL.replace(/\/+$/, "")}/api/auth/register`;
+    const registerUrl = `${BACKEND_URL}/api/auth/register`;
     
     console.log('📝 Attempting registration...');
     console.log('  Full URL:', registerUrl);
@@ -125,34 +125,22 @@ const Login = () => {
     console.log('  Email:', email);
     console.log('  Role:', role);
 
-    // Validation check
-    if (registerUrl.includes('REACT_APP_BACKEND_URL=')) {
-      setError('Configuration error: Backend URL is malformed. Please contact support.');
-      setLoading(false);
-      console.error('❌ Malformed URL detected:', registerUrl);
-      return;
-    }
-
     try {
-      const response = await axios.post(registerUrl,
-        { name, email, password, role },
-        {
-          withCredentials: true,
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 10000
-        }
-      );
+      const response = await axios.post(registerUrl, {
+        name,
+        email,
+        password,
+        role,
+      }, { withCredentials: true });
 
       console.log('✅ Registration successful!', response.data);
 
       // Auto-login after registration
-      const loginResponse = await axios.post(`${BACKEND_URL.replace(/\/+$/, "")}/api/auth/login`,
-        { email, password },
-        {
-          withCredentials: true,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+      const loginUrl = `${BACKEND_URL}/api/auth/login`;
+      const loginResponse = await axios.post(loginUrl, {
+        email,
+        password,
+      }, { withCredentials: true });
 
       if (loginResponse.data.user) {
         localStorage.setItem('user', JSON.stringify(loginResponse.data.user));
