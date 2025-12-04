@@ -1393,7 +1393,7 @@ async def evaluate_proposal(tender_id: str, proposal_id: str, evaluation: Propos
 @api_router.post("/tenders/{tender_id}/evaluate")
 async def evaluate_all_proposals(tender_id: str, request: Request):
     """Get evaluation summary for all proposals in a tender"""
-    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER])
+    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROCUREMENT_MANAGER, UserRole.PROJECT_MANAGER, UserRole.SENIOR_MANAGER, UserRole.ADMIN])
     
     # Find proposals without _id field
     proposals = await db.proposals.find({"tender_id": tender_id}, {"_id": 0}).to_list(1000)
