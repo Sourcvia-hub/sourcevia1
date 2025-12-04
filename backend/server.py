@@ -1395,31 +1395,33 @@ async def evaluate_all_proposals(tender_id: str, request: Request):
     """Get evaluation summary for all proposals in a tender"""
     await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER])
     
-    proposals = await db.proposals.find({"tender_id": tender_id}).to_list(1000)
+    # Find proposals without _id field
+    proposals = await db.proposals.find({"tender_id": tender_id}, {"_id": 0}).to_list(1000)
     
     if not proposals:
-        return {"message": "No proposals to evaluate", "proposals": []}
+        return {"message": "No proposals to evaluate", "proposals": [], "tender_id": tender_id, "total_proposals": 0, "evaluated_count": 0}
     
     # Calculate cost scores automatically based on lowest price
-    min_price = min(p["financial_proposal"] for p in proposals if p.get("financial_proposal"))
+    financial_proposals = [p.get("financial_proposal", 0) for p in proposals if p.get("financial_proposal")]
+    min_price = min(financial_proposals) if financial_proposals else 0
     
     evaluated_proposals = []
     for proposal in proposals:
         # Auto-calculate cost score (lowest price gets 5, others scaled)
-        if min_price > 0:
+        if min_price > 0 and proposal.get("financial_proposal", 0) > 0:
             cost_score = (min_price / proposal["financial_proposal"]) * 5
         else:
             cost_score = 3.0  # Default if no prices
         
         # Get vendor name
-        vendor = await db.vendors.find_one({"id": proposal["vendor_id"]})
-        vendor_name = vendor.get("name_english", vendor.get("company_name", "Unknown")) if vendor else "Unknown"
+        vendor = await db.vendors.find_one({"id": proposal.get("vendor_id")}, {"_id": 0})
+        vendor_name = vendor.get("name_english", vendor.get("commercial_name", "Unknown")) if vendor else "Unknown"
         
         evaluated_proposals.append({
-            "proposal_id": proposal["id"],
-            "vendor_id": proposal["vendor_id"],
+            "proposal_id": proposal.get("id"),
+            "vendor_id": proposal.get("vendor_id"),
             "vendor_name": vendor_name,
-            "financial_proposal": proposal["financial_proposal"],
+            "financial_proposal": proposal.get("financial_proposal", 0),
             "suggested_cost_score": round(cost_score, 2),
             "evaluation": proposal.get("evaluation"),
             "final_score": proposal.get("final_score", 0.0),
@@ -1427,7 +1429,7 @@ async def evaluate_all_proposals(tender_id: str, request: Request):
         })
     
     # Sort by final score descending
-    evaluated_proposals.sort(key=lambda x: x["final_score"], reverse=True)
+    evaluated_proposals.sort(key=lambda x: x.get("final_score", 0), reverse=True)
     
     return {
         "tender_id": tender_id,
