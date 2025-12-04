@@ -211,14 +211,14 @@ const OSRForm = () => {
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">Start typing or scroll to find the asset</p>
+                <p className="text-xs text-gray-500 mt-1">All information will be auto-filled from the selected asset</p>
                 
                 {/* Show selected asset details */}
                 {formData.asset_id && (() => {
                   const selectedAsset = masterData.assets.find(a => a.id === formData.asset_id);
                   return selectedAsset ? (
                     <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
-                      <div className="text-sm font-medium text-blue-900 mb-2">📦 Selected Asset Information</div>
+                      <div className="text-sm font-medium text-blue-900 mb-2">📦 Asset Information</div>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
                           <span className="text-gray-600">Asset Number:</span>
@@ -281,22 +281,41 @@ const OSRForm = () => {
             />
           </div>
 
-          {/* Category and Priority */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-              <select
-                required
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Category</option>
-                {masterData.osr_categories.map((cat) => (
-                  <option key={cat.id} value={cat.name}>{cat.name}</option>
-                ))}
-              </select>
+          {/* Category and Priority - Only for General Requests */}
+          {formData.request_type === 'general_request' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                <select
+                  required
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Category</option>
+                  {masterData.osr_categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Priority *</label>
+                <select
+                  required
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="low">Low</option>
+                  <option value="normal">Normal</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
             </div>
+          )}
+
+          {/* Priority only for Asset Related */}
+          {formData.request_type === 'asset_related' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Priority *</label>
               <select
@@ -310,7 +329,7 @@ const OSRForm = () => {
                 <option value="high">High</option>
               </select>
             </div>
-          </div>
+          )}
 
           {/* Description */}
           <div>
@@ -325,66 +344,52 @@ const OSRForm = () => {
             />
           </div>
 
-          {/* Location Section */}
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Location Information
-              {formData.request_type === 'asset_related' && formData.asset_id && (
-                <span className="ml-2 text-sm font-normal text-green-600">✓ Auto-filled from asset</span>
-              )}
-            </h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Building *</label>
-                <select
-                  required
-                  value={formData.building_id}
-                  onChange={(e) => setFormData({ ...formData, building_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  disabled={formData.request_type === 'asset_related' && formData.asset_id}
-                >
-                  <option value="">Select Building</option>
-                  {masterData.buildings.map((building) => (
-                    <option key={building.id} value={building.id}>{building.name}</option>
-                  ))}
-                </select>
-                {formData.request_type === 'asset_related' && formData.asset_id && (
-                  <p className="text-xs text-gray-500 mt-1">Auto-filled from selected asset</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Floor</label>
-                <select
-                  value={formData.floor_id}
-                  onChange={(e) => setFormData({ ...formData, floor_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  disabled={(!formData.building_id) || (formData.request_type === 'asset_related' && formData.asset_id)}
-                >
-                  <option value="">Select Floor</option>
-                  {availableFloors.map((floor) => (
-                    <option key={floor.id} value={floor.id}>{floor.name}</option>
-                  ))}
-                </select>
-                {formData.request_type === 'asset_related' && formData.asset_id && (
-                  <p className="text-xs text-gray-500 mt-1">Auto-filled from selected asset</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Room/Area</label>
-                <input
-                  type="text"
-                  value={formData.room_area}
-                  onChange={(e) => setFormData({ ...formData, room_area: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Room 201"
-                  disabled={formData.request_type === 'asset_related' && formData.asset_id}
-                />
-                {formData.request_type === 'asset_related' && formData.asset_id && (
-                  <p className="text-xs text-gray-500 mt-1">Auto-filled from selected asset</p>
-                )}
+          {/* Location Section - Only for General Requests */}
+          {formData.request_type === 'general_request' && (
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Location Information</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Building *</label>
+                  <select
+                    required
+                    value={formData.building_id}
+                    onChange={(e) => setFormData({ ...formData, building_id: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Building</option>
+                    {masterData.buildings.map((building) => (
+                      <option key={building.id} value={building.id}>{building.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Floor</label>
+                  <select
+                    value={formData.floor_id}
+                    onChange={(e) => setFormData({ ...formData, floor_id: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    disabled={!formData.building_id}
+                  >
+                    <option value="">Select Floor</option>
+                    {availableFloors.map((floor) => (
+                      <option key={floor.id} value={floor.id}>{floor.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Room/Area</label>
+                  <input
+                    type="text"
+                    value={formData.room_area}
+                    onChange={(e) => setFormData({ ...formData, room_area: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Room 201"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Assignment (Optional) */}
           <div className="border-t pt-6">
