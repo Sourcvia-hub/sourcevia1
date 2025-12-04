@@ -192,6 +192,82 @@ const OSRForm = () => {
             </div>
           </div>
 
+          {/* Asset Selection (if asset-related) - Show at top */}
+          {formData.request_type === 'asset_related' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">🔍 Select Asset</h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search and Select Asset *</label>
+                <select
+                  required={formData.request_type === 'asset_related'}
+                  value={formData.asset_id}
+                  onChange={(e) => setFormData({ ...formData, asset_id: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">-- Select an asset --</option>
+                  {masterData.assets.map((asset) => (
+                    <option key={asset.id} value={asset.id}>
+                      {asset.asset_number || 'N/A'} - {asset.name} | {asset.category_name || 'Unknown'} | {asset.building_name || 'Unknown Location'}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Start typing or scroll to find the asset</p>
+                
+                {/* Show selected asset details */}
+                {formData.asset_id && (() => {
+                  const selectedAsset = masterData.assets.find(a => a.id === formData.asset_id);
+                  return selectedAsset ? (
+                    <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
+                      <div className="text-sm font-medium text-blue-900 mb-2">📦 Selected Asset Information</div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="text-gray-600">Asset Number:</span>
+                          <span className="ml-2 font-medium">{selectedAsset.asset_number || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Category:</span>
+                          <span className="ml-2 font-medium">{selectedAsset.category_name || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Building:</span>
+                          <span className="ml-2 font-medium">{selectedAsset.building_name || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Floor:</span>
+                          <span className="ml-2 font-medium">{selectedAsset.floor_name || 'N/A'}</span>
+                        </div>
+                        {selectedAsset.room_area && (
+                          <div>
+                            <span className="text-gray-600">Room/Area:</span>
+                            <span className="ml-2 font-medium">{selectedAsset.room_area}</span>
+                          </div>
+                        )}
+                        {selectedAsset.warranty_status && (
+                          <div>
+                            <span className="text-gray-600">Warranty:</span>
+                            <span className="ml-2 font-medium">{selectedAsset.warranty_status}</span>
+                          </div>
+                        )}
+                        {selectedAsset.contract_number && (
+                          <div className="col-span-2">
+                            <span className="text-gray-600">AMC Contract:</span>
+                            <span className="ml-2 font-medium">{selectedAsset.contract_number}</span>
+                          </div>
+                        )}
+                        {selectedAsset.vendor_name && (
+                          <div className="col-span-2">
+                            <span className="text-gray-600">Vendor:</span>
+                            <span className="ml-2 font-medium">{selectedAsset.vendor_name}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+            </div>
+          )}
+
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
