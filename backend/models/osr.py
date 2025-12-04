@@ -44,10 +44,10 @@ class OSR(BaseModel):
     priority: OSRPriority = OSRPriority.NORMAL
     description: str
     
-    # Location
+    # Location - floor_id is now optional
     building_id: str
     building_name: Optional[str] = None
-    floor_id: str
+    floor_id: Optional[str] = None  # CHANGED: Made optional
     floor_name: Optional[str] = None
     room_area: Optional[str] = None
     
@@ -78,4 +78,3 @@ class OSR(BaseModel):
     created_by_name: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: Optional[datetime] = None
-

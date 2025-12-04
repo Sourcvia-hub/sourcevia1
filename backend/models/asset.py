@@ -63,10 +63,10 @@ class Asset(BaseModel):
     serial_number: Optional[str] = None
     manufacturer: Optional[str] = None
     
-    # Location
+    # Location - floor_id is now optional
     building_id: str
     building_name: Optional[str] = None  # Denormalized
-    floor_id: str
+    floor_id: Optional[str] = None  # CHANGED: Made optional
     floor_name: Optional[str] = None  # Denormalized
     room_area: Optional[str] = None  # Free text
     custodian: Optional[str] = None  # Free text for MVP
@@ -100,4 +100,3 @@ class Asset(BaseModel):
     created_by: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: Optional[datetime] = None
-
