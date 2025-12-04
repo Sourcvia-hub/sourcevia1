@@ -46,11 +46,17 @@ const OSRForm = () => {
   }, [formData.building_id]);
 
   useEffect(() => {
-    // When asset is selected, auto-populate asset details
+    // When asset is selected, auto-populate location and asset details
     if (formData.asset_id) {
       const asset = masterData.assets.find(a => a.id === formData.asset_id);
       if (asset) {
-        // Asset found - could auto-populate more fields if needed
+        // Auto-populate location from asset
+        setFormData(prev => ({
+          ...prev,
+          building_id: asset.building_id || prev.building_id,
+          floor_id: asset.floor_id || prev.floor_id,
+          room_area: asset.room_area || prev.room_area
+        }));
       }
     }
   }, [formData.asset_id, masterData.assets]);
