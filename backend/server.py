@@ -1306,7 +1306,7 @@ async def submit_proposal(tender_id: str, proposal: Proposal, request: Request):
 @api_router.get("/tenders/{tender_id}/proposals")
 async def get_tender_proposals(tender_id: str, request: Request):
     """Get all proposals for a tender"""
-    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER])
+    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROCUREMENT_MANAGER, UserRole.PROJECT_MANAGER, UserRole.SENIOR_MANAGER, UserRole.ADMIN])
     
     proposals = await db.proposals.find({"tender_id": tender_id}).to_list(1000)
     
