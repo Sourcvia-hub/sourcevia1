@@ -1334,7 +1334,7 @@ class ProposalEvaluationRequest(BaseModel):
 @api_router.post("/tenders/{tender_id}/proposals/{proposal_id}/evaluate")
 async def evaluate_proposal(tender_id: str, proposal_id: str, evaluation: ProposalEvaluationRequest, request: Request):
     """Evaluate a single proposal with detailed criteria"""
-    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROJECT_MANAGER])
+    user = await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROCUREMENT_MANAGER, UserRole.PROJECT_MANAGER, UserRole.SENIOR_MANAGER, UserRole.ADMIN])
     
     # Find proposal
     proposal = await db.proposals.find_one({"id": proposal_id, "tender_id": tender_id})
