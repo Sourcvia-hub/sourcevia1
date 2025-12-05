@@ -52,6 +52,15 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Include ProcureFlix API under /api/procureflix without impacting legacy endpoints
+try:
+    from procureflix import router as procureflix_router
+    api_router.include_router(procureflix_router, prefix="/procureflix")
+    print("[ProcureFlix] Router mounted at /api/procureflix")
+except Exception as exc:
+    # Fail gracefully if ProcureFlix package is not initialised correctly
+    print(f"[ProcureFlix] Failed to mount router: {exc}")
+
 
 # ==================== HELPER FUNCTIONS ====================
 def calculate_vendor_registration_score(vendor_data: dict) -> dict:
