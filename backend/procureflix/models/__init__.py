@@ -5,6 +5,6 @@ stack (model → repository → service → API). Additional modules will be
 added incrementally in later phases.
 """
 
-from .vendor import Vendor, VendorRiskCategory
+from .vendor import Vendor, VendorStatus, RiskCategory, VendorType
 
-__all__ = ["Vendor", "VendorRiskCategory"]
+__all__ = ["Vendor", "VendorStatus", "RiskCategory", "VendorType"]
