@@ -131,23 +131,15 @@ print(f"   Database: '{MONGO_DB_NAME}'")
 print(f"   Source: {'URL' if db_name_from_url else 'Environment Variable or Default'}")
 print(f"{'='*80}")
 
-# CRITICAL VALIDATION: Verify Atlas URLs have database name
-if ('mongodb+srv://' in MONGO_URL or 'mongodb.net' in MONGO_URL) and not db_name_from_url:
-    print("\n⚠️  CRITICAL: MongoDB Atlas URL missing database name!")
-    print("   Using fallback database 'sourcevia' to prevent authorization errors.")
-    print("   For production, please update MONGO_URL to include database name:")
-    print("   Example: mongodb+srv://user:pass@cluster.net/sourcevia?options")
-    print("\n")
-
 # Final validation to guarantee we never use wrong database
 if MONGO_DB_NAME == 'procurement_db':
     raise ValueError("FATAL: Cannot use 'procurement_db' database! This will cause authorization errors.")
 
-# For Atlas URLs, warn if not using 'sourcevia' but don't crash
-if ('mongodb+srv://' in MONGO_URL or 'mongodb.net' in MONGO_URL) and MONGO_DB_NAME != 'sourcevia':
-    print(f"\n⚠️  WARNING: Using database '{MONGO_DB_NAME}' with MongoDB Atlas.")
-    print("   Make sure your Atlas user has permissions for this database.")
-    print("   Recommended database name: 'sourcevia'")
+# For Atlas URLs, verify the database name matches expectations
+if ('mongodb+srv://' in MONGO_URL or 'mongodb.net' in MONGO_URL):
+    if not db_name_from_url:
+        print(f"\nℹ️  Note: Atlas URL reconstructed to include database '{MONGO_DB_NAME}'")
+    print(f"ℹ️  Atlas user should have permissions on database: '{MONGO_DB_NAME}'")
     print()
 
 print("\n[DB Init] Creating MongoDB client...")
