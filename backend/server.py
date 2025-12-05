@@ -1221,6 +1221,7 @@ async def get_approved_tenders(request: Request):
             "id": tender.get("id"),
             "tender_number": tender.get("tender_number"),
             "title": tender.get("title"),
+            "project_reference": tender.get("project_reference"),
             "project_name": tender.get("project_name"),
             "requirements": tender.get("requirements"),
             "budget": tender.get("budget")
