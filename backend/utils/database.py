@@ -148,7 +148,26 @@ if ('mongodb+srv://' in MONGO_URL or 'mongodb.net' in MONGO_URL) and MONGO_DB_NA
     print()
 
 print("\n[DB Init] Creating MongoDB client...")
-client = AsyncIOMotorClient(MONGO_URL)
+
+# For Atlas URLs without database name in URL, reconstruct the URL
+final_mongo_url = MONGO_URL
+if ('mongodb+srv://' in MONGO_URL or 'mongodb.net' in MONGO_URL) and not db_name_from_url:
+    print(f"[DB Init] Reconstructing Atlas URL to include database name '{MONGO_DB_NAME}'...")
+    try:
+        # Parse the URL
+        parsed = urlparse(MONGO_URL)
+        # Reconstruct with database name in path
+        # Format: mongodb+srv://user:pass@host/dbname?options
+        if parsed.query:
+            final_mongo_url = f"{parsed.scheme}://{parsed.netloc}/{MONGO_DB_NAME}?{parsed.query}"
+        else:
+            final_mongo_url = f"{parsed.scheme}://{parsed.netloc}/{MONGO_DB_NAME}"
+        print(f"[DB Init] Reconstructed URL: {final_mongo_url[:80]}...")
+    except Exception as e:
+        print(f"[DB Init] WARNING: Could not reconstruct URL: {e}")
+        print(f"[DB Init] Using original URL and selecting database via client['{MONGO_DB_NAME}']")
+
+client = AsyncIOMotorClient(final_mongo_url)
 db = client[MONGO_DB_NAME]
 print("[DB Init] Database client created successfully")
 print(f"[DB Init] Will connect to database: '{MONGO_DB_NAME}'\n")
