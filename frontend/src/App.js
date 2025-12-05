@@ -270,8 +270,8 @@ const AppRoutes = () => {
         </div>
       );
     }
-    
-    // Redirect to dashboard if logged in, otherwise to login
+
+    // Redirect to legacy Sourcevia dashboard if logged in, otherwise to login
     return user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
   };
 
