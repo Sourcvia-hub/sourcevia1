@@ -1,0 +1,25 @@
+[
+  {
+    "id": "11111111-1111-1111-1111-111111111111",
+    "tender_number": "Tender-25-0001",
+    "title": "IT Helpdesk Outsourcing",
+    "description": "Outsourcing of IT helpdesk services for 24/7 support.",
+    "project_reference": "PRJ-IT-HELP-001",
+    "project_name": "IT Helpdesk Transformation",
+    "requirements": "Provide 24/7 multilingual helpdesk with defined SLAs.",
+    "budget": 1000000,
+    "deadline": "2025-02-01T00:00:00+00:00",
+    "status": "published",
+    "invited_vendors": [
+      "b7f0c9b4-1a2b-4bde-9a9b-111111111111",
+      "b7f0c9b4-1a2b-4bde-9a9b-222222222222"
+    ],
+    "evaluation_method": "technical_financial",
+    "technical_weight": 0.6,
+    "financial_weight": 0.4,
+    "created_by": "seed-user",
+    "created_at": "2025-01-15T10:00:00+00:00",
+    "updated_at": "2025-01-15T10:00:00+00:00",
+    "evaluation_summary": null
+  }
+]
