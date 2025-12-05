@@ -81,6 +81,7 @@ const Tenders = () => {
       setFormData({
         title: '',
         description: '',
+        project_reference: '',
         project_name: '',
         requirements: '',
         budget: '',
