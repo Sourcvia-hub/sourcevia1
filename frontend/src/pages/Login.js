@@ -336,19 +336,6 @@ const Login = () => {
             {loading ? 'Please wait...' : (isRegistering ? 'Create Account' : 'Login')}
           </button>
         </form>
-
-        {/* Debug Info */}
-        <div style={{
-          marginTop: '20px',
-          padding: '10px',
-          background: '#f9f9f9',
-          borderRadius: '6px',
-          fontSize: '12px',
-          color: '#666'
-        }}>
-          <strong>Debug Info:</strong><br/>
-          <p>Backend: {BACKEND_URL}</p>
-        </div>
       </div>
     </div>
   );
