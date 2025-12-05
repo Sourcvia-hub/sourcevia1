@@ -7,5 +7,11 @@ without touching the business logic.
 
 from .base import IRepository
 from .vendor_repository import InMemoryVendorRepository
+from .tender_repository import InMemoryTenderRepository, InMemoryProposalRepository
 
-__all__ = ["IRepository", "InMemoryVendorRepository"]
+__all__ = [
+    "IRepository",
+    "InMemoryVendorRepository",
+    "InMemoryTenderRepository",
+    "InMemoryProposalRepository",
+]
