@@ -479,6 +479,23 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
+      {/* ProcureFlix routes under /pf/... */}
+      <Route
+        path="/pf"
+        element={
+          <ProtectedRoute>
+            <ProcureFlixLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="/pf/dashboard" replace />} />
+        <Route path="dashboard" element={<PfDashboard />} />
+        <Route path="vendors" element={<PfVendorsList />} />
+        <Route path="vendors/:id" element={<PfVendorDetail />} />
+        <Route path="tenders" element={<PfTendersList />} />
+        <Route path="tenders/:id" element={<PfTenderDetail />} />
+      </Route>
     </Routes>
   );
 };
