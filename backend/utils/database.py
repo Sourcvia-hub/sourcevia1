@@ -79,7 +79,8 @@ else:
         # Using MongoDB Atlas - extract username which is typically the database name
         print("\n⚠️  [WARNING] MongoDB Atlas URL detected but no database name found in URL!")
         
-        # For Emergent Atlas deployments, the database name equals the username
+        # For Emergent Atlas deployments, the database name MUST match the username
+        # This is because Atlas users are typically granted access only to their own database
         # Extract username from connection string
         try:
             # Format: mongodb+srv://username:password@host/...
@@ -88,13 +89,15 @@ else:
                 if ':' in credentials:
                     atlas_username = credentials.split(':')[0]
                     print(f"   ℹ️  Extracted Atlas username: '{atlas_username}'")
-                    # For Emergent deployments, database name typically matches username
-                    if env_db_name:
-                        print(f"   ℹ️  Using MONGO_DB_NAME from environment: '{env_db_name}'")
-                        MONGO_DB_NAME = env_db_name
-                    else:
-                        print(f"   ℹ️  Using Atlas username as database name: '{atlas_username}'")
-                        MONGO_DB_NAME = atlas_username
+                    
+                    # CRITICAL: For Atlas, username = database name (Emergent convention)
+                    # The user 'sourcevia-proc' only has access to database 'sourcevia-proc'
+                    print(f"   ℹ️  For Atlas authentication, using username as database name: '{atlas_username}'")
+                    MONGO_DB_NAME = atlas_username
+                    
+                    if env_db_name and env_db_name != atlas_username:
+                        print(f"   ⚠️  WARNING: MONGO_DB_NAME env var is '{env_db_name}' but Atlas user '{atlas_username}' likely only has access to '{atlas_username}' database")
+                        print(f"   ⚠️  Overriding to use '{atlas_username}' to prevent authorization errors")
                 else:
                     MONGO_DB_NAME = env_db_name if env_db_name else 'sourcevia'
             else:
