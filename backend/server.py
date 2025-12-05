@@ -1243,6 +1243,7 @@ async def update_tender(tender_id: str, tender: Tender, request: Request):
     update_data = {
         "title": tender.title,
         "description": tender.description,
+        "project_reference": getattr(tender, "project_reference", None),
         "project_name": tender.project_name,
         "requirements": tender.requirements,
         "budget": tender.budget,
