@@ -271,6 +271,19 @@ const Tenders = () => {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Project Number / JIRA Reference
+                  <span className="text-xs text-gray-500 ml-1">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.project_reference}
+                  onChange={(e) => setFormData({ ...formData, project_reference: e.target.value })}
+                  placeholder="e.g., PRJ-1234 or JIRA-5678"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Project Name *</label>
                 <input
                   type="text"
