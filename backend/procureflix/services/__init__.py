@@ -5,6 +5,8 @@ from .tender_service import TenderService
 from .contract_service import ContractService
 from .purchase_order_service import PurchaseOrderService
 from .invoice_service import InvoiceService
+from .resource_service import ResourceService
+from .service_request_service import ServiceRequestService
 
 __all__ = [
     "VendorService",
@@ -12,4 +14,6 @@ __all__ = [
     "ContractService",
     "PurchaseOrderService",
     "InvoiceService",
+    "ResourceService",
+    "ServiceRequestService",
 ]
