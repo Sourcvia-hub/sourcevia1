@@ -11,6 +11,8 @@ from .tender_repository import InMemoryTenderRepository, InMemoryProposalReposit
 from .contract_repository import InMemoryContractRepository
 from .purchase_order_repository import InMemoryPurchaseOrderRepository
 from .invoice_repository import InMemoryInvoiceRepository
+from .resource_repository import InMemoryResourceRepository
+from .service_request_repository import InMemoryServiceRequestRepository
 
 __all__ = [
     "IRepository",
@@ -20,4 +22,6 @@ __all__ = [
     "InMemoryContractRepository",
     "InMemoryPurchaseOrderRepository",
     "InMemoryInvoiceRepository",
+    "InMemoryResourceRepository",
+    "InMemoryServiceRequestRepository",
 ]
