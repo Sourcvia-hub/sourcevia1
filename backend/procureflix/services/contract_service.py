@@ -47,6 +47,55 @@ class ContractService:
             contract.contract_number = self._generate_contract_number(now)
 
         self._apply_risk_and_dd_logic(contract)
+
+
+    def create_contract_from_request(self, request: ContractCreateRequest) -> Contract:
+        """Create a contract from simplified ContractCreateRequest.
+        
+        This method auto-generates:
+        - contract_number
+        - risk_score and risk_category (based on flags)
+        - dd_required and noc_required (based on risk)
+        - status (defaults to draft)
+        - timestamps (created_at, updated_at)
+        """
+        from uuid import uuid4
+        
+        now = datetime.now(timezone.utc)
+        
+        # Create full Contract model from request
+        contract = Contract(
+            id=str(uuid4()),
+            contract_number=self._generate_contract_number(now),
+            vendor_id=request.vendor_id,
+            tender_id=request.tender_id,
+            title=request.title,
+            description=request.description,
+            contract_type=request.contract_type,
+            contract_value=request.contract_value,
+            currency=request.currency,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            auto_renewal=request.auto_renewal,
+            has_data_access=request.has_data_access,
+            has_onsite_presence=request.has_onsite_presence,
+            has_implementation=request.has_implementation,
+            criticality_level=request.criticality_level,
+            created_by=request.created_by,
+            status=ContractStatus.DRAFT,
+            created_at=now,
+            updated_at=now,
+            risk_score=0.0,  # Will be calculated
+            risk_category=RiskCategory.LOW,  # Will be adjusted
+            dd_required=False,  # Will be determined
+            noc_required=False,  # Will be determined
+        )
+        
+        # Apply risk scoring and compliance logic
+        self._apply_risk_and_dd_logic(contract)
+        
+        return self._repository.add(contract)
+
         return self._repository.add(contract)
 
     def update_contract(self, contract_id: str, updated: Contract) -> Optional[Contract]:
