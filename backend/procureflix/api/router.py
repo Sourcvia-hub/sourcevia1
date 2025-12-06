@@ -94,6 +94,7 @@ async def procureflix_health() -> dict:
     return {
         "app": settings.app_name,
         "status": "ok",
+        "data_backend": settings.data_backend,
         "sharepoint_configured": bool(settings.sharepoint_site_url),
     }
 
