@@ -19,6 +19,7 @@ from fastapi import APIRouter, HTTPException
 from ..config import get_settings
 from ..models import (
     Vendor,
+    VendorCreateRequest,
     VendorStatus,
     Tender,
     Proposal,
