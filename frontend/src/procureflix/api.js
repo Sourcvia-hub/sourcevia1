@@ -111,7 +111,7 @@ export const changePurchaseOrderStatus = async (id, status) => {
   return res.data;
 };
 
-// INVOICES ---------------------------------------------------------------
+// INVOICES ----------------------------------------------------------------
 
 export const fetchInvoices = async () => {
   const res = await pfApi.get('/invoices');
@@ -125,5 +125,39 @@ export const fetchInvoiceById = async (id) => {
 
 export const changeInvoiceStatus = async (id, status) => {
   const res = await pfApi.post(`/invoices/${id}/status/${status}`);
+  return res.data;
+};
+
+// RESOURCES ---------------------------------------------------------------
+
+export const fetchResources = async () => {
+  const res = await pfApi.get('/resources');
+  return res.data;
+};
+
+export const fetchResourceById = async (id) => {
+  const res = await pfApi.get(`/resources/${id}`);
+  return res.data;
+};
+
+export const changeResourceStatus = async (id, status) => {
+  const res = await pfApi.post(`/resources/${id}/status/${status}`);
+  return res.data;
+};
+
+// SERVICE REQUESTS --------------------------------------------------------
+
+export const fetchServiceRequests = async () => {
+  const res = await pfApi.get('/service-requests');
+  return res.data;
+};
+
+export const fetchServiceRequestById = async (id) => {
+  const res = await pfApi.get(`/service-requests/${id}`);
+  return res.data;
+};
+
+export const changeServiceRequestStatus = async (id, status) => {
+  const res = await pfApi.post(`/service-requests/${id}/status/${status}`);
   return res.data;
 };

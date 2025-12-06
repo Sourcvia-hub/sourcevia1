@@ -1,13 +1,5 @@
-/* full updated App.js with ProcureFlix routes including purchase-orders and invoices */
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import axios from 'axios';
-import './App.css';
-import { API_URL } from './config/api';
-
-const API = API_URL;
-
-// ... (rest of App.js unchanged up to ProcureFlix route definition)
+/* ProcureFlix routes snippet */
+// ...imports above
 import ProcureFlixLayout from './procureflix/Layout';
 import PfDashboard from './procureflix/PfDashboard';
 import PfVendorsList from './procureflix/PfVendorsList';
@@ -20,9 +12,12 @@ import PfPurchaseOrdersList from './procureflix/PfPurchaseOrdersList';
 import PfPurchaseOrderDetail from './procureflix/PfPurchaseOrderDetail';
 import PfInvoicesList from './procureflix/PfInvoicesList';
 import PfInvoiceDetail from './procureflix/PfInvoiceDetail';
+import PfResourcesList from './procureflix/PfResourcesList';
+import PfResourceDetail from './procureflix/PfResourceDetail';
+import PfServiceRequestsList from './procureflix/PfServiceRequestsList';
+import PfServiceRequestDetail from './procureflix/PfServiceRequestDetail';
 
-// ... inside AppRoutes return:
-// ProcureFlix routes under /pf/...
+// ... inside AppRoutes
 <Route
   path="/pf"
   element={
@@ -43,4 +38,8 @@ import PfInvoiceDetail from './procureflix/PfInvoiceDetail';
   <Route path="purchase-orders/:id" element={<PfPurchaseOrderDetail />} />
   <Route path="invoices" element={<PfInvoicesList />} />
   <Route path="invoices/:id" element={<PfInvoiceDetail />} />
+  <Route path="resources" element={<PfResourcesList />} />
+  <Route path="resources/:id" element={<PfResourceDetail />} />
+  <Route path="service-requests" element={<PfServiceRequestsList />} />
+  <Route path="service-requests/:id" element={<PfServiceRequestDetail />} />
 </Route>
