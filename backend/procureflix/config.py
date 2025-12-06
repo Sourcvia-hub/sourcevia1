@@ -1,33 +1,31 @@
 """Configuration for ProcureFlix backend.
 
 This module defines a dedicated settings object for ProcureFlix so we can
-cleanly manage environment variables (including future SharePoint
-integration and AI settings) without interfering with legacy Sourcevia
-configuration.
+cleanly manage environment variables (including SharePoint integration
+and AI settings) without interfering with legacy Sourcevia configuration.
 """
 
 from functools import lru_cache
 import os
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Literal
 
 
 @dataclass
 class ProcureFlixSettings:
     """ProcureFlix-specific settings.
 
-    These are intentionally minimal for Phase 1 and will be extended as we
-    wire more modules and integrate SharePoint.
-
-    We deliberately avoid pydantic's BaseSettings here to keep the
-    dependency surface small and compatible with the existing
-    environment.
+    These settings control the data backend (memory vs SharePoint),
+    SharePoint authentication, and AI feature flags.
     """
 
     # Application metadata
     app_name: str = "ProcureFlix"
 
-    # SharePoint integration placeholders (Phase 4 target)
+    # Data backend selection: 'memory' or 'sharepoint'
+    data_backend: Literal["memory", "sharepoint"] = "memory"
+
+    # SharePoint integration settings
     sharepoint_site_url: Optional[str] = None
     sharepoint_tenant_id: Optional[str] = None
     sharepoint_client_id: Optional[str] = None
@@ -45,9 +43,10 @@ def get_settings() -> ProcureFlixSettings:
     """
 
     return ProcureFlixSettings(
+        data_backend=os.getenv("PROCUREFLIX_DATA_BACKEND", "memory").lower(),  # type: ignore
         sharepoint_site_url=os.getenv("SHAREPOINT_SITE_URL"),
-        sharepoint_tenant_id=os.getenv("TENANT_ID"),
-        sharepoint_client_id=os.getenv("CLIENT_ID"),
-        sharepoint_client_secret=os.getenv("CLIENT_SECRET"),
+        sharepoint_tenant_id=os.getenv("SHAREPOINT_TENANT_ID"),
+        sharepoint_client_id=os.getenv("SHAREPOINT_CLIENT_ID"),
+        sharepoint_client_secret=os.getenv("SHAREPOINT_CLIENT_SECRET"),
         enable_ai=os.getenv("PROCUREFLIX_ENABLE_AI", "true").lower() == "true",
     )
