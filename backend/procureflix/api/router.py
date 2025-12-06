@@ -336,6 +336,94 @@ async def change_invoice_status(invoice_id: str, status: InvoiceStatus) -> Invoi
     return updated
 
 
+# ---------------------------------------------------------------------------
+# Resource endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get("/resources", response_model=List[Resource])
+async def list_resources() -> List[Resource]:
+    return _resource_service.list_resources()
+
+
+@router.get("/resources/{resource_id}", response_model=Resource)
+async def get_resource(resource_id: str) -> Resource:
+    res = _resource_service.get_resource(resource_id)
+    if not res:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return res
+
+
+@router.post("/resources", response_model=Resource, status_code=201)
+async def create_resource(resource: Resource) -> Resource:
+    if not resource.name:
+        raise HTTPException(status_code=400, detail="name is required")
+    if not resource.vendor_id:
+        raise HTTPException(status_code=400, detail="vendor_id is required")
+    return _resource_service.create_resource(resource)
+
+
+@router.put("/resources/{resource_id}", response_model=Resource)
+async def update_resource(resource_id: str, resource: Resource) -> Resource:
+    updated = _resource_service.update_resource(resource_id, resource)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return updated
+
+
+@router.post("/resources/{resource_id}/status/{status}", response_model=Resource)
+async def change_resource_status(resource_id: str, status: ResourceStatus) -> Resource:
+    updated = _resource_service.change_status(resource_id, status)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    return updated
+
+
+# ---------------------------------------------------------------------------
+# Service request (OSR) endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get("/service-requests", response_model=List[ServiceRequest])
+async def list_service_requests() -> List[ServiceRequest]:
+    return _sr_service.list_service_requests()
+
+
+@router.get("/service-requests/{sr_id}", response_model=ServiceRequest)
+async def get_service_request(sr_id: str) -> ServiceRequest:
+    sr = _sr_service.get_service_request(sr_id)
+    if not sr:
+        raise HTTPException(status_code=404, detail="Service request not found")
+    return sr
+
+
+@router.post("/service-requests", response_model=ServiceRequest, status_code=201)
+async def create_service_request(sr: ServiceRequest) -> ServiceRequest:
+    if not sr.title:
+        raise HTTPException(status_code=400, detail="title is required")
+    if not sr.vendor_id:
+        raise HTTPException(status_code=400, detail="vendor_id is required")
+    if not sr.requester:
+        raise HTTPException(status_code=400, detail="requester is required")
+    return _sr_service.create_service_request(sr)
+
+
+@router.put("/service-requests/{sr_id}", response_model=ServiceRequest)
+async def update_service_request(sr_id: str, sr: ServiceRequest) -> ServiceRequest:
+    updated = _sr_service.update_service_request(sr_id, sr)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Service request not found")
+    return updated
+
+
+@router.post("/service-requests/{sr_id}/status/{status}", response_model=ServiceRequest)
+async def change_service_request_status(sr_id: str, status: ServiceRequestStatus) -> ServiceRequest:
+    updated = _sr_service.change_status(sr_id, status)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Service request not found")
+    return updated
+
+
 @router.get("/vendors/{vendor_id}", response_model=Vendor)
 async def get_vendor(vendor_id: str) -> Vendor:
     vendor = _vendor_service.get_vendor(vendor_id)
