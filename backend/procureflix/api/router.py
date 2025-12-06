@@ -28,6 +28,10 @@ from ..models import (
     PurchaseOrderStatus,
     Invoice,
     InvoiceStatus,
+    Resource,
+    ResourceStatus,
+    ServiceRequest,
+    ServiceRequestStatus,
 )
 from ..repositories import (
     InMemoryVendorRepository,
@@ -36,6 +40,8 @@ from ..repositories import (
     InMemoryContractRepository,
     InMemoryPurchaseOrderRepository,
     InMemoryInvoiceRepository,
+    InMemoryResourceRepository,
+    InMemoryServiceRequestRepository,
 )
 from ..services import (
     VendorService,
@@ -43,6 +49,8 @@ from ..services import (
     ContractService,
     PurchaseOrderService,
     InvoiceService,
+    ResourceService,
+    ServiceRequestService,
 )
 
 
