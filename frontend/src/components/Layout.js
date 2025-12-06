@@ -81,16 +81,10 @@ const Layout = ({ children }) => {
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-4 border-b">
             <div className="flex items-center space-x-3">
-              <img 
-                src={`${process.env.PUBLIC_URL}/logo.png`}
-                alt="Sourcevia Logo" 
-                className="h-10 w-auto"
-                onError={(e) => {
-                  console.error('Logo failed to load');
-                  e.target.style.display = 'none';
-                }}
-              />
-              <span className="text-xl font-bold text-gray-900">Sourcevia</span>
+              <div className="w-10 h-10 rounded-lg bg-sky-500 flex items-center justify-center text-white font-bold text-lg">
+                PF
+              </div>
+              <span className="text-xl font-bold text-gray-900">ProcureFlix</span>
             </div>
           </div>
 
