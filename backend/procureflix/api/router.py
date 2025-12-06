@@ -66,6 +66,8 @@ _proposal_seed_path = _seed_dir / "proposals.json"
 _contract_seed_path = _seed_dir / "contracts.json"
 _po_seed_path = _seed_dir / "purchase_orders.json"
 _invoice_seed_path = _seed_dir / "invoices.json"
+_resource_seed_path = _seed_dir / "resources.json"
+_service_request_seed_path = _seed_dir / "service_requests.json"
 
 _vendor_repo = InMemoryVendorRepository(seed_path=_vendor_seed_path)
 _tender_repo = InMemoryTenderRepository(seed_path=_tender_seed_path)
@@ -73,12 +75,16 @@ _proposal_repo = InMemoryProposalRepository(seed_path=_proposal_seed_path)
 _contract_repo = InMemoryContractRepository(seed_path=_contract_seed_path)
 _po_repo = InMemoryPurchaseOrderRepository(seed_path=_po_seed_path)
 _invoice_repo = InMemoryInvoiceRepository(seed_path=_invoice_seed_path)
+_resource_repo = InMemoryResourceRepository(seed_path=_resource_seed_path)
+_sr_repo = InMemoryServiceRequestRepository(seed_path=_service_request_seed_path)
 
 _vendor_service = VendorService(repository=_vendor_repo)
 _tender_service = TenderService(tender_repo=_tender_repo, proposal_repo=_proposal_repo)
 _contract_service = ContractService(repository=_contract_repo)
 _po_service = PurchaseOrderService(repository=_po_repo)
 _invoice_service = InvoiceService(repository=_invoice_repo)
+_resource_service = ResourceService(repository=_resource_repo)
+_sr_service = ServiceRequestService(repository=_sr_repo)
 
 
 @router.get("/health")
