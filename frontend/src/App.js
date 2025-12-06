@@ -190,8 +190,7 @@ const AppRoutes = () => {
       <Route path="/assets/:id" element={<ProtectedRoute><AssetDetail /></ProtectedRoute>} />
       <Route path="/assets/new" element={<ProtectedRoute><AssetForm /></ProtectedRoute>} />
       <Route path="/assets/:id/edit" element={<ProtectedRoute><AssetForm /></ProtectedRoute>} />
-      <Route path="/service-requests" element={<ProtectedRoute><ServiceRequests /></ProtectedRoute>} />
-      <Route path="/service-requests/:id" element={<ProtectedRoute><ServiceRequestDetail /></ProtectedRoute>} />
+      {/* Service requests routes not available in this version */}
 
       {/* ProcureFlix routes */}
       <Route
