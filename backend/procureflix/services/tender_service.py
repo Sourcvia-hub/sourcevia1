@@ -57,6 +57,47 @@ class TenderService:
         tender.status = TenderStatus.DRAFT
         tender.evaluation_summary = None
 
+
+
+    def create_tender_from_request(self, request: TenderCreateRequest) -> Tender:
+        """Create a tender from simplified TenderCreateRequest.
+        
+        This method auto-generates:
+        - tender_number
+        - status (defaults to draft)
+        - timestamps (created_at, updated_at)
+        """
+        from uuid import uuid4
+        
+        now = datetime.now(timezone.utc)
+        
+        # Validate weights sum to 1.0
+        if abs(request.technical_weight + request.financial_weight - 1.0) > 0.01:
+            raise ValueError("Technical and financial weights must sum to 1.0")
+        
+        # Create full Tender model from request
+        tender = Tender(
+            id=str(uuid4()),
+            tender_number=self._generate_tender_number(now),
+            title=request.title,
+            description=request.description,
+            project_reference=request.project_reference,
+            project_name=request.project_name,
+            requirements=request.requirements,
+            budget=request.budget,
+            deadline=request.deadline,
+            invited_vendors=request.invited_vendors,
+            evaluation_method=request.evaluation_method,
+            technical_weight=request.technical_weight,
+            financial_weight=request.financial_weight,
+            created_by=request.created_by,
+            status=TenderStatus.DRAFT,
+            created_at=now,
+            updated_at=now,
+        )
+        
+        return self._tenders.add(tender)
+
         return self._tenders.add(tender)
 
     def update_tender(self, tender_id: str, updated: Tender) -> Optional[Tender]:
