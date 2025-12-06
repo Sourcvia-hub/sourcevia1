@@ -3763,13 +3763,16 @@ async def seed_facilities_data(request: Request):
 
 # ==================== APP SETUP ====================
 # Configure CORS middleware (must be before including router)
-DEFAULT_PRODUCTION_ORIGINS = [
-    "https://sourcevia.xyz",
-    "https://www.sourcevia.xyz",
-    "https://sourcevia-secure.emergent.host",
+# Default to allow localhost for development
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:80",
+    "http://localhost",
 ]
 
-cors_origins = os.environ.get("CORS_ORIGINS", ",".join(DEFAULT_PRODUCTION_ORIGINS)).split(",")
+# Get CORS origins from environment variable or use defaults
+cors_origins_str = os.environ.get("ALLOWED_ORIGINS", ",".join(DEFAULT_CORS_ORIGINS))
+cors_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
 
 print(f"🔒 CORS Configuration:")
 print(f"   Allowed Origins: {cors_origins}")
