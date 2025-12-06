@@ -828,6 +828,21 @@ asset_management:
           agent: "testing"
           comment: "✅ COMPREHENSIVE LOGIN PAGE TESTING COMPLETED - ALL SCENARIOS FROM REVIEW REQUEST SUCCESSFULLY VERIFIED: **TEST 1 - PAGE LOAD & CONFIGURATION**: ✅ Login page loads correctly at /login, ✅ Debug info shows correct backend URL (https://procurement-app-1.preview.emergentagent.com), ✅ Page title 'Sourcevia App' displays properly, ⚠️ Minor console errors (401 unauthorized during initial auth check - expected behavior). **TEST 2 - VALID CREDENTIALS LOGIN**: ✅ admin@sourcevia.com/admin123 login successful, ✅ POST /api/auth/login returns HTTP 200 OK, ✅ User data properly returned in response, ✅ Successful redirect to /dashboard, ✅ User email 'admin@sourcevia.com' appears in header, ✅ Dashboard loads showing 'Welcome back, Admin User!'. **TEST 3 - INVALID CREDENTIALS**: ✅ wrong@email.com/wrongpassword properly rejected, ✅ API returns HTTP 401 Unauthorized, ✅ Error message 'Invalid email or password' displayed correctly, ✅ User stays on login page (no redirect). **TEST 4 - REGISTRATION FLOW**: ✅ Register tab functional and switches form correctly, ✅ Registration form with Name/Email/Password/Role fields visible, ✅ test@sourcevia.com registration successful, ✅ Auto-login after registration works, ✅ Redirect to dashboard after registration. **TEST 5 - NETWORK & CORS**: ✅ All API calls use correct backend URL, ✅ CORS headers present (Access-Control-Allow-Origin: *), ✅ withCredentials: true properly set, ✅ 11 total API requests made during testing, ✅ No CORS policy errors detected. **TEST 6 - SESSION PERSISTENCE**: ✅ Login persists after page refresh, ✅ User data found in localStorage, ✅ Session maintained across browser refresh. **OVERALL RESULTS**: 100% success rate on all critical authentication flows, all test scenarios from review request completed successfully, no blocking issues found."
 
+  - task: "Legacy ProcureFlix Routes Testing - OSR, CCTV, Access Management"
+    implemented: true
+    working: true
+    file: "frontend/src/App.js, frontend/src/pages/OSRList.js, frontend/src/pages/CCTVLiveView.js, frontend/src/pages/AccessManagement.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Added missing routes for OSR (/osr), CCTV (/cctv), and Access Management (/access-management) to App.js. Backend APIs exist and are working. All page components exist in /pages/. Routes were missing from the application routing configuration."
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE LEGACY PROCUREFLIX ROUTES TESTING COMPLETED: All three routes are working perfectly. VERIFIED RESULTS: 1) **Authentication**: Successfully logged in with admin@sourcevia.com/admin123 credentials, 2) **OSR Page (/osr)**: Loads successfully with title 'Operating Service Requests', displays New Service Request button, 3 statistics cards, table structure, and search functionality, 3) **CCTV Page (/cctv)**: Loads successfully with title 'CCTV Live View', displays camera selection dropdown, 8 camera feed containers, and live indicators, 4) **Access Management Page (/access-management)**: Loads successfully with title 'Access Management', displays 6 statistics cards, access logs table, date/type filters, and export functionality. **NAVIGATION**: All three pages accessible via direct URLs without 404 errors. **CONTENT**: All pages display appropriate content (not blank/error) with proper UI elements and functionality. **AUTHENTICATION**: All routes properly protected and require authentication. No critical issues found - all legacy routes are fully functional."
+
   - task: "RBAC Status Change Button Testing - ProcureFlix Detail Pages"
     implemented: true
     working: true
