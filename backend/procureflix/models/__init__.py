@@ -24,6 +24,7 @@ from .service_request import (
 
 __all__ = [
     "Vendor",
+    "VendorCreateRequest",
     "VendorStatus",
     "RiskCategory",
     "VendorType",
