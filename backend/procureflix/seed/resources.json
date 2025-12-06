@@ -1,35 +1,57 @@
 [
   {
-    "id": "66666666-6666-6666-6666-666666666661",
-    "name": "L1 Helpdesk Agent",
-    "role": "Helpdesk",
-    "vendor_id": "b7f0c9b4-1a2b-4bde-9a9b-111111111111",
-    "contract_id": "33333333-3333-3333-3333-333333333332",
-    "assigned_to_project": "IT Helpdesk Transformation",
+    "id": "res-ti-pm",
+    "name": "Michael Anderson",
+    "role": "Project Manager - IT Modernization",
+    "vendor_id": "vendor-tech-innovate",
+    "contract_id": "contract-ti-it-infra",
+    "assigned_to_project": "IT Modernization Initiative 2025",
     "status": "active",
-    "created_at": "2025-03-01T10:00:00+00:00",
-    "updated_at": "2025-03-01T10:00:00+00:00"
+    "created_at": "2025-04-01T00:00:00Z",
+    "updated_at": "2025-04-01T00:00:00Z"
   },
   {
-    "id": "66666666-6666-6666-6666-666666666662",
-    "name": "Senior HVAC Technician",
-    "role": "Facilities",
-    "vendor_id": "b7f0c9b4-1a2b-4bde-9a9b-222222222222",
-    "contract_id": null,
-    "assigned_to_project": "Branch Maintenance",
+    "id": "res-ti-arch",
+    "name": "Dr. Aisha Patel",
+    "role": "Cloud Solutions Architect",
+    "vendor_id": "vendor-tech-innovate",
+    "contract_id": "contract-ti-it-infra",
+    "assigned_to_project": "IT Modernization Initiative 2025",
     "status": "active",
-    "created_at": "2025-02-10T10:00:00+00:00",
-    "updated_at": "2025-02-10T10:00:00+00:00"
+    "created_at": "2025-04-01T00:00:00Z",
+    "updated_at": "2025-04-01T00:00:00Z"
   },
   {
-    "id": "66666666-6666-6666-6666-666666666663",
-    "name": "Cloud CRM Consultant",
-    "role": "Consultant",
-    "vendor_id": "b7f0c9b4-1a2b-4bde-9a9b-111111111111",
-    "contract_id": "33333333-3333-3333-3333-333333333333",
-    "assigned_to_project": "CRM Rollout",
-    "status": "inactive",
-    "created_at": "2025-01-20T10:00:00+00:00",
-    "updated_at": "2025-01-20T10:00:00+00:00"
+    "id": "res-ti-devops",
+    "name": "Carlos Martinez",
+    "role": "Senior DevOps Engineer",
+    "vendor_id": "vendor-tech-innovate",
+    "contract_id": "contract-ti-it-infra",
+    "assigned_to_project": "IT Modernization Initiative 2025",
+    "status": "active",
+    "created_at": "2025-04-15T00:00:00Z",
+    "updated_at": "2025-04-15T00:00:00Z"
+  },
+  {
+    "id": "res-df-analyst",
+    "name": "Emily Zhang",
+    "role": "Lead Data Analyst",
+    "vendor_id": "vendor-dataflow",
+    "contract_id": "contract-df-analytics",
+    "assigned_to_project": "Data Analytics Transformation",
+    "status": "active",
+    "created_at": "2025-05-10T00:00:00Z",
+    "updated_at": "2025-05-10T00:00:00Z"
+  },
+  {
+    "id": "res-gs-analyst",
+    "name": "David Kim",
+    "role": "Security Analyst",
+    "vendor_id": "vendor-global-secure",
+    "contract_id": "contract-gs-security",
+    "assigned_to_project": "Security Operations Center",
+    "status": "active",
+    "created_at": "2025-04-15T00:00:00Z",
+    "updated_at": "2025-04-15T00:00:00Z"
   }
 ]
