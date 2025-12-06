@@ -45,6 +45,9 @@ def get_settings() -> ProcureFlixSettings:
     Using lru_cache ensures we only parse environment variables once.
     """
 
+    # Support both EMERGENT_LLM_KEY (for emergentintegrations) and OPENAI_API_KEY (for standard OpenAI SDK)
+    api_key = os.getenv("EMERGENT_LLM_KEY") or os.getenv("OPENAI_API_KEY")
+    
     return ProcureFlixSettings(
         data_backend=os.getenv("PROCUREFLIX_DATA_BACKEND", "memory").lower(),  # type: ignore
         sharepoint_site_url=os.getenv("SHAREPOINT_SITE_URL"),
@@ -54,5 +57,5 @@ def get_settings() -> ProcureFlixSettings:
         enable_ai=os.getenv("PROCUREFLIX_AI_ENABLED", "true").lower() == "true",
         ai_provider=os.getenv("PROCUREFLIX_AI_PROVIDER", "emergent"),
         ai_model=os.getenv("PROCUREFLIX_AI_MODEL", "gpt-5"),
-        emergent_llm_key=os.getenv("EMERGENT_LLM_KEY"),
+        emergent_llm_key=api_key,
     )
