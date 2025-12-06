@@ -599,7 +599,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete Authentication Flow Testing"
+    - "RBAC Status Change Button Testing - ProcureFlix"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
