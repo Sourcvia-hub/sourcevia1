@@ -12,6 +12,7 @@ from .tender import (
     ProposalStatus,
     EvaluationMethod,
 )
+from .contract import Contract, ContractType, ContractStatus, CriticalityLevel
 
 __all__ = [
     "Vendor",
@@ -23,4 +24,8 @@ __all__ = [
     "TenderStatus",
     "ProposalStatus",
     "EvaluationMethod",
+    "Contract",
+    "ContractType",
+    "ContractStatus",
+    "CriticalityLevel",
 ]
