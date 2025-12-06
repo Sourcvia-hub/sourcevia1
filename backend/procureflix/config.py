@@ -33,8 +33,8 @@ class ProcureFlixSettings:
 
     # AI / LLM configuration
     enable_ai: bool = True
-    ai_provider: str = "emergent"
-    ai_model: str = "gpt-5"
+    ai_provider: str = "openai"
+    ai_model: str = "gpt-4o"
     emergent_llm_key: Optional[str] = None
 
 
