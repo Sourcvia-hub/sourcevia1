@@ -158,18 +158,18 @@ const Login = () => {
           <div style={{
             width: '60px',
             height: '60px',
-            background: '#667eea',
-            borderRadius: '50%',
+            background: '#0ea5e9',
+            borderRadius: '12px',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: 'white',
-            fontSize: '28px',
+            fontSize: '24px',
             fontWeight: 'bold',
             marginBottom: '15px'
-          }}>S</div>
-          <h1 style={{ fontSize: '32px', margin: '0 0 10px 0', color: '#333' }}>Sourcevia</h1>
-          <p style={{ color: '#666', fontSize: '14px' }}>Procurement Management</p>
+          }}>PF</div>
+          <h1 style={{ fontSize: '32px', margin: '0 0 10px 0', color: '#333' }}>ProcureFlix</h1>
+          <p style={{ color: '#666', fontSize: '14px' }}>Next-gen Procurement Lifecycle</p>
         </div>
 
         {/* Tab Buttons */}
