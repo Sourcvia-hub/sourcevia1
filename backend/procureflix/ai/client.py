@@ -39,7 +39,7 @@ class ProcureFlixAIClient:
     All AI features are read-only and do not modify data.
     """
 
-    def __init__(self, enabled: bool = False, api_key: Optional[str] = None, model: str = "gpt-5"):
+    def __init__(self, enabled: bool = False, api_key: Optional[str] = None, model: str = "gpt-4o"):
         self.enabled = enabled
         self.api_key = api_key
         self.model = model
