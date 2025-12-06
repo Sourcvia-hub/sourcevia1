@@ -54,6 +54,15 @@ class ProcureFlixAIClient:
             return {"summary": "AI disabled", "details": []}
         return {"summary": "Stub tender proposals analysis", "details": []}
 
+    # ------------------------------------------------------------------
+    # Contract helpers
+    # ------------------------------------------------------------------
+
+    async def analyse_contract(self, contract_payload: Dict[str, Any]) -> Dict[str, Any]:
+        if not self.enabled:
+            return {"summary": "AI disabled", "details": []}
+        return {"summary": "Stub contract analysis", "details": []}
+
 
 _ai_client: Optional[ProcureFlixAIClient] = None
 
