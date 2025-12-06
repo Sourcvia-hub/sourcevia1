@@ -1,0 +1,122 @@
+ProcureFlix Standalone Deployment Package - File Checklist
+===========================================================
+
+This checklist confirms all files needed for external deployment are present.
+
+✅ CORE APPLICATION FILES
+-------------------------
+[ ] backend/                          - FastAPI backend application
+    [ ] procureflix/                 - ProcureFlix module
+    [ ] models/                      - Data models
+    [ ] utils/                       - Utilities
+    [ ] server.py                    - Main application
+    [ ] requirements.txt             - Python dependencies (NO emergentintegrations!)
+    [ ] Dockerfile                   - Backend container config
+    [ ] .env.template                - Environment variables template
+
+[ ] frontend/                         - React frontend application
+    [ ] build/                       - PRE-BUILT React app (REQUIRED!)
+    [ ] src/                         - Source code (for reference)
+    [ ] public/                      - Static assets
+    [ ] package.json                 - Node dependencies
+    [ ] Dockerfile                   - Frontend container config (production version)
+    [ ] nginx.conf                   - Nginx configuration
+    [ ] .env.template                - Environment variables template
+
+✅ DOCKER CONFIGURATION
+-----------------------
+[ ] docker-compose.yml               - Multi-service orchestration
+    - mongo service
+    - backend service
+    - frontend service
+
+✅ DOCUMENTATION FILES
+----------------------
+[ ] README_STANDALONE.md             - Quick start guide
+[ ] EXTERNAL_DEPLOYMENT_GUIDE.md     - Complete deployment guide (PRIMARY)
+[ ] DOCKER_TESTING_CHECKLIST.md      - Testing procedures
+[ ] PRODUCTION_DEPLOYMENT.md         - Full deployment reference
+[ ] DOCKER_VALIDATION_REPORT.md      - Package validation
+[ ] PACKAGE_CONTENTS.md              - Package overview
+[ ] SHAREPOINT_INTEGRATION.md        - SharePoint setup (future)
+[ ] PACKAGE_INFO.txt                 - Build information
+
+✅ BUILD & DEPLOYMENT SCRIPTS
+-----------------------------
+[ ] build-production-package.sh      - Package builder script
+
+✅ CRITICAL VERIFICATIONS
+-------------------------
+[ ] backend/requirements.txt does NOT contain "emergentintegrations"
+[ ] frontend/build/ folder exists with compiled React app
+[ ] frontend/Dockerfile is production version (uses pre-built files)
+[ ] docker-compose.yml uses correct image references
+[ ] All .env.template files are present and documented
+
+✅ OPTIONAL BUT RECOMMENDED
+---------------------------
+[ ] .dockerignore                    - Docker build exclusions
+[ ] .gitignore                       - Git exclusions
+[ ] LICENSE                          - License file
+[ ] CHANGELOG.md                     - Version history
+
+❌ FILES TO EXCLUDE
+-------------------
+[ ] .git/                            - Git repository (can be excluded)
+[ ] node_modules/                    - Node dependencies (excluded)
+[ ] __pycache__/                     - Python cache (excluded)
+[ ] .env                             - Actual env files (never include!)
+[ ] backend/.env                     - Actual backend env (never include!)
+[ ] frontend/.env                    - Actual frontend env (never include!)
+
+✅ MINIMUM PACKAGE SIZE
+-----------------------
+Compressed: ~50-100 MB
+Uncompressed: ~200-300 MB
+
+Main contributors to size:
+- frontend/build/ (~20 MB)
+- backend/procureflix/ (~10 MB)
+- Documentation (~5 MB)
+
+✅ PRE-DEPLOYMENT VERIFICATION
+------------------------------
+Run this command to verify the package is ready:
+
+  cd /app && ./build-production-package.sh
+
+Expected output:
+  ✅ Backend requirements.txt is clean (no emergent dependencies)
+  ✅ Frontend build folder exists
+  ✅ All Docker configuration files present
+  ✅ Production package ready!
+
+✅ POST-PACKAGE VERIFICATION
+----------------------------
+After creating the package, extract it to a test location and run:
+
+  1. cd extracted-package/
+  2. ls -la backend/requirements.txt      # Verify file exists
+  3. grep emergent backend/requirements.txt  # Should return nothing
+  4. ls -la frontend/build/              # Should have index.html and static/
+  5. cat PACKAGE_INFO.txt                # Review build info
+
+✅ DEPLOYMENT TEST (On Target Server)
+-------------------------------------
+1. Upload package to server
+2. cd /path/to/procureflix
+3. cp backend/.env.template backend/.env
+4. nano backend/.env  # Add OPENAI_API_KEY
+5. docker compose build --no-cache
+6. docker compose up -d
+7. docker compose ps  # Verify all healthy
+8. curl http://localhost:8001/api/health
+9. Open http://localhost in browser
+
+==========================================================
+PACKAGE READY FOR DISTRIBUTION: YES / NO
+
+Date Verified: _______________
+Verified By: __________________
+Target Environment: Ubuntu 24.04 + Docker 20.10+
+==========================================================
