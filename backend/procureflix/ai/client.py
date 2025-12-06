@@ -11,7 +11,17 @@ import json
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+try:
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    EMERGENT_AVAILABLE = True
+except ImportError:
+    EMERGENT_AVAILABLE = False
+    # Fallback to OpenAI SDK
+    try:
+        from openai import OpenAI
+        OPENAI_AVAILABLE = True
+    except ImportError:
+        OPENAI_AVAILABLE = False
 
 from ..config import get_settings
 
