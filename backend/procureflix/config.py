@@ -55,7 +55,7 @@ def get_settings() -> ProcureFlixSettings:
         sharepoint_client_id=os.getenv("SHAREPOINT_CLIENT_ID"),
         sharepoint_client_secret=os.getenv("SHAREPOINT_CLIENT_SECRET"),
         enable_ai=os.getenv("PROCUREFLIX_AI_ENABLED", "true").lower() == "true",
-        ai_provider=os.getenv("PROCUREFLIX_AI_PROVIDER", "emergent"),
-        ai_model=os.getenv("PROCUREFLIX_AI_MODEL", "gpt-5"),
+        ai_provider=os.getenv("PROCUREFLIX_AI_PROVIDER", "openai"),
+        ai_model=os.getenv("PROCUREFLIX_AI_MODEL", "gpt-4o"),
         emergent_llm_key=api_key,
     )
