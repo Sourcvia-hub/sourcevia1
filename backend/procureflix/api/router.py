@@ -434,20 +434,15 @@ async def get_vendor(vendor_id: str) -> Vendor:
 
 
 @router.post("/vendors", response_model=Vendor, status_code=201)
-async def create_vendor(vendor: Vendor) -> Vendor:
-    """Create a new vendor.
-
-    Validation of required business fields will be tightened as we
-    connect the ProcureFlix frontend; for now we enforce only minimal
-    checks.
+async def create_vendor(request: VendorCreateRequest) -> Vendor:
+    """Create a new vendor using simplified request model.
+    
+    This endpoint accepts a minimal VendorCreateRequest with essential fields.
+    System fields (vendor_number, risk_score, timestamps, etc.) are auto-generated.
+    
+    The full Vendor model is returned in the response.
     """
-
-    if not vendor.name_english:
-        raise HTTPException(status_code=400, detail="name_english is required")
-    if not vendor.commercial_name:
-        raise HTTPException(status_code=400, detail="commercial_name is required")
-
-    return _vendor_service.create_vendor(vendor)
+    return _vendor_service.create_vendor_from_request(request)
 
 
 @router.put("/vendors/{vendor_id}", response_model=Vendor)
