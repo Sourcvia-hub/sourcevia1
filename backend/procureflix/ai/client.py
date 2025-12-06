@@ -75,15 +75,23 @@ class ProcureFlixAIClient:
 Analyze vendor information and provide clear, actionable risk assessments.
 Be concise and focus on key risk factors. Always respond in valid JSON format."""
 
+        # Extract vendor info - handle both ProcureFlix and Sourcevia models
+        company_name = vendor_payload.get('company_name') or vendor_payload.get('name_english') or vendor_payload.get('commercial_name')
+        risk_category = vendor_payload.get('risk_category', 'medium')
+        risk_score = vendor_payload.get('risk_score', 50)
+        status = vendor_payload.get('status', 'active')
+        dd_required = vendor_payload.get('dd_required', False)
+        dd_complete = vendor_payload.get('dd_complete', False)
+
         prompt = f"""Analyze this vendor and explain their risk assessment:
 
 Vendor Information:
-- Company: {vendor_payload.get('company_name')}
-- Risk Category: {vendor_payload.get('risk_category')}
-- Risk Score: {vendor_payload.get('risk_score')}
-- Status: {vendor_payload.get('status')}
-- Due Diligence Required: {vendor_payload.get('dd_required')}
-- Due Diligence Complete: {vendor_payload.get('dd_complete')}
+- Company: {company_name}
+- Risk Category: {risk_category}
+- Risk Score: {risk_score}/100
+- Status: {status}
+- Due Diligence Required: {dd_required}
+- Due Diligence Complete: {dd_complete}
 
 Provide a JSON response with:
 1. "risk_explanation": Brief explanation of why this risk category was assigned (2-3 sentences)
