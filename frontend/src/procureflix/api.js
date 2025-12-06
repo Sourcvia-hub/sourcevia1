@@ -93,3 +93,37 @@ export const fetchContractAIAnalysis = async (id) => {
   const res = await pfApi.get(`/contracts/${id}/ai/analysis`);
   return res.data;
 };
+
+// PURCHASE ORDERS ---------------------------------------------------------
+
+export const fetchPurchaseOrders = async () => {
+  const res = await pfApi.get('/purchase-orders');
+  return res.data;
+};
+
+export const fetchPurchaseOrderById = async (id) => {
+  const res = await pfApi.get(`/purchase-orders/${id}`);
+  return res.data;
+};
+
+export const changePurchaseOrderStatus = async (id, status) => {
+  const res = await pfApi.post(`/purchase-orders/${id}/status/${status}`);
+  return res.data;
+};
+
+// INVOICES ---------------------------------------------------------------
+
+export const fetchInvoices = async () => {
+  const res = await pfApi.get('/invoices');
+  return res.data;
+};
+
+export const fetchInvoiceById = async (id) => {
+  const res = await pfApi.get(`/invoices/${id}`);
+  return res.data;
+};
+
+export const changeInvoiceStatus = async (id, status) => {
+  const res = await pfApi.post(`/invoices/${id}/status/${status}`);
+  return res.data;
+};

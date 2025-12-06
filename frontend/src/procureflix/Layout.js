@@ -6,6 +6,9 @@ const navItems = [
   { to: '/pf/dashboard', label: 'Dashboard' },
   { to: '/pf/vendors', label: 'Vendors' },
   { to: '/pf/tenders', label: 'Tenders' },
+  { to: '/pf/contracts', label: 'Contracts' },
+  { to: '/pf/purchase-orders', label: 'Purchase Orders' },
+  { to: '/pf/invoices', label: 'Invoices' },
 ];
 
 const ProcureFlixLayout = () => {
@@ -69,7 +72,7 @@ const ProcureFlixLayout = () => {
         <header className="h-14 border-b bg-white flex items-center justify-between px-6">
           <div>
             <h1 className="text-base font-semibold text-slate-900">ProcureFlix</h1>
-            <p className="text-xs text-slate-500">Vendors & Tenders</p>
+            <p className="text-xs text-slate-500">Vendors, Tenders, Contracts, POs & Invoices</p>
           </div>
           <div className="text-xs text-slate-500">
             Logged in as <span className="font-medium">{user?.email}</span>
