@@ -229,6 +229,99 @@ async def change_contract_status(contract_id: str, status: ContractStatus) -> Co
 async def contract_ai_analysis(contract_id: str) -> Dict[str, object]:
     return await _contract_service.get_contract_analysis(contract_id)
 
+
+# ---------------------------------------------------------------------------
+# Purchase order endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get("/purchase-orders", response_model=List[PurchaseOrder])
+async def list_purchase_orders() -> List[PurchaseOrder]:
+    return _po_service.list_purchase_orders()
+
+
+@router.get("/purchase-orders/{po_id}", response_model=PurchaseOrder)
+async def get_purchase_order(po_id: str) -> PurchaseOrder:
+    po = _po_service.get_purchase_order(po_id)
+    if not po:
+        raise HTTPException(status_code=404, detail="Purchase order not found")
+    return po
+
+
+@router.post("/purchase-orders", response_model=PurchaseOrder, status_code=201)
+async def create_purchase_order(po: PurchaseOrder) -> PurchaseOrder:
+    if not po.vendor_id:
+        raise HTTPException(status_code=400, detail="vendor_id is required")
+    if not po.description:
+        raise HTTPException(status_code=400, detail="description is required")
+    return _po_service.create_purchase_order(po)
+
+
+@router.put("/purchase-orders/{po_id}", response_model=PurchaseOrder)
+async def update_purchase_order(po_id: str, po: PurchaseOrder) -> PurchaseOrder:
+    updated = _po_service.update_purchase_order(po_id, po)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Purchase order not found")
+    return updated
+
+
+@router.post("/purchase-orders/{po_id}/status/{status}", response_model=PurchaseOrder)
+async def change_purchase_order_status(po_id: str, status: PurchaseOrderStatus) -> PurchaseOrder:
+    updated = _po_service.change_status(po_id, status)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Purchase order not found")
+    return updated
+
+
+# ---------------------------------------------------------------------------
+# Invoice endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get("/invoices", response_model=List[Invoice])
+async def list_invoices() -> List[Invoice]:
+    return _invoice_service.list_invoices()
+
+
+@router.get("/invoices/{invoice_id}", response_model=Invoice)
+async def get_invoice(invoice_id: str) -> Invoice:
+    inv = _invoice_service.get_invoice(invoice_id)
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return inv
+
+
+@router.post("/invoices", response_model=Invoice, status_code=201)
+async def create_invoice(invoice: Invoice) -> Invoice:
+    if not invoice.vendor_id:
+        raise HTTPException(status_code=400, detail="vendor_id is required")
+    if not invoice.amount:
+        raise HTTPException(status_code=400, detail="amount is required")
+    try:
+        return _invoice_service.create_invoice(invoice)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.put("/invoices/{invoice_id}", response_model=Invoice)
+async def update_invoice(invoice_id: str, invoice: Invoice) -> Invoice:
+    try:
+        updated = _invoice_service.update_invoice(invoice_id, invoice)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if not updated:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return updated
+
+
+@router.post("/invoices/{invoice_id}/status/{status}", response_model=Invoice)
+async def change_invoice_status(invoice_id: str, status: InvoiceStatus) -> Invoice:
+    updated = _invoice_service.change_status(invoice_id, status)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return updated
+
+
 @router.get("/vendors/{vendor_id}", response_model=Vendor)
 async def get_vendor(vendor_id: str) -> Vendor:
     vendor = _vendor_service.get_vendor(vendor_id)
