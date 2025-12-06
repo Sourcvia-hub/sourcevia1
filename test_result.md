@@ -604,6 +604,12 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+agent_communication:
+    - agent: "main"
+      message: "Added missing routes for OSR (/osr), CCTV (/cctv), and Access Management (/access-management) to App.js. Backend APIs exist and are working. All page components exist in /pages/. Need comprehensive testing of all three routes."
+    - agent: "testing"
+      message: "✅ COMPREHENSIVE LEGACY PROCUREFLIX ROUTES TESTING COMPLETED: All three routes (OSR, CCTV, Access Management) are working perfectly. Successfully tested with admin@sourcevia.com/admin123 credentials. All pages load without 404 errors, display appropriate content with proper titles and UI elements. Routes are properly configured and functional. No critical issues found."
+
 # Asset Management Module Testing Results
 asset_management:
   - task: "Asset List Page"
