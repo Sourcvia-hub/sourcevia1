@@ -44,21 +44,31 @@ class ProcureFlixAIClient:
         self.api_key = api_key
         self.model = model
 
-    def _create_chat(self, system_message: str) -> Optional[LlmChat]:
+    def _create_chat(self, system_message: str):
         """Create a new LLM chat session."""
         if not self.enabled or not self.api_key:
             return None
         
         try:
-            chat = LlmChat(
-                api_key=self.api_key,
-                session_id=f"procureflix-{uuid4()}",
-                system_message=system_message
-            )
-            
-            # Configure model based on provider
-            chat.with_model("openai", self.model)
-            return chat
+            # Try Emergent integration first
+            if EMERGENT_AVAILABLE:
+                chat = LlmChat(
+                    api_key=self.api_key,
+                    session_id=f"procureflix-{uuid4()}",
+                    system_message=system_message
+                )
+                chat.with_model("openai", self.model)
+                return chat
+            # Fallback to OpenAI SDK
+            elif OPENAI_AVAILABLE:
+                return {
+                    'client': OpenAI(api_key=self.api_key),
+                    'system_message': system_message,
+                    'model': self.model
+                }
+            else:
+                logger.error("No LLM client available (neither emergentintegrations nor openai installed)")
+                return None
         except Exception as e:
             logger.error(f"Failed to create AI chat: {e}")
             return None
