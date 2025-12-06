@@ -142,7 +142,11 @@ import ResourceDetail from './pages/ResourceDetail';
 import Assets from './pages/Assets';
 import AssetDetail from './pages/AssetDetail';
 import AssetForm from './pages/AssetForm';
-// ServiceRequests components not available in this version
+import OSRList from './pages/OSRList';
+import OSRDetail from './pages/OSRDetail';
+import OSRForm from './pages/OSRForm';
+import CCTVLiveView from './pages/CCTVLiveView';
+import AccessManagement from './pages/AccessManagement';
 
 // ProcureFlix components
 import ProcureFlixLayout from './procureflix/Layout';
