@@ -159,10 +159,57 @@ async def tender_ai_summary(tender_id: str) -> Dict[str, object]:
     return await _tender_service.get_tender_summary(tender_id)
 
 
-@router.get("/tenders/{tender_id}/ai/evaluation-suggestions")
+@router.post("/tenders/{tender_id}/ai/evaluation-suggestions")
 async def tender_ai_evaluation_suggestions(tender_id: str) -> Dict[str, object]:
     return await _tender_service.get_evaluation_suggestions(tender_id)
 
+
+# ---------------------------------------------------------------------------
+# Contract endpoints
+# ---------------------------------------------------------------------------
+
+
+@router.get("/contracts", response_model=List[Contract])
+async def list_contracts() -> List[Contract]:
+    return _contract_service.list_contracts()
+
+
+@router.get("/contracts/{contract_id}", response_model=Contract)
+async def get_contract(contract_id: str) -> Contract:
+    contract = _contract_service.get_contract(contract_id)
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    return contract
+
+
+@router.post("/contracts", response_model=Contract, status_code=201)
+async def create_contract(contract: Contract) -> Contract:
+    if not contract.title:
+        raise HTTPException(status_code=400, detail="title is required")
+    if not contract.vendor_id:
+        raise HTTPException(status_code=400, detail="vendor_id is required")
+    return _contract_service.create_contract(contract)
+
+
+@router.put("/contracts/{contract_id}", response_model=Contract)
+async def update_contract(contract_id: str, contract: Contract) -> Contract:
+    updated = _contract_service.update_contract(contract_id, contract)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    return updated
+
+
+@router.post("/contracts/{contract_id}/status/{status}", response_model=Contract)
+async def change_contract_status(contract_id: str, status: ContractStatus) -> Contract:
+    updated = _contract_service.change_status(contract_id, status)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    return updated
+
+
+@router.get("/contracts/{contract_id}/ai/analysis")
+async def contract_ai_analysis(contract_id: str) -> Dict[str, object]:
+    return await _contract_service.get_contract_analysis(contract_id)
 
 @router.get("/vendors/{vendor_id}", response_model=Vendor)
 async def get_vendor(vendor_id: str) -> Vendor:
