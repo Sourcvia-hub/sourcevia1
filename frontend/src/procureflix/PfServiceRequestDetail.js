@@ -82,6 +82,25 @@ const PfServiceRequestDetail = () => {
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+        <div className="rounded-lg border bg-white p-4 text-sm space-y-2">
+          <h3 className="text-sm font-semibold text-slate-900 mb-2">Category & Location</h3>
+          <p>
+            <span className="text-slate-500">Category:</span>{' '}
+            <span className="inline-block px-2 py-1 rounded bg-blue-50 text-blue-700 text-xs">
+              {sr.category?.replace('_', ' ') || '—'}
+            </span>
+          </p>
+          <p>
+            <span className="text-slate-500">Building:</span> {sr.building_name || '—'}
+          </p>
+          <p>
+            <span className="text-slate-500">Floor:</span> {sr.floor_name || '—'}
+          </p>
+          <p>
+            <span className="text-slate-500">Room/Area:</span> {sr.room_area || '—'}
+          </p>
+        </div>
+
         <div className="rounded-lg border bg-white p-4 text-sm space-y-1">
           <h3 className="text-sm font-semibold text-slate-900 mb-1">Linkage</h3>
           <p>
