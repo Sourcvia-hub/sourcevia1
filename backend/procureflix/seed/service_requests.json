@@ -22,7 +22,7 @@
     "id": "sr-firewall-config",
     "title": "Firewall Configuration for Cloud Integration",
     "description": "Configure enterprise firewall rules to allow secure communication between on-premise systems and new cloud infrastructure. Requires GlobalSecure security review and approval.",
-    "category": "safety",
+    "category": "Security Equipment",
     "building_id": "building-hq",
     "building_name": "Headquarters Building",
     "floor_id": "floor-1",
