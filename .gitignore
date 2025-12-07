@@ -84,3 +84,11 @@ android-sdk/ -e
 # *.env.*
 frontend/node_modules/.cache/default-development/0.pack
 procureflix_package.zip
+-e 
+# Environment files
+*.env
+*.env.*
+-e 
+# Environment files
+*.env
+*.env.*
