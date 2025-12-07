@@ -488,3 +488,67 @@ async def vendor_risk_explanation(vendor_id: str) -> Dict[str, object]:
         raise HTTPException(status_code=404, detail="Vendor not found")
 
     return await _vendor_service.get_risk_explanation(vendor)
+
+
+
+# ============================================================================
+# Master Data Endpoints (Buildings, Floors, Asset Categories)
+# ============================================================================
+
+@router.get("/master-data/buildings")
+async def get_buildings() -> List[Dict]:
+    """Get all buildings for service request forms."""
+    from motor.motor_asyncio import AsyncIOMotorClient
+    import os
+    
+    mongo_url = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+    client = AsyncIOMotorClient(mongo_url)
+    db = client.get_database("sourcevia")
+    
+    buildings = await db.buildings.find(
+        {"is_active": True},
+        {"_id": 0, "id": 1, "name": 1, "code": 1}
+    ).to_list(1000)
+    
+    return buildings
+
+
+@router.get("/master-data/floors")
+async def get_floors(building_id: str = None) -> List[Dict]:
+    """Get all floors, optionally filtered by building_id."""
+    from motor.motor_asyncio import AsyncIOMotorClient
+    import os
+    
+    mongo_url = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+    client = AsyncIOMotorClient(mongo_url)
+    db = client.get_database("sourcevia")
+    
+    query = {"is_active": True}
+    if building_id:
+        query["building_id"] = building_id
+    
+    floors = await db.floors.find(
+        query,
+        {"_id": 0, "id": 1, "building_id": 1, "name": 1, "number": 1}
+    ).to_list(1000)
+    
+    return floors
+
+
+@router.get("/master-data/asset-categories")
+async def get_asset_categories() -> List[Dict]:
+    """Get all asset categories for service request forms."""
+    from motor.motor_asyncio import AsyncIOMotorClient
+    import os
+    
+    mongo_url = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+    client = AsyncIOMotorClient(mongo_url)
+    db = client.get_database("sourcevia")
+    
+    categories = await db.asset_categories.find(
+        {"is_active": True},
+        {"_id": 0, "id": 1, "name": 1, "description": 1}
+    ).to_list(1000)
+    
+    return categories
+
