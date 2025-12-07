@@ -60,7 +60,7 @@
     "id": "sr-monitoring-setup",
     "title": "Cloud Infrastructure Monitoring Setup",
     "description": "Configure comprehensive monitoring and alerting for all cloud infrastructure components. Includes performance monitoring, security event tracking, and automated incident response.",
-    "category": "maintenance",
+    "category": "HVAC Systems",
     "building_id": "building-hq",
     "building_name": "Headquarters Building",
     "floor_id": "floor-1",
