@@ -23,6 +23,15 @@ class ServiceRequestPriority(str, Enum):
     URGENT = "urgent"
 
 
+class ServiceRequestCategory(str, Enum):
+    MAINTENANCE = "maintenance"
+    CLEANING = "cleaning"
+    RELOCATION = "relocation"
+    SAFETY = "safety"
+    IT_SUPPORT = "it_support"
+    OTHER = "other"
+
+
 class ServiceRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -30,6 +39,14 @@ class ServiceRequest(BaseModel):
 
     title: str
     description: str
+
+    # Category and Location
+    category: Optional[ServiceRequestCategory] = ServiceRequestCategory.OTHER
+    building_id: Optional[str] = None
+    building_name: Optional[str] = None
+    floor_id: Optional[str] = None
+    floor_name: Optional[str] = None
+    room_area: Optional[str] = None
 
     vendor_id: str
     contract_id: Optional[str] = None
