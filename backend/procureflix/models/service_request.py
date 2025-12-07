@@ -24,12 +24,18 @@ class ServiceRequestPriority(str, Enum):
 
 
 class ServiceRequestCategory(str, Enum):
-    MAINTENANCE = "maintenance"
-    CLEANING = "cleaning"
-    RELOCATION = "relocation"
-    SAFETY = "safety"
-    IT_SUPPORT = "it_support"
-    OTHER = "other"
+    """Service request categories aligned with Asset categories"""
+    IT_EQUIPMENT = "IT Equipment"
+    FURNITURE = "Furniture"
+    HVAC_SYSTEMS = "HVAC Systems"
+    SECURITY_EQUIPMENT = "Security Equipment"
+    OFFICE_EQUIPMENT = "Office Equipment"
+    ELECTRICAL_EQUIPMENT = "Electrical Equipment"
+    COMMUNICATION_SYSTEMS = "Communication Systems"
+    KITCHEN_EQUIPMENT = "Kitchen Equipment"
+    VEHICLES = "Vehicles"
+    TOOLS_EQUIPMENT = "Tools & Equipment"
+    GENERAL = "General"  # For non-asset related requests
 
 
 class ServiceRequest(BaseModel):
