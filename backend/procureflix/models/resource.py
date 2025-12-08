@@ -31,5 +31,9 @@ class Resource(BaseModel):
 
     status: ResourceStatus = ResourceStatus.ACTIVE
 
+    # Attendance sheets (Excel files)
+    attendance_sheets: list[dict] = Field(default_factory=list)
+    # Format: [{"filename": "attendance_jan_2025.xlsx", "upload_date": "2025-01-15", "file_path": "/path/to/file", "uploaded_by": "user@example.com"}]
+
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
