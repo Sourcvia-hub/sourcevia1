@@ -61,6 +61,46 @@ const Resources = () => {
     }
   };
 
+  const handleAttendanceUpload = async (resourceId, event) => {
+    event.stopPropagation();
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = [
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx?|xls)$/i)) {
+      alert('Please upload an Excel file (.xlsx or .xls)');
+      event.target.value = '';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      await axios.post(
+        `${API}/resources/${resourceId}/attendance-sheets`,
+        formData,
+        { 
+          withCredentials: true,
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );
+      
+      alert('✅ Attendance sheet uploaded successfully!');
+      fetchResources(); // Refresh to show updated count
+      event.target.value = ''; // Clear input
+    } catch (error) {
+      console.error('Upload failed:', error);
+      const errorMsg = error.response?.data?.detail || 'Failed to upload file';
+      alert(`❌ ${errorMsg}`);
+      event.target.value = '';
+    }
+  };
+
   const fetchContracts = async () => {
     try {
       const response = await axios.get(`${API}/contracts`, { withCredentials: true });
