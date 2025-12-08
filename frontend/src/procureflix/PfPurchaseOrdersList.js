@@ -37,7 +37,7 @@ const PfPurchaseOrdersList = () => {
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Purchase Orders</h2>
           <p className="text-sm text-slate-500 mt-1">
-            ProcureFlix purchase orders linked to vendors and contracts.
+            Sourcevia purchase orders linked to vendors and contracts.
           </p>
         </div>
       </div>
