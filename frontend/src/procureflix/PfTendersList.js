@@ -37,7 +37,7 @@ const PfTendersList = () => {
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Tenders</h2>
           <p className="text-sm text-slate-500 mt-1">
-            ProcureFlix tenders with proposals & evaluation.
+            Sourcevia tenders with proposals & evaluation.
           </p>
         </div>
       </div>
