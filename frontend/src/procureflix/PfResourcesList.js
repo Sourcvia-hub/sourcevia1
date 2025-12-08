@@ -85,7 +85,7 @@ const PfResourcesList = () => {
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Resources</h2>
           <p className="text-sm text-slate-500 mt-1">
-            ProcureFlix resources linked to vendors and contracts.
+            Sourcevia resources linked to vendors and contracts.
           </p>
         </div>
       </div>
