@@ -86,7 +86,7 @@ const ProcureFlixLayout = () => {
         {/* Top bar */}
         <header className="h-14 border-b bg-white flex items-center justify-between px-6">
           <div>
-            <h1 className="text-base font-semibold text-slate-900">ProcureFlix</h1>
+            <h1 className="text-base font-semibold text-slate-900">Sourcevia</h1>
             <p className="text-xs text-slate-500">End-to-end procurement lifecycle</p>
           </div>
           <div className="text-xs text-slate-500">
