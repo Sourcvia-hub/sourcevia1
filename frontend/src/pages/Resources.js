@@ -330,6 +330,26 @@ const Resources = () => {
                     {resource.access_production && <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Prod</span>}
                     {resource.access_uat && <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">UAT</span>}
                   </div>
+                  
+                  {/* Attendance Upload - Only for Active Resources */}
+                  {resource.status === 'active' && (
+                    <div className="flex items-center text-sm gap-2 pt-2 border-t border-gray-100 mt-2">
+                      <span className="text-gray-600 w-32">Attendance:</span>
+                      <label className="flex-1 flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-medium cursor-pointer hover:bg-blue-100 transition-colors">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        Upload Sheet (Excel)
+                        <input
+                          type="file"
+                          accept=".xlsx,.xls"
+                          onChange={(e) => handleAttendanceUpload(resource.id, e)}
+                          className="hidden"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </label>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-2">
