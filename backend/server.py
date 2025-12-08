@@ -349,6 +349,8 @@ async def login(login_data: LoginRequest, response: Response):
     await db.user_sessions.insert_one(session_doc)
     
     # Set cookie
+    # Use secure=False for HTTP, secure=True for HTTPS
+    is_production = os.getenv("ENVIRONMENT", "development") == "production"
     response.set_cookie(
         key="session_token",
         value=session_token,
@@ -401,6 +403,8 @@ async def auto_login(response: Response):
     await db.user_sessions.insert_one(session_doc)
     
     # Set cookie
+    # Use secure=False for HTTP, secure=True for HTTPS
+    is_production = os.getenv("ENVIRONMENT", "development") == "production"
     response.set_cookie(
         key="session_token",
         value=session_token,
