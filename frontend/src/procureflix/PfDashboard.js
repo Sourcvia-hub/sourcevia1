@@ -109,7 +109,7 @@ const PfDashboard = () => {
       <section>
         <h2 className="text-xl font-semibold text-slate-900">Overview</h2>
         <p className="text-sm text-slate-500 mt-1">
-          High-level KPIs from the ProcureFlix in-memory datasets.
+          High-level KPIs from the Sourcevia in-memory datasets.
         </p>
         <div className="mt-4 grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-6">
           <KpiCard label="Total Vendors" value={data.totalVendors} />
