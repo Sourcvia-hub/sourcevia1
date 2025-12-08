@@ -353,8 +353,8 @@ async def login(login_data: LoginRequest, response: Response):
         key="session_token",
         value=session_token,
         httponly=True,
-        secure=True,
-        samesite="none",  # Changed to 'none' for cross-origin requests
+        secure=False,  # Set to False for HTTP deployment, True for HTTPS
+        samesite="lax",  # Use 'lax' for same-site, 'none' only works with HTTPS
         path="/",
         max_age=7 * 24 * 60 * 60
     )
@@ -405,8 +405,8 @@ async def auto_login(response: Response):
         key="session_token",
         value=session_token,
         httponly=True,
-        secure=True,
-        samesite="none",  # Changed to 'none' for cross-origin requests
+        secure=False,  # Set to False for HTTP deployment, True for HTTPS
+        samesite="lax",  # Use 'lax' for same-site, 'none' only works with HTTPS
         path="/",
         max_age=7 * 24 * 60 * 60
     )
