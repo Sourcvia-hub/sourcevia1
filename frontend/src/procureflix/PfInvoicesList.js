@@ -37,7 +37,7 @@ const PfInvoicesList = () => {
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Invoices</h2>
           <p className="text-sm text-slate-500 mt-1">
-            ProcureFlix invoices linked to vendors, purchase orders, and contracts.
+            Sourcevia invoices linked to vendors, purchase orders, and contracts.
           </p>
         </div>
       </div>
