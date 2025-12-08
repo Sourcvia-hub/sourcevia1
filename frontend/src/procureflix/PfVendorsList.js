@@ -44,7 +44,7 @@ const PfVendorsList = () => {
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Vendors</h2>
           <p className="text-sm text-slate-500 mt-1">
-            Seeded ProcureFlix vendor records with risk & due diligence info.
+            Seeded Sourcevia vendor records with risk & due diligence info.
           </p>
         </div>
       </div>
