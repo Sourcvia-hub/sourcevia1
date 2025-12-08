@@ -40,14 +40,9 @@ const ProcureFlixLayout = () => {
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-slate-100 flex flex-col">
         <div className="px-6 py-4 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-sky-500 flex items-center justify-center text-white font-semibold text-lg">
-              PF
-            </div>
-            <div>
-              <div className="text-sm font-semibold tracking-wide">Sourcevia</div>
-              <div className="text-xs text-slate-400">Next-gen procurement</div>
-            </div>
+          <div>
+            <div className="text-lg font-bold tracking-wide text-white">Sourcevia</div>
+            <div className="text-xs text-slate-400">Procurement Management System</div>
           </div>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1 text-sm">
