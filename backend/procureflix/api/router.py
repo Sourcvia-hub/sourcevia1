@@ -552,3 +552,136 @@ async def get_asset_categories() -> List[Dict]:
     
     return categories
 
+
+
+# ============================================================================
+# Resource Attendance Sheet Upload
+# ============================================================================
+
+@router.post("/resources/{resource_id}/attendance-sheets")
+async def upload_attendance_sheet(
+    resource_id: str,
+    file: "UploadFile",
+) -> Dict[str, object]:
+    """Upload an attendance sheet (Excel file) for a resource."""
+    from fastapi import UploadFile, HTTPException
+    from pathlib import Path
+    import os
+    from datetime import datetime, timezone
+    
+    # Get resource
+    resource = _resource_service.get_resource(resource_id)
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    
+    # Check if resource is active
+    if resource.status != ResourceStatus.ACTIVE:
+        raise HTTPException(
+            status_code=400,
+            detail="Can only upload attendance sheets for active resources"
+        )
+    
+    # Validate file type (Excel files)
+    allowed_extensions = [".xlsx", ".xls"]
+    file_extension = Path(file.filename).suffix.lower()
+    if file_extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type. Only Excel files ({', '.join(allowed_extensions)}) are allowed"
+        )
+    
+    # Create uploads directory if it doesn't exist
+    upload_dir = Path("/app/backend/uploads/attendance_sheets")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Generate unique filename
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    safe_filename = f"{resource_id}_{timestamp}_{file.filename}"
+    file_path = upload_dir / safe_filename
+    
+    # Save file
+    try:
+        contents = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(contents)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+    
+    # Add to resource attendance_sheets
+    attendance_entry = {
+        "filename": file.filename,
+        "stored_filename": safe_filename,
+        "upload_date": datetime.now(timezone.utc).isoformat(),
+        "file_path": str(file_path),
+        "file_size": len(contents),
+        "uploaded_by": "current_user",  # TODO: Get from auth context
+    }
+    
+    # Update resource
+    if not hasattr(resource, "attendance_sheets") or resource.attendance_sheets is None:
+        resource.attendance_sheets = []
+    
+    resource.attendance_sheets.append(attendance_entry)
+    updated = _resource_service.update_resource(resource_id, resource)
+    
+    if not updated:
+        # Rollback: delete uploaded file
+        file_path.unlink(missing_ok=True)
+        raise HTTPException(status_code=500, detail="Failed to update resource")
+    
+    return {
+        "message": "Attendance sheet uploaded successfully",
+        "file_info": attendance_entry,
+        "resource_id": resource_id
+    }
+
+
+@router.get("/resources/{resource_id}/attendance-sheets")
+async def get_attendance_sheets(resource_id: str) -> List[Dict]:
+    """Get all attendance sheets for a resource."""
+    from fastapi import HTTPException
+    
+    resource = _resource_service.get_resource(resource_id)
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    
+    return resource.attendance_sheets or []
+
+
+@router.delete("/resources/{resource_id}/attendance-sheets/{filename}")
+async def delete_attendance_sheet(resource_id: str, filename: str) -> Dict[str, str]:
+    """Delete an attendance sheet."""
+    from fastapi import HTTPException
+    from pathlib import Path
+    
+    resource = _resource_service.get_resource(resource_id)
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    
+    # Find the attendance sheet
+    sheet_to_delete = None
+    for sheet in (resource.attendance_sheets or []):
+        if sheet.get("stored_filename") == filename:
+            sheet_to_delete = sheet
+            break
+    
+    if not sheet_to_delete:
+        raise HTTPException(status_code=404, detail="Attendance sheet not found")
+    
+    # Delete file from filesystem
+    file_path = Path(sheet_to_delete["file_path"])
+    if file_path.exists():
+        file_path.unlink()
+    
+    # Remove from resource
+    resource.attendance_sheets = [
+        sheet for sheet in resource.attendance_sheets
+        if sheet.get("stored_filename") != filename
+    ]
+    
+    updated = _resource_service.update_resource(resource_id, resource)
+    if not updated:
+        raise HTTPException(status_code=500, detail="Failed to update resource")
+    
+    return {"message": "Attendance sheet deleted successfully"}
+
