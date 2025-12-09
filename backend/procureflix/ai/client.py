@@ -1,7 +1,7 @@
-"""AI client abstraction for ProcureFlix.
+"""AI client abstraction for Sourcevia - OpenAI only.
 
 This module provides AI-powered analysis for vendors, contracts, and tenders
-using the Emergent LLM integration. All AI features are read-only and advisory.
+using the OpenAI SDK directly. All AI features are read-only and advisory.
 """
 
 from __future__ import annotations
@@ -9,19 +9,12 @@ from __future__ import annotations
 import logging
 import json
 from typing import Any, Dict, Optional
-from uuid import uuid4
 
 try:
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
-    EMERGENT_AVAILABLE = True
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
 except ImportError:
-    EMERGENT_AVAILABLE = False
-    # Fallback to OpenAI SDK
-    try:
-        from openai import OpenAI
-        OPENAI_AVAILABLE = True
-    except ImportError:
-        OPENAI_AVAILABLE = False
+    OPENAI_AVAILABLE = False
 
 from ..config import get_settings
 
@@ -29,9 +22,9 @@ logger = logging.getLogger(__name__)
 
 
 class ProcureFlixAIClient:
-    """High-level AI facade for ProcureFlix.
+    """High-level AI facade for Sourcevia.
     
-    Provides AI-powered analysis using Emergent LLM integration:
+    Provides AI-powered analysis using OpenAI SDK:
     - Vendor risk analysis and explanations
     - Contract analysis and recommendations
     - Tender evaluation suggestions
@@ -43,59 +36,34 @@ class ProcureFlixAIClient:
         self.enabled = enabled
         self.api_key = api_key
         self.model = model
+        self.client = None
+        
+        if self.enabled and self.api_key and OPENAI_AVAILABLE:
+            try:
+                self.client = OpenAI(api_key=self.api_key)
+                logger.info(f"OpenAI client initialized with model {model}")
+            except Exception as e:
+                logger.error(f"Failed to initialize OpenAI client: {e}")
+                self.enabled = False
 
-    def _create_chat(self, system_message: str):
-        """Create a new LLM chat session."""
-        if not self.enabled or not self.api_key:
-            return None
+    def _send_message(self, system_message: str, prompt: str) -> str:
+        """Send message to OpenAI and get response."""
+        if not self.client:
+            raise ValueError("OpenAI client not initialized")
         
         try:
-            # Try Emergent integration first
-            if EMERGENT_AVAILABLE:
-                chat = LlmChat(
-                    api_key=self.api_key,
-                    session_id=f"procureflix-{uuid4()}",
-                    system_message=system_message
-                )
-                chat.with_model("openai", self.model)
-                return {'type': 'emergent', 'chat': chat}
-            # Fallback to OpenAI SDK
-            elif OPENAI_AVAILABLE:
-                return {
-                    'type': 'openai',
-                    'client': OpenAI(api_key=self.api_key),
-                    'system_message': system_message,
-                    'model': self.model
-                }
-            else:
-                logger.error("No LLM client available (neither emergentintegrations nor openai installed)")
-                return None
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1000
+            )
+            return response.choices[0].message.content
         except Exception as e:
-            logger.error(f"Failed to create AI chat: {e}")
-            return None
-    
-    async def _send_message(self, chat_obj, prompt: str) -> str:
-        """Send message to AI and get response (supports both Emergent and OpenAI)."""
-        if not chat_obj:
-            raise ValueError("No chat object provided")
-        
-        try:
-            if chat_obj['type'] == 'emergent':
-                response = await chat_obj['chat'].send_message(UserMessage(text=prompt))
-                return response
-            elif chat_obj['type'] == 'openai':
-                response = chat_obj['client'].chat.completions.create(
-                    model=chat_obj['model'],
-                    messages=[
-                        {"role": "system", "content": chat_obj['system_message']},
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=0.7,
-                    max_tokens=1000
-                )
-                return response.choices[0].message.content
-        except Exception as e:
-            logger.error(f"Failed to send message to AI: {e}")
+            logger.error(f"Failed to send message to OpenAI: {e}")
             raise
 
     # ------------------------------------------------------------------
@@ -146,14 +114,13 @@ Provide a JSON response with:
 Keep responses clear, professional, and actionable."""
 
         try:
-            chat = self._create_chat(system_message)
-            if not chat:
+            if not self.client:
                 return {
                     "ai_enabled": False,
-                    "reason": "Failed to initialize AI client"
+                    "reason": "OpenAI client not initialized"
                 }
 
-            response = await self._send_message(chat, prompt)
+            response = self._send_message(system_message, prompt)
             
             # Try to parse JSON response
             try:
@@ -221,14 +188,13 @@ Provide a JSON response with:
 Keep responses professional, specific, and focused on risk mitigation."""
 
         try:
-            chat = self._create_chat(system_message)
-            if not chat:
+            if not self.client:
                 return {
                     "ai_enabled": False,
-                    "reason": "Failed to initialize AI client"
+                    "reason": "OpenAI client not initialized"
                 }
 
-            response = await self._send_message(chat, prompt)
+            response = self._send_message(system_message, prompt)
             
             try:
                 result = json.loads(response)
@@ -284,14 +250,13 @@ Provide a JSON response with:
 Keep it concise and professional."""
 
         try:
-            chat = self._create_chat(system_message)
-            if not chat:
+            if not self.client:
                 return {
                     "ai_enabled": False,
-                    "reason": "Failed to initialize AI client"
+                    "reason": "OpenAI client not initialized"
                 }
 
-            response = await self._send_message(chat, prompt)
+            response = self._send_message(system_message, prompt)
             
             try:
                 result = json.loads(response)
@@ -360,14 +325,13 @@ Provide a JSON response with:
 Remember: This is advisory only. The committee makes the final decision."""
 
         try:
-            chat = self._create_chat(system_message)
-            if not chat:
+            if not self.client:
                 return {
                     "ai_enabled": False,
-                    "reason": "Failed to initialize AI client"
+                    "reason": "OpenAI client not initialized"
                 }
 
-            response = await self._send_message(chat, prompt)
+            response = self._send_message(system_message, prompt)
             
             try:
                 result = json.loads(response)
@@ -398,9 +362,11 @@ def get_ai_client() -> ProcureFlixAIClient:
     global _ai_client
     if _ai_client is None:
         settings = get_settings()
+        # Use openai_api_key instead of emergent_llm_key
+        api_key = settings.openai_api_key or settings.emergent_llm_key
         _ai_client = ProcureFlixAIClient(
             enabled=settings.enable_ai,
-            api_key=settings.emergent_llm_key,
+            api_key=api_key,
             model=settings.ai_model
         )
         logger.info(f"AI Client initialized: enabled={settings.enable_ai}, model={settings.ai_model}")

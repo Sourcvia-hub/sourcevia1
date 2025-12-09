@@ -1,61 +1,50 @@
-"""Configuration for ProcureFlix backend.
+"""Configuration for Sourcevia backend - Production ready."""
 
-This module defines a dedicated settings object for ProcureFlix so we can
-cleanly manage environment variables (including SharePoint integration
-and AI settings) without interfering with legacy Sourcevia configuration.
-"""
-
-from functools import lru_cache
 import os
-from dataclasses import dataclass
-from typing import Optional, Literal
+from functools import lru_cache
+from typing import Optional
+from pydantic_settings import BaseSettings
 
 
-@dataclass
-class ProcureFlixSettings:
-    """ProcureFlix-specific settings.
-
-    These settings control the data backend (memory vs SharePoint),
-    SharePoint authentication, and AI feature flags.
-    """
-
-    # Application metadata
-    app_name: str = "Sourcevia"
-
-    # Data backend selection: 'memory' or 'sharepoint'
-    data_backend: Literal["memory", "sharepoint"] = "memory"
-
-    # SharePoint integration settings
-    sharepoint_site_url: Optional[str] = None
-    sharepoint_tenant_id: Optional[str] = None
-    sharepoint_client_id: Optional[str] = None
-    sharepoint_client_secret: Optional[str] = None
-
-    # AI / LLM configuration
-    enable_ai: bool = True
-    ai_provider: str = "openai"
-    ai_model: str = "gpt-4o"
-    emergent_llm_key: Optional[str] = None
-
-
-@lru_cache(maxsize=1)
-def get_settings() -> ProcureFlixSettings:
-    """Return cached ProcureFlix settings instance.
-
-    Using lru_cache ensures we only parse environment variables once.
-    """
-
-    # Support both EMERGENT_LLM_KEY (for emergentintegrations) and OPENAI_API_KEY (for standard OpenAI SDK)
-    api_key = os.getenv("EMERGENT_LLM_KEY") or os.getenv("OPENAI_API_KEY")
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
     
-    return ProcureFlixSettings(
-        data_backend=os.getenv("PROCUREFLIX_DATA_BACKEND", "memory").lower(),  # type: ignore
-        sharepoint_site_url=os.getenv("SHAREPOINT_SITE_URL"),
-        sharepoint_tenant_id=os.getenv("SHAREPOINT_TENANT_ID"),
-        sharepoint_client_id=os.getenv("SHAREPOINT_CLIENT_ID"),
-        sharepoint_client_secret=os.getenv("SHAREPOINT_CLIENT_SECRET"),
-        enable_ai=os.getenv("PROCUREFLIX_AI_ENABLED", "true").lower() == "true",
-        ai_provider=os.getenv("PROCUREFLIX_AI_PROVIDER", "openai"),
-        ai_model=os.getenv("PROCUREFLIX_AI_MODEL", "gpt-4o"),
-        emergent_llm_key=api_key,
-    )
+    # MongoDB Configuration
+    mongo_url: str = "mongodb://localhost:27017"
+    mongo_db_name: str = "sourcevia"
+    
+    # API Keys
+    openai_api_key: Optional[str] = None
+    emergent_llm_key: Optional[str] = None  # Backward compatibility
+    
+    # AI Configuration
+    enable_ai: bool = False
+    ai_model: str = "gpt-4o"
+    
+    # CORS Configuration
+    allowed_origins: str = "http://localhost:3000,http://localhost:80"
+    
+    # Server Configuration
+    host: str = "0.0.0.0"
+    port: int = 8001
+    
+    # Environment
+    environment: str = "production"
+    debug: bool = False
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = False
+        extra = "allow"
+
+    def get_allowed_origins_list(self) -> list[str]:
+        """Parse ALLOWED_ORIGINS into a list."""
+        if not self.allowed_origins:
+            return []
+        return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
+
+
+@lru_cache()
+def get_settings() -> Settings:
+    """Get cached settings instance."""
+    return Settings()
