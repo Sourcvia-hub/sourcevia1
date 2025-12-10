@@ -3840,6 +3840,21 @@ async def seed_facilities_data(request: Request):
     return {"message": "Seed data created successfully"}
 
 # ==================== APP SETUP ====================
+
+# Add request logging middleware for debugging CORS and auth issues
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all requests for debugging production issues"""
+    logger.info(f"🔍 Request: {request.method} {request.url.path}")
+    logger.info(f"   Origin: {request.headers.get('origin', 'None')}")
+    logger.info(f"   Host: {request.headers.get('host', 'None')}")
+    logger.info(f"   Cookies: {list(request.cookies.keys())}")
+    
+    response = await call_next(request)
+    
+    logger.info(f"   Response Status: {response.status_code}")
+    return response
+
 # Configure CORS middleware (must be before including router)
 # Default to allow localhost for development
 DEFAULT_CORS_ORIGINS = [
@@ -3854,6 +3869,7 @@ cors_origins = [origin.strip() for origin in cors_origins_str.split(",") if orig
 
 print(f"🔒 CORS Configuration:")
 print(f"   Allowed Origins: {cors_origins}")
+print(f"   ALLOWED_ORIGINS env var: {os.environ.get('ALLOWED_ORIGINS', 'NOT SET')}")
 
 app.add_middleware(
     CORSMiddleware,
