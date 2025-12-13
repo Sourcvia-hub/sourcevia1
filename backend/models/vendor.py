@@ -31,41 +31,41 @@ class Vendor(BaseModel):
     vendor_number: Optional[str] = None  # Auto-generated (e.g., Vendor-25-0001)
     vendor_type: VendorType = VendorType.LOCAL  # International or Local
     
-    # Company Information
-    name_english: str
-    commercial_name: str
-    entity_type: str
-    vat_number: str
+    # Company Information - All Optional
+    name_english: Optional[str] = None
+    commercial_name: Optional[str] = None
+    entity_type: Optional[str] = None
+    vat_number: Optional[str] = None
     unified_number: Optional[str] = None  # For Saudi entities
-    cr_number: str
-    cr_expiry_date: datetime
-    cr_country_city: str
+    cr_number: Optional[str] = None
+    cr_expiry_date: Optional[datetime] = None
+    cr_country_city: Optional[str] = None
     license_number: Optional[str] = None
     license_expiry_date: Optional[datetime] = None
-    activity_description: str
-    number_of_employees: int
+    activity_description: Optional[str] = None
+    number_of_employees: Optional[int] = 0
     
-    # Address and Contact
-    street: str
-    building_no: str
-    city: str
-    district: str
-    country: str
-    mobile: str
+    # Address and Contact - All Optional
+    street: Optional[str] = None
+    building_no: Optional[str] = None
+    city: Optional[str] = None
+    district: Optional[str] = None
+    country: Optional[str] = None
+    mobile: Optional[str] = None
     landline: Optional[str] = None
     fax: Optional[str] = None
-    email: EmailStr
+    email: Optional[str] = None  # Changed from EmailStr to allow empty
     
-    # Representative Information
-    representative_name: str
-    representative_designation: str
-    representative_id_type: str
-    representative_id_number: str
-    representative_nationality: str
-    representative_mobile: str
+    # Representative Information - All Optional
+    representative_name: Optional[str] = None
+    representative_designation: Optional[str] = None
+    representative_id_type: Optional[str] = None
+    representative_id_number: Optional[str] = None
+    representative_nationality: Optional[str] = None
+    representative_mobile: Optional[str] = None
     representative_residence_tel: Optional[str] = None
     representative_phone_area_code: Optional[str] = None
-    representative_email: EmailStr
+    representative_email: Optional[str] = None  # Changed from EmailStr to allow empty
     
     # Bank Account Information
     bank_account_name: str
