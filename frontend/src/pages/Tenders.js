@@ -124,7 +124,7 @@ const Tenders = () => {
               data-testid="create-tender-btn"
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
             >
-              Create Purchase Request
+              Raise PR
             </button>
           )}
         </div>
