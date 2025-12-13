@@ -1055,7 +1055,7 @@ async def blacklist_vendor(vendor_id: str, request: Request):
     user = await get_current_user(request)
     
     # Only procurement manager can blacklist vendors
-    if user["role"] not in ["procurement_manager"]:
+    if user.role not in ["procurement_manager"]:
         raise HTTPException(status_code=403, detail="Only procurement managers can blacklist vendors")
     
     vendor = await db.vendors.find_one({"id": vendor_id})
