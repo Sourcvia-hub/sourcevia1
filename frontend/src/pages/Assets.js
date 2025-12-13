@@ -11,6 +11,8 @@ const Assets = () => {
   const { user } = useAuth();
   const [assets, setAssets] = useState([]);
   const [filteredAssets, setFilteredAssets] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [buildings, setBuildings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: '',
@@ -22,6 +24,7 @@ const Assets = () => {
 
   useEffect(() => {
     fetchAssets();
+    fetchMasterData();
   }, []);
 
   useEffect(() => {
@@ -37,6 +40,19 @@ const Assets = () => {
       console.error('Error fetching assets:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMasterData = async () => {
+    try {
+      const [categoriesRes, buildingsRes] = await Promise.all([
+        axios.get(`${API}/asset-categories`, { withCredentials: true }),
+        axios.get(`${API}/buildings`, { withCredentials: true })
+      ]);
+      setCategories(categoriesRes.data);
+      setBuildings(buildingsRes.data);
+    } catch (error) {
+      console.error('Error fetching master data:', error);
     }
   };
 
