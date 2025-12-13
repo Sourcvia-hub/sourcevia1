@@ -195,7 +195,8 @@ class SourceviaBackendTester:
         if "vendor_id" in self.test_data:
             try:
                 vendor_id = self.test_data["vendor_id"]
-                response = self.session.post(f"{BACKEND_URL}/vendors/{vendor_id}/direct-approve")
+                approval_data = {"comment": "Test approval"}
+                response = self.session.post(f"{BACKEND_URL}/vendors/{vendor_id}/direct-approve", json=approval_data)
                 
                 if response.status_code == 200:
                     # Verify status changed to approved
@@ -220,16 +221,20 @@ class SourceviaBackendTester:
             # Test usable-in-pr (should include draft + approved)
             response = self.session.get(f"{BACKEND_URL}/vendors/usable-in-pr")
             if response.status_code == 200:
-                vendors = response.json()
-                self.log_result("Vendors Usable in PR", True, f"Found {len(vendors)} vendors")
+                data = response.json()
+                vendors = data.get("vendors", [])
+                count = data.get("count", 0)
+                self.log_result("Vendors Usable in PR", True, f"Found {count} vendors")
             else:
                 self.log_result("Vendors Usable in PR", False, f"Status: {response.status_code}")
 
             # Test usable-in-contracts (should include only approved)
             response = self.session.get(f"{BACKEND_URL}/vendors/usable-in-contracts")
             if response.status_code == 200:
-                vendors = response.json()
-                self.log_result("Vendors Usable in Contracts", True, f"Found {len(vendors)} approved vendors")
+                data = response.json()
+                vendors = data.get("vendors", [])
+                count = data.get("count", 0)
+                self.log_result("Vendors Usable in Contracts", True, f"Found {count} approved vendors")
             else:
                 self.log_result("Vendors Usable in Contracts", False, f"Status: {response.status_code}")
                 
