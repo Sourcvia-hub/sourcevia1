@@ -126,4 +126,4 @@ test_plan:
 
 agent_communication:
   - agent: "testing"
-    message: "Backend testing completed with 76.9% success rate. Core functionality (auth, CRUD operations, master data) working correctly. Two main issues identified: 1) Workflow endpoints returning 500 errors - likely authentication or dependency issues in workflow routes. 2) Vendor usage rule endpoints returning 404 - routes may not be properly mounted. These require investigation of route mounting and authentication flow in workflow modules."
+    message: "Backend testing completed with 76.9% success rate. CRITICAL BUG FOUND: All workflow endpoints fail with 500 errors due to incorrect User object attribute access. The workflow routes use dictionary syntax (current_user['role']) but get_current_user() returns a User object requiring dot notation (current_user.role). This affects: 1) All workflow endpoints in workflow_routes.py 2) Vendor special workflow endpoints in vendor_workflow.py. FIX REQUIRED: Change all current_user['field'] to current_user.field in both workflow route files. Core CRUD functionality works correctly."
