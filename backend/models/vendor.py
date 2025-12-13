@@ -12,6 +12,7 @@ class VendorType(str, Enum):
     INTERNATIONAL = "international"
 
 class VendorStatus(str, Enum):
+    DRAFT = "draft"
     PENDING = "pending"
     PENDING_DUE_DILIGENCE = "pending_due_diligence"
     APPROVED = "approved"
