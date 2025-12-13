@@ -57,7 +57,7 @@ backend:
     status_history:
       - working: false
         agent: "testing"
-        comment: "Workflow endpoints exist but return 500 errors. Direct approve vendor endpoint fails with Internal Server Error. Submit/review endpoints for tenders also fail with 500 errors. Authentication issue or missing dependencies in workflow routes."
+        comment: "CRITICAL BUG IDENTIFIED: Workflow routes expect current_user to be a dictionary (current_user['role']) but get_current_user() returns a User object (current_user.role). This causes 500 Internal Server Error on all workflow endpoints. Need to fix attribute access in workflow_routes.py and vendor_workflow.py."
 
   - task: "Vendor Usage Rules"
     implemented: true
@@ -69,7 +69,7 @@ backend:
     status_history:
       - working: false
         agent: "testing"
-        comment: "Vendor usage endpoints (/vendors/usable-in-pr, /vendors/usable-in-contracts) return 404 errors. Routes may not be properly mounted or authentication issues."
+        comment: "SAME BUG AS WORKFLOW ENDPOINTS: Vendor workflow routes use current_user['role'] syntax but get_current_user() returns User object. This affects /vendors/usable-in-pr, /vendors/usable-in-contracts, and /vendors/{id}/direct-approve endpoints. All return 500 errors due to incorrect attribute access."
 
   - task: "Master Data Endpoints"
     implemented: true
