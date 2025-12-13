@@ -3884,6 +3884,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include workflow routes for all modules
+from routes.workflow_routes import create_workflow_router
+
+# Create workflow routers for each module
+vendors_workflow_router = create_workflow_router("Vendor", "vendors", "vendors")
+tenders_workflow_router = create_workflow_router("Purchase Request", "tenders", "tenders")
+contracts_workflow_router = create_workflow_router("Contract", "contracts", "contracts")
+pos_workflow_router = create_workflow_router("Purchase Order", "purchase_orders", "purchase_orders")
+invoices_workflow_router = create_workflow_router("Invoice", "invoices", "invoices")
+service_requests_workflow_router = create_workflow_router("Service Request", "service_requests", "service_requests")
+resources_workflow_router = create_workflow_router("Resource", "resources", "resources")
+
+# Include workflow routers
+api_router.include_router(vendors_workflow_router)
+api_router.include_router(tenders_workflow_router)
+api_router.include_router(contracts_workflow_router)
+api_router.include_router(pos_workflow_router)
+api_router.include_router(invoices_workflow_router)
+api_router.include_router(service_requests_workflow_router)
+api_router.include_router(resources_workflow_router)
+
 # Include the router in the main app (must be after all endpoints are defined)
 app.include_router(api_router)
 
