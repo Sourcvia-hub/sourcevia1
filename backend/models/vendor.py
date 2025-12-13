@@ -90,7 +90,7 @@ class Vendor(BaseModel):
     risk_score: float = 0.0
     risk_category: RiskCategory = RiskCategory.LOW
     risk_assessment_details: Dict[str, Any] = {}  # Breakdown of risk calculation
-    status: VendorStatus = VendorStatus.APPROVED  # Auto-approved
+    status: VendorStatus = VendorStatus.DRAFT  # Default status is draft
     evaluation_notes: Optional[str] = None
     created_by: Optional[str] = None  # User ID who created
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
