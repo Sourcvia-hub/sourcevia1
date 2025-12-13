@@ -62,18 +62,18 @@ ROLE_PERMISSIONS: Dict[str, Dict[str, List[str]]] = {
         Module.SERVICE_REQUESTS: [Permission.REQUESTER],
     },
     "procurement_officer": {
-        Module.DASHBOARD: [Permission.VIEWER],
-        Module.VENDORS: [Permission.REQUESTER, Permission.VERIFIER],
-        Module.VENDOR_DD: [Permission.REQUESTER],
-        Module.TENDERS: [Permission.REQUESTER, Permission.VERIFIER],
-        Module.TENDER_EVALUATION: [Permission.REQUESTER, Permission.VERIFIER],
-        Module.TENDER_PROPOSALS: [Permission.REQUESTER],
-        Module.CONTRACTS: [Permission.REQUESTER, Permission.VERIFIER],
-        Module.PURCHASE_ORDERS: [Permission.REQUESTER, Permission.VERIFIER],
-        Module.RESOURCES: [Permission.REQUESTER, Permission.VERIFIER],
-        Module.INVOICES: [Permission.REQUESTER, Permission.VERIFIER],
-        Module.ASSETS: [Permission.REQUESTER],
-        Module.SERVICE_REQUESTS: [Permission.REQUESTER, Permission.VERIFIER],
+        Module.DASHBOARD: [Permission.VIEWER],  # View all requests
+        Module.VENDORS: [Permission.VERIFIER, Permission.APPROVER],  # Can review and approve vendors
+        Module.VENDOR_DD: [Permission.VERIFIER],
+        Module.TENDERS: [Permission.VERIFIER],  # Can review PRs
+        Module.TENDER_EVALUATION: [Permission.VERIFIER],
+        Module.TENDER_PROPOSALS: [Permission.VERIFIER],
+        Module.CONTRACTS: [Permission.VERIFIER],  # Can review contracts
+        Module.PURCHASE_ORDERS: [Permission.VERIFIER],  # Can review POs
+        Module.RESOURCES: [Permission.VERIFIER],  # Can review resources
+        Module.INVOICES: [Permission.VERIFIER],  # Can review invoices
+        Module.ASSETS: [Permission.VERIFIER],  # Can view assets
+        Module.SERVICE_REQUESTS: [Permission.VERIFIER],  # Can review service requests
     },
     "senior_manager": {
         Module.DASHBOARD: [Permission.VIEWER],
