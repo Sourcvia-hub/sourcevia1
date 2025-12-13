@@ -371,7 +371,7 @@ const Vendors = () => {
                       Complete DD
                     </Link>
                   )}
-                  {vendor.status !== 'blacklisted' && (
+                  {vendor.status !== 'blacklisted' && user?.role === 'procurement_manager' && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
