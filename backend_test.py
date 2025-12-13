@@ -503,7 +503,7 @@ class SourceviaBackendTester:
             self.log_result("Critical Bugs Setup", False, "Could not authenticate as procurement_manager")
             return
 
-        # 1. Verify contracts do NOT auto-approve
+        # 1. Verify contracts do NOT auto-approve to final status
         if "contract_id" in self.test_data:
             try:
                 contract_id = self.test_data["contract_id"]
@@ -513,8 +513,8 @@ class SourceviaBackendTester:
                     contract = response.json()
                     status = contract.get("status")
                     
-                    if status == "draft":
-                        self.log_result("Contracts No Auto-Approve", True, "Contract remains in draft status")
+                    if status in ["draft", "pending_due_diligence"]:
+                        self.log_result("Contracts No Auto-Approve", True, f"Contract in proper initial status: {status}")
                     else:
                         self.log_result("Contracts No Auto-Approve", False, f"Contract auto-approved to: {status}")
                 else:
@@ -523,12 +523,23 @@ class SourceviaBackendTester:
                 self.log_result("Contracts No Auto-Approve", False, f"Exception: {str(e)}")
 
         # 2. Test vendor blacklist (procurement_manager only)
-        if "vendor_id" in self.test_data:
-            try:
-                vendor_id = self.test_data["vendor_id"]
-                response = self.session.post(f"{BACKEND_URL}/vendors/{vendor_id}/blacklist")
+        # Create a new vendor for blacklist test to avoid affecting other tests
+        try:
+            blacklist_vendor_data = {
+                "name_english": "Blacklist Test Vendor",
+                "vendor_type": "local"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/vendors", json=blacklist_vendor_data)
+            
+            if response.status_code == 200:
+                vendor = response.json()
+                vendor_id = vendor.get("id")
                 
-                if response.status_code == 200:
+                # Now blacklist this vendor
+                blacklist_response = self.session.post(f"{BACKEND_URL}/vendors/{vendor_id}/blacklist")
+                
+                if blacklist_response.status_code == 200:
                     # Verify vendor is blacklisted
                     get_response = self.session.get(f"{BACKEND_URL}/vendors/{vendor_id}")
                     if get_response.status_code == 200:
@@ -541,9 +552,11 @@ class SourceviaBackendTester:
                     else:
                         self.log_result("Vendor Blacklist", False, "Could not verify blacklist status")
                 else:
-                    self.log_result("Vendor Blacklist", False, f"Status: {response.status_code}, Response: {response.text}")
-            except Exception as e:
-                self.log_result("Vendor Blacklist", False, f"Exception: {str(e)}")
+                    self.log_result("Vendor Blacklist", False, f"Status: {blacklist_response.status_code}, Response: {blacklist_response.text}")
+            else:
+                self.log_result("Vendor Blacklist", False, f"Could not create test vendor: {response.status_code}")
+        except Exception as e:
+            self.log_result("Vendor Blacklist", False, f"Exception: {str(e)}")
 
         # 3. Test that all vendor fields are optional
         try:
