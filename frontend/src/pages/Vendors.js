@@ -4,11 +4,13 @@ import Layout from '../components/Layout';
 import VendorForm from '../components/VendorForm';
 import { Link } from 'react-router-dom';
 import WorkflowStatusBadge from '../components/workflow/WorkflowStatusBadge';
+import { useAuth } from '../App';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const Vendors = () => {
+  const { user } = useAuth();
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
