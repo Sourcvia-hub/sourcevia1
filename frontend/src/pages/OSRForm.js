@@ -194,6 +194,25 @@ const OSRForm = () => {
             </div>
           </div>
 
+          {/* General Request Type Selection (if general_request) */}
+          {formData.request_type === 'general_request' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">General Request Type *</label>
+              <select
+                required={formData.request_type === 'general_request'}
+                value={formData.general_request_type}
+                onChange={(e) => setFormData({ ...formData, general_request_type: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">-- Select Request Type --</option>
+                <option value="cleaning">🧹 Cleaning Services</option>
+                <option value="relocation">📦 Relocation / Moving</option>
+                <option value="other_services">🔧 Other Services</option>
+                <option value="register_asset">📝 Register New Asset</option>
+              </select>
+            </div>
+          )}
+
           {/* Asset Selection (if asset-related) - Show at top */}
           {formData.request_type === 'asset_related' && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
