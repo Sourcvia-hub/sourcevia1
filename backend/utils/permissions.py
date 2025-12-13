@@ -35,17 +35,17 @@ class Module(str, Enum):
 ROLE_PERMISSIONS: Dict[str, Dict[str, List[str]]] = {
     "user": {
         Module.DASHBOARD: [Permission.VIEWER],  # Own requests only
-        Module.VENDORS: [Permission.VIEWER],
+        Module.VENDORS: [Permission.REQUESTER],  # Can create draft vendors
         Module.VENDOR_DD: [Permission.VIEWER],
-        Module.TENDERS: [Permission.REQUESTER],
-        Module.TENDER_EVALUATION: [Permission.REQUESTER],
+        Module.TENDERS: [Permission.REQUESTER],  # Can create PRs
+        Module.TENDER_EVALUATION: [Permission.VIEWER],
         Module.TENDER_PROPOSALS: [Permission.VIEWER],
-        Module.CONTRACTS: [Permission.REQUESTER],
-        Module.PURCHASE_ORDERS: [Permission.REQUESTER],
-        Module.RESOURCES: [Permission.REQUESTER],
-        Module.INVOICES: [Permission.VERIFIER],
+        Module.CONTRACTS: [Permission.REQUESTER],  # Can create draft contracts
+        Module.PURCHASE_ORDERS: [Permission.REQUESTER],  # Can create draft POs
+        Module.RESOURCES: [Permission.REQUESTER],  # Can create resource requests
+        Module.INVOICES: [Permission.REQUESTER],  # Can create invoices
         Module.ASSETS: [Permission.NO_ACCESS],
-        Module.SERVICE_REQUESTS: [Permission.REQUESTER],
+        Module.SERVICE_REQUESTS: [Permission.REQUESTER],  # Can create service requests
     },
     "direct_manager": {
         Module.DASHBOARD: [Permission.VIEWER],  # Domain only
