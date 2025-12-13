@@ -17,7 +17,7 @@ const Layout = ({ children }) => {
   const navigation = [
     { name: 'Dashboard', path: '/dashboard', icon: '📊', module: Module.DASHBOARD },
     { name: 'Vendors', path: '/vendors', icon: '🏢', module: Module.VENDORS },
-    { name: 'Tenders', path: '/tenders', icon: '📋', module: Module.TENDERS },
+    { name: 'Purchase Requests', path: '/tenders', icon: '📋', module: Module.TENDERS },
     { name: 'Contracts', path: '/contracts', icon: '📄', module: Module.CONTRACTS },
     { name: 'Purchase Orders', path: '/purchase-orders', icon: '📝', module: Module.PURCHASE_ORDERS },
     { name: 'Resources', path: '/resources', icon: '👤', module: Module.RESOURCES },
