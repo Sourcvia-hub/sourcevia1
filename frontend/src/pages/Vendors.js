@@ -101,7 +101,7 @@ const Vendors = () => {
         ...formData,
         status: 'draft',  // Set initial status as draft
         number_of_employees: parseInt(formData.number_of_employees) || 0,
-        cr_expiry_date: new Date(formData.cr_expiry_date).toISOString(),
+        cr_expiry_date: formData.cr_expiry_date ? new Date(formData.cr_expiry_date).toISOString() : null,
         license_expiry_date: formData.license_expiry_date ? new Date(formData.license_expiry_date).toISOString() : null,
         owners_managers: [],
         authorized_persons: [],
