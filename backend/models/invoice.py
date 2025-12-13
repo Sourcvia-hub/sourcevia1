@@ -8,6 +8,7 @@ from enum import Enum
 import uuid
 
 class InvoiceStatus(str, Enum):
+    DRAFT = "draft"
     PENDING = "pending"
     VERIFIED = "verified"
     APPROVED = "approved"
