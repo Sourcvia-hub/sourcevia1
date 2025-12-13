@@ -22,6 +22,7 @@ const OSRForm = () => {
   const [formData, setFormData] = useState({
     title: '',
     request_type: 'general_request',
+    general_request_type: '',  // New: cleaning, relocation, other_services, register_asset
     category: '',
     priority: 'normal',
     description: '',
