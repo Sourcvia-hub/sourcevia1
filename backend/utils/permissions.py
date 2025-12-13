@@ -75,19 +75,19 @@ ROLE_PERMISSIONS: Dict[str, Dict[str, List[str]]] = {
         Module.ASSETS: [Permission.VERIFIER],  # Can view assets
         Module.SERVICE_REQUESTS: [Permission.VERIFIER],  # Can review service requests
     },
-    "senior_manager": {
-        Module.DASHBOARD: [Permission.VIEWER],
-        Module.VENDORS: [Permission.VIEWER],
+    "senior_manager": {  # Approver role
+        Module.DASHBOARD: [Permission.VIEWER],  # View assigned requests
+        Module.VENDORS: [Permission.VIEWER],  # View only
         Module.VENDOR_DD: [Permission.VIEWER],
-        Module.TENDERS: [Permission.APPROVER, Permission.VIEWER],
-        Module.TENDER_EVALUATION: [Permission.APPROVER, Permission.VIEWER],
+        Module.TENDERS: [Permission.APPROVER],  # Can approve PRs
+        Module.TENDER_EVALUATION: [Permission.VIEWER],
         Module.TENDER_PROPOSALS: [Permission.VIEWER],
-        Module.CONTRACTS: [Permission.APPROVER, Permission.VIEWER],
-        Module.PURCHASE_ORDERS: [Permission.APPROVER, Permission.VIEWER],
-        Module.RESOURCES: [Permission.APPROVER, Permission.VIEWER],
-        Module.INVOICES: [Permission.APPROVER, Permission.VIEWER],
-        Module.ASSETS: [Permission.NO_ACCESS],
-        Module.SERVICE_REQUESTS: [Permission.REQUESTER],
+        Module.CONTRACTS: [Permission.APPROVER],  # Can approve contracts
+        Module.PURCHASE_ORDERS: [Permission.APPROVER],  # Can approve POs
+        Module.RESOURCES: [Permission.APPROVER],  # Can approve resources
+        Module.INVOICES: [Permission.APPROVER],  # Can approve invoices
+        Module.ASSETS: [Permission.VIEWER],  # View only
+        Module.SERVICE_REQUESTS: [Permission.APPROVER],  # Can approve service requests
     },
     "procurement_manager": {
         Module.DASHBOARD: [Permission.VIEWER],
