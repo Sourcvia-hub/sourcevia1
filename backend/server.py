@@ -1079,7 +1079,7 @@ async def blacklist_vendor(vendor_id: str, request: Request):
         },
         {"$set": {
             "terminated": True,
-            "terminated_by": user.id,
+            "terminated_by": user["id"],
             "terminated_at": datetime.now(timezone.utc).isoformat(),
             "termination_reason": "Vendor blacklisted",
             "status": ContractStatus.EXPIRED.value,
