@@ -1818,6 +1818,9 @@ async def submit_invoice(invoice: Invoice, request: Request):
     if invoice_doc.get("paid_at"):
         invoice_doc["paid_at"] = invoice_doc["paid_at"].isoformat()
     
+    # Add workflow to invoice
+    invoice_doc["workflow"] = workflow.model_dump()
+    
     await db.invoices.insert_one(invoice_doc)
     
     # Notify procurement officers
