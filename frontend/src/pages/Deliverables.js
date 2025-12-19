@@ -44,7 +44,11 @@ const Deliverables = () => {
   const fetchContracts = async () => {
     try {
       const response = await axios.get(`${API}/contracts`, { withCredentials: true });
-      setContracts(response.data || []);
+      // Filter for approved contracts only
+      const approvedContracts = (response.data || []).filter(c => 
+        ['approved', 'active'].includes(c.status)
+      );
+      setContracts(approvedContracts);
     } catch (error) {
       console.error('Error fetching contracts:', error);
     }
@@ -53,7 +57,11 @@ const Deliverables = () => {
   const fetchPurchaseOrders = async () => {
     try {
       const response = await axios.get(`${API}/purchase-orders`, { withCredentials: true });
-      setPurchaseOrders(response.data || []);
+      // Filter for issued POs only
+      const issuedPOs = (response.data || []).filter(po => 
+        ['issued', 'approved', 'partially_fulfilled'].includes(po.status)
+      );
+      setPurchaseOrders(issuedPOs);
     } catch (error) {
       console.error('Error fetching POs:', error);
     }
