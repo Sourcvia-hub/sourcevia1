@@ -138,8 +138,7 @@ metadata:
 test_plan:
   current_focus:
     - "Contract Governance Features"
-  stuck_tasks: 
-    - "Vendor DD Form Component"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
