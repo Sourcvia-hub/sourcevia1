@@ -34,8 +34,9 @@ const Contracts = () => {
     value: '',
     start_date: '',
     end_date: '',
-    is_outsourcing: false,
   });
+  const [contractCreationMode, setContractCreationMode] = useState('fill'); // 'fill' or 'upload'
+  const [uploadedContractFile, setUploadedContractFile] = useState(null);
 
   useEffect(() => {
     fetchContracts();
