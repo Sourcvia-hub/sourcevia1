@@ -101,6 +101,14 @@ try:
 except Exception as exc:
     print(f"[Quick Create] Failed to mount router: {exc}")
 
+# Include Reports & Analytics Routes
+try:
+    from routes.reports_routes import router as reports_router
+    api_router.include_router(reports_router)
+    print("[Reports] Router mounted at /api/reports")
+except Exception as exc:
+    print(f"[Reports] Failed to mount router: {exc}")
+
 
 # ==================== HELPER FUNCTIONS ====================
 def calculate_vendor_registration_score(vendor_data: dict) -> dict:
