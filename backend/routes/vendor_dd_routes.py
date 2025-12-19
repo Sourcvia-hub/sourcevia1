@@ -1,6 +1,6 @@
 """
 Vendor Due Diligence API Routes
-New AI-powered DD system with workflow
+AI-powered document extraction and risk assessment
 """
 import os
 import uuid
@@ -82,6 +82,60 @@ def serialize_dd_data(dd_data: dict) -> dict:
     if '_id' in dd_data:
         del dd_data['_id']
     return dd_data
+
+
+# ==================== DOCUMENT EXTRACTION FOR FORM ====================
+
+@router.post("/extract-from-document")
+async def extract_from_document(
+    request: Request,
+    file: UploadFile = File(...),
+    current_user = Depends(get_current_user)
+):
+    """
+    Extract vendor data from uploaded document (PDF/Word)
+    Returns extracted fields that can be used to fill the vendor form
+    """
+    user_role = get_user_role(current_user)
+    
+    # Validate file type
+    filename = file.filename or "document"
+    file_ext = filename.split(".")[-1].lower()
+    if file_ext not in ["pdf", "docx", "doc"]:
+        raise HTTPException(status_code=400, detail="Only PDF and Word documents are supported")
+    
+    # Save file temporarily
+    file_id = str(uuid.uuid4())
+    file_path = os.path.join(UPLOAD_DIR, f"temp_{file_id}.{file_ext}")
+    
+    try:
+        with open(file_path, "wb") as f:
+            content = await file.read()
+            f.write(content)
+        
+        # Get AI service
+        ai_service = get_vendor_dd_ai_service()
+        
+        # Extract text from document
+        document_text = await ai_service.extract_document_text(file_path, file_ext)
+        
+        # Extract fields using AI
+        extracted_fields = await ai_service.extract_fields(document_text)
+        
+        return {
+            "message": "Document processed successfully",
+            "file_id": file_id,
+            "filename": filename,
+            "extracted_fields": extracted_fields
+        }
+        
+    except Exception as e:
+        logger.error(f"Document extraction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to extract data: {str(e)}")
+    finally:
+        # Clean up temp file
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 
 # ==================== VENDOR DD CRUD ====================
