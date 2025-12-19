@@ -38,6 +38,7 @@ const ContractDetail = () => {
   const [showGovernancePanel, setShowGovernancePanel] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const [classificationResult, setClassificationResult] = useState(null);
+  const [showDDQuestionnaire, setShowDDQuestionnaire] = useState(false);
 
   useEffect(() => {
     fetchContract();
