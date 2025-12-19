@@ -409,7 +409,7 @@ const ContractDetail = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">No milestones. Click "Add Milestone" to create one.</p>
+                  <p className="text-sm text-gray-500 italic">No milestones. Click &quot;Add Milestone&quot; to create one.</p>
                 )}
               </div>
 
