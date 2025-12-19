@@ -142,13 +142,7 @@ const TenderDetail = () => {
       fetchTender();
       fetchWorkflowStatus();
     } catch (error) {
-      const errorDetail = error.response?.data?.detail;
-      const errorMessage = typeof errorDetail === 'string' 
-        ? errorDetail 
-        : Array.isArray(errorDetail) 
-          ? errorDetail.map(e => e.msg).join(', ')
-          : "Failed to forward";
-      toast({ title: "❌ Error", description: errorMessage, variant: "destructive" });
+      toast({ title: "❌ Error", description: getErrorMessage(error, "Failed to forward"), variant: "destructive" });
     }
   };
 
