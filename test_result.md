@@ -17,11 +17,14 @@ backend:
     file: "backend/routes/vendor_dd_routes.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "New Vendor DD system implemented with AI extraction and risk assessment. APIs tested via curl: init-dd, get-dd, high-risk-countries all working."
+      - working: true
+        agent: "testing"
+        comment: "Comprehensive testing completed. All 10 DD APIs working: init-dd, get-dd, field-update, upload, run-ai, officer-review, hop-approval, risk-acceptance, high-risk-countries, audit-log. DD workflow validated with proper status transitions and role-based access control."
 
   - task: "Workflow Endpoints"
     implemented: true
@@ -29,11 +32,14 @@ backend:
     file: "backend/routes/workflow_routes.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Fixed current_user attribute access bug. Changed from dict syntax to object dot notation."
+      - working: true
+        agent: "testing"
+        comment: "Workflow endpoints bug fix verified. No more 500 errors on GET /tenders, /vendors, /contracts. All workflow history endpoints working correctly."
 
   - task: "Vendor Workflow Routes"
     implemented: true
@@ -41,11 +47,14 @@ backend:
     file: "backend/routes/vendor_workflow.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Fixed current_user attribute access bug. Changed from dict syntax to object dot notation."
+      - working: true
+        agent: "testing"
+        comment: "Fixed route ordering issue. Vendor workflow endpoints now working: usable-in-pr (12 vendors), usable-in-contracts (10 approved vendors), direct-approve endpoint exists. Routes moved to server.py before generic {vendor_id} route to resolve path conflicts."
 
   - task: "Master Data Endpoints"
     implemented: true
@@ -54,6 +63,10 @@ backend:
     stuck_count: 0
     priority: "medium"
     needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "All master data endpoints working: asset-categories (10), osr-categories (11), buildings (2)."
 
 frontend:
   - task: "Vendor DD Form Component"
