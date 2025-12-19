@@ -153,10 +153,19 @@ const Vendors = () => {
         currency: '',
         swift_code: '',
       });
+      toast({
+        title: "✅ Vendor Created",
+        description: "New vendor has been registered successfully",
+        variant: "success"
+      });
       fetchVendors();
     } catch (error) {
       console.error('Error creating vendor:', error);
-      alert('Failed to create vendor: ' + (error.response?.data?.detail || error.message));
+      toast({
+        title: "❌ Creation Failed",
+        description: error.response?.data?.detail || error.message,
+        variant: "destructive"
+      });
     }
   };
 
@@ -178,11 +187,19 @@ const Vendors = () => {
 
     try {
       await axios.post(`${API}/vendors/${vendorId}/blacklist`, {}, { withCredentials: true });
-      alert('Vendor blacklisted successfully');
+      toast({
+        title: "⚠️ Vendor Blacklisted",
+        description: "The vendor has been blacklisted and all contracts terminated",
+        variant: "warning"
+      });
       fetchVendors();
     } catch (error) {
       console.error('Error blacklisting vendor:', error);
-      alert('Failed to blacklist vendor');
+      toast({
+        title: "❌ Action Failed",
+        description: "Failed to blacklist vendor",
+        variant: "destructive"
+      });
     }
   };
 
