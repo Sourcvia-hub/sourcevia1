@@ -1983,6 +1983,13 @@ class SourceviaBackendTester:
         self.test_contract_governance_system()  # New Contract Governance AI System testing
         self.test_approvals_hub_system()  # New Approvals Hub API testing
         self.test_deliverables_and_payment_authorization_system()  # New Deliverables & PAF System testing
+        
+        # NEW FEATURES from review request
+        self.test_quick_create_api()  # Feature 1: Quick Create API
+        self.test_reports_analytics_api()  # Feature 2: Reports & Analytics API
+        self.test_bulk_import_api()  # Feature 3: Bulk Import API
+        self.test_toast_notifications_backend_support()  # Feature 4: Toast Notifications backend support
+        
         self.test_workflow_endpoints_fixed()
         self.test_master_data()
         self.test_critical_bugs()
