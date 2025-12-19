@@ -2642,6 +2642,9 @@ class SourceviaBackendTester:
         self.test_health_check()
         self.test_authentication()
         
+        # NEW: Token-Based Authentication Fix Testing (PRIORITY TEST from review request)
+        self.test_token_based_auth_fix()
+        
         # NEW: Business Request Workflow Testing (as requested in review)
         self.test_business_request_workflow()
         
