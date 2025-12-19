@@ -95,6 +95,19 @@ class Asset(BaseModel):
     # Attachments
     attachments: List[Dict[str, Any]] = []
     
+    # ==================== APPROVAL WORKFLOW ====================
+    approval_status: Optional[str] = None  # "draft", "pending_officer_review", "pending_hop_approval", "approved", "rejected"
+    submitted_for_approval_at: Optional[datetime] = None
+    submitted_for_approval_by: Optional[str] = None
+    officer_review_status: Optional[str] = None  # "pending", "approved", "rejected"
+    officer_reviewed_by: Optional[str] = None
+    officer_reviewed_at: Optional[datetime] = None
+    officer_review_notes: Optional[str] = None
+    hop_decision: Optional[str] = None  # "approved", "rejected", "returned"
+    hop_decision_by: Optional[str] = None
+    hop_decision_at: Optional[datetime] = None
+    hop_decision_notes: Optional[str] = None
+    
     # Metadata
     notes: Optional[str] = None
     created_by: Optional[str] = None
