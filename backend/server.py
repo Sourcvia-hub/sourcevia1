@@ -814,6 +814,100 @@ async def get_vendors(request: Request, status: Optional[VendorStatus] = None, s
     
     return result
 
+# ==================== SPECIAL VENDOR WORKFLOW ROUTES ====================
+# These must be defined before the generic {vendor_id} route
+
+@api_router.get("/vendors/usable-in-pr")
+async def get_vendors_usable_in_pr(request: Request):
+    """Get vendors that can be used in Purchase Requests - includes both draft and approved vendors"""
+    from utils.auth import require_auth
+    await require_auth(request)
+    
+    vendors = await db.vendors.find(
+        {"status": {"$in": ["draft", "approved"]}},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    return {
+        "vendors": vendors,
+        "count": len(vendors)
+    }
+
+@api_router.get("/vendors/usable-in-contracts")
+async def get_vendors_usable_in_contracts(request: Request):
+    """Get vendors that can be used in Contracts - only approved vendors"""
+    from utils.auth import require_auth
+    await require_auth(request)
+    
+    vendors = await db.vendors.find(
+        {"status": "approved"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    return {
+        "vendors": vendors,
+        "count": len(vendors)
+    }
+
+@api_router.get("/vendors/usable-in-po")
+async def get_vendors_usable_in_po(request: Request):
+    """Get vendors that can be used in Purchase Orders - only approved vendors"""
+    from utils.auth import require_auth
+    await require_auth(request)
+    
+    vendors = await db.vendors.find(
+        {"status": "approved"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    return {
+        "vendors": vendors,
+        "count": len(vendors)
+    }
+
+@api_router.post("/vendors/{vendor_id}/direct-approve")
+async def direct_approve_vendor(vendor_id: str, request: Request):
+    """Direct approval of vendor by Procurement Officer"""
+    from utils.auth import require_auth
+    user = await require_auth(request)
+    
+    # Check permissions - get role as string
+    user_role = user.role.value if hasattr(user.role, 'value') else str(user.role)
+    if user_role not in ["procurement_officer", "procurement_manager"]:
+        raise HTTPException(
+            status_code=403, 
+            detail="Only procurement officers can approve vendors"
+        )
+    
+    # Get vendor
+    vendor = await db.vendors.find_one({"id": vendor_id})
+    if not vendor:
+        raise HTTPException(status_code=404, detail="Vendor not found")
+    
+    # Check current status - can only approve draft vendors
+    if vendor.get("status") != "draft":
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Vendor must be in draft status. Current status: {vendor.get('status')}"
+        )
+    
+    # Update vendor status to approved
+    await db.vendors.update_one(
+        {"id": vendor_id},
+        {
+            "$set": {
+                "status": "approved",
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    return {
+        "message": "Vendor approved successfully",
+        "status": "approved",
+        "vendor_id": vendor_id
+    }
+
 @api_router.get("/vendors/{vendor_id}")
 async def get_vendor(vendor_id: str, request: Request):
     """Get vendor by ID - RBAC: requires viewer permission"""
