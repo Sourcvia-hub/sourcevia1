@@ -37,6 +37,8 @@ const Contracts = () => {
   });
   const [contractCreationMode, setContractCreationMode] = useState('fill'); // 'fill' or 'upload'
   const [uploadedContractFile, setUploadedContractFile] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
 
   useEffect(() => {
     fetchContracts();
