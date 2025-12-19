@@ -33,6 +33,10 @@ const ContractDetail = () => {
     end_date: '',
     milestones: []
   });
+  // Contract Governance state
+  const [showGovernancePanel, setShowGovernancePanel] = useState(true);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [classificationResult, setClassificationResult] = useState(null);
 
   useEffect(() => {
     fetchContract();
