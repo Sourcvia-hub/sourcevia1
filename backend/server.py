@@ -1377,12 +1377,24 @@ async def get_tender(tender_id: str, request: Request):
 
 @api_router.get("/tenders/approved/list")
 async def get_approved_tenders(request: Request):
-    """Get list of approved tenders for contract creation - RBAC: requires viewer permission"""
+    """Get list of tenders ready for contract creation (has selected proposal or awarded)"""
     from utils.auth import require_permission
     from utils.permissions import Permission
     await require_permission(request, "tenders", Permission.VIEWER)
     
-    tenders = await db.tenders.find({"status": TenderStatus.PUBLISHED.value}).to_list(1000)
+    # Include tenders that:
+    # 1. Have a selected/recommended proposal (evaluation complete)
+    # 2. Are awarded
+    # 3. Are in pending approval stages (additional approval, hop approval)
+    tenders = await db.tenders.find({
+        "$or": [
+            {"status": "awarded"},
+            {"status": "evaluation_complete"},
+            {"status": "pending_additional_approval"},
+            {"status": "pending_hop_approval"},
+            {"selected_proposal_id": {"$exists": True, "$ne": None}}
+        ]
+    }).to_list(1000)
     
     result = []
     for tender in tenders:
@@ -1398,7 +1410,9 @@ async def get_approved_tenders(request: Request):
             "project_reference": tender.get("project_reference"),
             "project_name": tender.get("project_name"),
             "requirements": tender.get("requirements"),
-            "budget": tender.get("budget")
+            "budget": tender.get("budget"),
+            "status": tender.get("status"),
+            "selected_proposal_id": tender.get("selected_proposal_id")
         })
     
     return result
