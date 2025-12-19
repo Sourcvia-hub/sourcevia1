@@ -617,34 +617,168 @@ const Contracts = () => {
 
               {/* Upload Contract Mode */}
               {contractCreationMode === 'upload' && (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <input
-                    type="file"
-                    id="contract-upload"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) => setUploadedContractFile(e.target.files[0])}
-                    className="hidden"
-                  />
-                  <label htmlFor="contract-upload" className="cursor-pointer">
-                    <span className="text-4xl block mb-2">📄</span>
-                    {uploadedContractFile ? (
-                      <div>
-                        <p className="font-semibold text-green-600">{uploadedContractFile.name}</p>
-                        <p className="text-sm text-gray-500">{(uploadedContractFile.size / 1024).toFixed(1)} KB</p>
+                <>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <input
+                      type="file"
+                      id="contract-upload"
+                      accept=".pdf,.doc,.docx"
+                      onChange={(e) => {
+                        if (e.target.files[0]) {
+                          handleContractUpload(e.target.files[0]);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <label htmlFor="contract-upload" className="cursor-pointer">
+                      {analyzing ? (
+                        <div>
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                          <p className="font-medium text-blue-600">Analyzing contract with AI...</p>
+                          <p className="text-sm text-gray-500">Extracting fields and generating advisory</p>
+                        </div>
+                      ) : uploadedContractFile ? (
+                        <div>
+                          <span className="text-4xl block mb-2">✅</span>
+                          <p className="font-semibold text-green-600">{uploadedContractFile.name}</p>
+                          <p className="text-sm text-gray-500">{(uploadedContractFile.size / 1024).toFixed(1)} KB</p>
+                          <p className="text-xs text-blue-600 mt-2">Click to upload a different file</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <span className="text-4xl block mb-2">📄</span>
+                          <p className="font-medium">Click to upload contract document</p>
+                          <p className="text-sm text-gray-500">PDF, DOC, DOCX files accepted</p>
+                          <p className="text-xs text-blue-600 mt-2">AI will extract fields and provide advisory</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+
+                  {/* AI Analysis Results */}
+                  {analysisResult && analysisResult.success && (
+                    <div className="space-y-4">
+                      {/* Extraction Confidence */}
+                      {analysisResult.extracted_fields?.extraction_confidence && (
+                        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                          <span>🎯</span>
+                          <span className="text-sm">
+                            <strong>Extraction Confidence:</strong> {analysisResult.extracted_fields.extraction_confidence}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Extracted Fields Preview */}
+                      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                        <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
+                          <span>📋</span> Extracted Contract Details
+                        </h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          {analysisResult.extracted_fields?.supplier_name && (
+                            <div><strong>Supplier:</strong> {analysisResult.extracted_fields.supplier_name}</div>
+                          )}
+                          {analysisResult.extracted_fields?.value && (
+                            <div><strong>Value:</strong> {analysisResult.extracted_fields.value?.toLocaleString()} {analysisResult.extracted_fields.currency}</div>
+                          )}
+                          {analysisResult.extracted_fields?.duration_months && (
+                            <div><strong>Duration:</strong> {analysisResult.extracted_fields.duration_months} months</div>
+                          )}
+                          {analysisResult.extracted_fields?.start_date && (
+                            <div><strong>Start:</strong> {analysisResult.extracted_fields.start_date}</div>
+                          )}
+                          {analysisResult.extracted_fields?.end_date && (
+                            <div><strong>End:</strong> {analysisResult.extracted_fields.end_date}</div>
+                          )}
+                        </div>
+                        {analysisResult.extracted_fields?.sow_summary && (
+                          <div className="mt-3 pt-3 border-t border-green-200">
+                            <strong>SOW Summary:</strong>
+                            <p className="text-gray-700 mt-1">{analysisResult.extracted_fields.sow_summary}</p>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div>
-                        <p className="font-medium">Click to upload contract document</p>
-                        <p className="text-sm text-gray-500">PDF, DOC, DOCX files accepted</p>
-                      </div>
-                    )}
-                  </label>
-                </div>
+
+                      {/* AI Advisory */}
+                      {analysisResult.advisory && (
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                          <h4 className="font-semibold text-purple-800 mb-3 flex items-center gap-2">
+                            <span>🤖</span> AI Advisory
+                            {analysisResult.advisory.overall_score && (
+                              <span className={`ml-auto px-2 py-1 rounded text-xs font-bold ${
+                                analysisResult.advisory.overall_score >= 80 ? 'bg-green-100 text-green-800' :
+                                analysisResult.advisory.overall_score >= 60 ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                Score: {analysisResult.advisory.overall_score}/100
+                              </span>
+                            )}
+                          </h4>
+
+                          {/* Drafting Hints */}
+                          {analysisResult.advisory.hints?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-sm font-medium text-purple-700 mb-2">💡 Drafting Hints:</p>
+                              <ul className="text-sm space-y-1">
+                                {analysisResult.advisory.hints.slice(0, 3).map((hint, idx) => (
+                                  <li key={idx} className="flex items-start gap-2">
+                                    <span className={`px-1.5 py-0.5 rounded text-xs ${
+                                      hint.priority === 'high' ? 'bg-red-100 text-red-700' :
+                                      hint.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-gray-100 text-gray-700'
+                                    }`}>{hint.priority}</span>
+                                    <span>{hint.hint}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Missing Clauses */}
+                          {analysisResult.advisory.missing_clauses?.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-sm font-medium text-purple-700 mb-2">⚠️ Missing Clauses:</p>
+                              <ul className="text-sm space-y-1">
+                                {analysisResult.advisory.missing_clauses.slice(0, 3).map((clause, idx) => (
+                                  <li key={idx} className="flex items-start gap-2">
+                                    <span className="text-red-500">•</span>
+                                    <span><strong>{clause.clause}</strong> ({clause.importance})</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Recommendations */}
+                          {analysisResult.advisory.recommendations?.length > 0 && (
+                            <div>
+                              <p className="text-sm font-medium text-purple-700 mb-2">📌 Recommendations:</p>
+                              <ul className="text-sm space-y-1">
+                                {analysisResult.advisory.recommendations.slice(0, 3).map((rec, idx) => (
+                                  <li key={idx} className="flex items-start gap-2">
+                                    <span className="text-purple-500">→</span>
+                                    <span>{rec}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Fill Fields Mode */}
-              {contractCreationMode === 'fill' && (
+              {(contractCreationMode === 'fill' || (contractCreationMode === 'upload' && analysisResult?.success)) && (
                 <>
+                  {contractCreationMode === 'upload' && analysisResult?.success && (
+                    <div className="border-t pt-4 mt-4">
+                      <p className="text-sm text-gray-600 mb-4">
+                        📝 Review and edit the extracted fields below:
+                      </p>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
                     <input
