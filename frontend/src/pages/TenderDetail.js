@@ -59,15 +59,20 @@ const TenderDetail = () => {
 
   const fetchProposalsForUser = async () => {
     try {
+      // First try the new endpoint that shows proposals to the requester
       const response = await axios.get(`${API}/business-requests/${id}/proposals-for-user`, { withCredentials: true });
+      console.log('Proposals fetched from business-requests endpoint:', response.data);
       setProposals(response.data.proposals || []);
     } catch (error) {
+      console.log('Falling back to regular proposals endpoint:', error.message);
       // Fallback to regular proposals endpoint
       try {
         const response = await axios.get(`${API}/tenders/${id}/proposals`, { withCredentials: true });
+        console.log('Proposals fetched from tenders endpoint:', response.data);
         setProposals(response.data || []);
       } catch (e) {
         console.error('Error fetching proposals:', e);
+        setProposals([]);
       }
     }
   };
