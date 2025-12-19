@@ -1538,6 +1538,7 @@ class SourceviaBackendTester:
         self.test_vendor_dd_system()
         self.test_contract_governance_system()  # New Contract Governance AI System testing
         self.test_approvals_hub_system()  # New Approvals Hub API testing
+        self.test_deliverables_and_payment_authorization_system()  # New Deliverables & PAF System testing
         self.test_workflow_endpoints_fixed()
         self.test_master_data()
         self.test_critical_bugs()
