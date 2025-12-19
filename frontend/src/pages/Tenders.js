@@ -262,7 +262,7 @@ const Tenders = () => {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Purchase Request (PR)</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Business Request (PR)</h2>
             <form onSubmit={handleCreateTender} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
