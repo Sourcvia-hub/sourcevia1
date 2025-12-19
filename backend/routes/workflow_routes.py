@@ -285,11 +285,12 @@ class WorkflowRoutes:
             item_id: str,
             return_req: ReturnRequest,
             request: Request,
-            current_user: dict = Depends(get_current_user)
+            current_user = Depends(get_current_user)
         ):
             """Return request for clarification"""
-            # Check permissions
-            if current_user["role"] not in ["procurement_officer", "senior_manager", "procurement_manager"]:
+            # Check permissions - get role as string
+            user_role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+            if user_role not in ["procurement_officer", "senior_manager", "procurement_manager"]:
                 raise HTTPException(status_code=403, detail="Insufficient permissions")
             
             # Get item
@@ -299,8 +300,8 @@ class WorkflowRoutes:
             workflow = item.get("workflow", {})
             workflow = WorkflowManager.return_for_clarification(
                 workflow,
-                current_user["id"],
-                current_user["name"],
+                current_user.id,
+                current_user.name,
                 return_req.reason
             )
             
@@ -324,11 +325,12 @@ class WorkflowRoutes:
             item_id: str,
             approval_req: ApprovalRequest,
             request: Request,
-            current_user: dict = Depends(get_current_user)
+            current_user = Depends(get_current_user)
         ):
             """Final approval (Procurement Manager only)"""
-            # Check permissions
-            if current_user["role"] != "procurement_manager":
+            # Check permissions - get role as string
+            user_role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+            if user_role != "procurement_manager":
                 raise HTTPException(status_code=403, detail="Only procurement managers can grant final approval")
             
             # Get item
@@ -342,8 +344,8 @@ class WorkflowRoutes:
             workflow = item.get("workflow", {})
             workflow = WorkflowManager.final_approve(
                 workflow,
-                current_user["id"],
-                current_user["name"],
+                current_user.id,
+                current_user.name,
                 approval_req.comment
             )
             
@@ -367,11 +369,12 @@ class WorkflowRoutes:
             item_id: str,
             reopen_req: ReopenRequest,
             request: Request,
-            current_user: dict = Depends(get_current_user)
+            current_user = Depends(get_current_user)
         ):
             """Reopen a completed request (Procurement Manager only)"""
-            # Check permissions
-            if current_user["role"] != "procurement_manager":
+            # Check permissions - get role as string
+            user_role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+            if user_role != "procurement_manager":
                 raise HTTPException(status_code=403, detail="Only procurement managers can reopen requests")
             
             # Get item
@@ -381,8 +384,8 @@ class WorkflowRoutes:
             workflow = item.get("workflow", {})
             workflow = WorkflowManager.reopen(
                 workflow,
-                current_user["id"],
-                current_user["name"],
+                current_user.id,
+                current_user.name,
                 reopen_req.reason
             )
             
@@ -405,7 +408,7 @@ class WorkflowRoutes:
         async def get_workflow_history(
             item_id: str,
             request: Request,
-            current_user: dict = Depends(get_current_user)
+            current_user = Depends(get_current_user)
         ):
             """Get complete workflow history"""
             # Get item
