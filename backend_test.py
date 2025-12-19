@@ -1029,6 +1029,199 @@ class SourceviaBackendTester:
             except Exception as e:
                 self.log_result("Submit for Approval", False, f"Exception: {str(e)}")
 
+    def test_approvals_hub_system(self):
+        """Test new Approvals Hub APIs for Sourcevia"""
+        print("\n=== APPROVALS HUB SYSTEM TESTING ===")
+        
+        # Test with procurement_officer role as specified in review request
+        if not self.authenticate_as('procurement_officer'):
+            self.log_result("Approvals Hub Setup", False, "Could not authenticate as procurement_officer")
+            return
+
+        # 1. Test GET /api/approvals-hub/summary - Get summary counts
+        try:
+            response = self.session.get(f"{BACKEND_URL}/approvals-hub/summary")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check required structure
+                required_modules = ["vendors", "business_requests", "contracts", "purchase_orders", "invoices", "resources", "assets"]
+                all_modules_present = all(module in data for module in required_modules)
+                
+                if all_modules_present:
+                    # Check vendors sub-categories
+                    vendors = data.get("vendors", {})
+                    vendor_subcats = ["pending_review", "pending_dd", "pending_approval", "total_pending"]
+                    vendors_structure_ok = all(subcat in vendors for subcat in vendor_subcats)
+                    
+                    # Check total_all exists
+                    has_total_all = "total_all" in data
+                    
+                    if vendors_structure_ok and has_total_all:
+                        total_all = data.get("total_all", 0)
+                        self.log_result("Approvals Hub Summary", True, f"All modules present, total_all: {total_all}")
+                    else:
+                        self.log_result("Approvals Hub Summary", False, f"Missing structure - vendors_ok: {vendors_structure_ok}, total_all: {has_total_all}")
+                else:
+                    missing = [m for m in required_modules if m not in data]
+                    self.log_result("Approvals Hub Summary", False, f"Missing modules: {missing}")
+            else:
+                self.log_result("Approvals Hub Summary", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Approvals Hub Summary", False, f"Exception: {str(e)}")
+
+        # 2. Test GET /api/approvals-hub/vendors - Get pending vendors
+        try:
+            response = self.session.get(f"{BACKEND_URL}/approvals-hub/vendors")
+            
+            if response.status_code == 200:
+                data = response.json()
+                vendors = data.get("vendors", [])
+                count = data.get("count", 0)
+                
+                if isinstance(vendors, list) and isinstance(count, int):
+                    self.log_result("Approvals Hub Vendors", True, f"Found {count} pending vendors")
+                else:
+                    self.log_result("Approvals Hub Vendors", False, "Invalid response structure")
+            else:
+                self.log_result("Approvals Hub Vendors", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Approvals Hub Vendors", False, f"Exception: {str(e)}")
+
+        # 3. Test GET /api/approvals-hub/business-requests - Get pending business requests with proposal counts
+        try:
+            response = self.session.get(f"{BACKEND_URL}/approvals-hub/business-requests")
+            
+            if response.status_code == 200:
+                data = response.json()
+                business_requests = data.get("business_requests", [])
+                count = data.get("count", 0)
+                
+                if isinstance(business_requests, list) and isinstance(count, int):
+                    # Check if proposal_count is included in enriched data
+                    has_proposal_counts = all("proposal_count" in br for br in business_requests) if business_requests else True
+                    
+                    if has_proposal_counts:
+                        self.log_result("Approvals Hub Business Requests", True, f"Found {count} business requests with proposal counts")
+                    else:
+                        self.log_result("Approvals Hub Business Requests", False, "Missing proposal_count in enriched data")
+                else:
+                    self.log_result("Approvals Hub Business Requests", False, "Invalid response structure")
+            else:
+                self.log_result("Approvals Hub Business Requests", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Approvals Hub Business Requests", False, f"Exception: {str(e)}")
+
+        # 4. Test GET /api/approvals-hub/contracts - Get pending contracts with vendor info
+        try:
+            response = self.session.get(f"{BACKEND_URL}/approvals-hub/contracts")
+            
+            if response.status_code == 200:
+                data = response.json()
+                contracts = data.get("contracts", [])
+                count = data.get("count", 0)
+                
+                if isinstance(contracts, list) and isinstance(count, int):
+                    # Check if vendor_info is included in enriched data
+                    has_vendor_info = all("vendor_info" in contract for contract in contracts) if contracts else True
+                    
+                    if has_vendor_info:
+                        self.log_result("Approvals Hub Contracts", True, f"Found {count} pending contracts with vendor info")
+                    else:
+                        self.log_result("Approvals Hub Contracts", False, "Missing vendor_info in enriched data")
+                else:
+                    self.log_result("Approvals Hub Contracts", False, "Invalid response structure")
+            else:
+                self.log_result("Approvals Hub Contracts", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Approvals Hub Contracts", False, f"Exception: {str(e)}")
+
+        # 5. Test GET /api/approvals-hub/purchase-orders - Get pending POs with vendor info
+        try:
+            response = self.session.get(f"{BACKEND_URL}/approvals-hub/purchase-orders")
+            
+            if response.status_code == 200:
+                data = response.json()
+                purchase_orders = data.get("purchase_orders", [])
+                count = data.get("count", 0)
+                
+                if isinstance(purchase_orders, list) and isinstance(count, int):
+                    # Check if vendor_info is included in enriched data
+                    has_vendor_info = all("vendor_info" in po for po in purchase_orders) if purchase_orders else True
+                    
+                    if has_vendor_info:
+                        self.log_result("Approvals Hub Purchase Orders", True, f"Found {count} pending POs with vendor info")
+                    else:
+                        self.log_result("Approvals Hub Purchase Orders", False, "Missing vendor_info in enriched data")
+                else:
+                    self.log_result("Approvals Hub Purchase Orders", False, "Invalid response structure")
+            else:
+                self.log_result("Approvals Hub Purchase Orders", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Approvals Hub Purchase Orders", False, f"Exception: {str(e)}")
+
+        # 6. Test GET /api/approvals-hub/invoices - Get pending invoices with vendor and contract info
+        try:
+            response = self.session.get(f"{BACKEND_URL}/approvals-hub/invoices")
+            
+            if response.status_code == 200:
+                data = response.json()
+                invoices = data.get("invoices", [])
+                count = data.get("count", 0)
+                
+                if isinstance(invoices, list) and isinstance(count, int):
+                    # Check if vendor_info and contract_info are included in enriched data
+                    has_vendor_info = all("vendor_info" in invoice for invoice in invoices) if invoices else True
+                    has_contract_info = all("contract_info" in invoice for invoice in invoices) if invoices else True
+                    
+                    if has_vendor_info and has_contract_info:
+                        self.log_result("Approvals Hub Invoices", True, f"Found {count} pending invoices with vendor and contract info")
+                    else:
+                        self.log_result("Approvals Hub Invoices", False, f"Missing enriched data - vendor_info: {has_vendor_info}, contract_info: {has_contract_info}")
+                else:
+                    self.log_result("Approvals Hub Invoices", False, "Invalid response structure")
+            else:
+                self.log_result("Approvals Hub Invoices", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Approvals Hub Invoices", False, f"Exception: {str(e)}")
+
+        # 7. Test GET /api/approvals-hub/resources - Get expiring resources
+        try:
+            response = self.session.get(f"{BACKEND_URL}/approvals-hub/resources")
+            
+            if response.status_code == 200:
+                data = response.json()
+                resources = data.get("resources", [])
+                count = data.get("count", 0)
+                
+                if isinstance(resources, list) and isinstance(count, int):
+                    self.log_result("Approvals Hub Resources", True, f"Found {count} expiring resources")
+                else:
+                    self.log_result("Approvals Hub Resources", False, "Invalid response structure")
+            else:
+                self.log_result("Approvals Hub Resources", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Approvals Hub Resources", False, f"Exception: {str(e)}")
+
+        # 8. Test GET /api/approvals-hub/assets - Get assets needing attention
+        try:
+            response = self.session.get(f"{BACKEND_URL}/approvals-hub/assets")
+            
+            if response.status_code == 200:
+                data = response.json()
+                assets = data.get("assets", [])
+                count = data.get("count", 0)
+                
+                if isinstance(assets, list) and isinstance(count, int):
+                    self.log_result("Approvals Hub Assets", True, f"Found {count} assets needing attention")
+                else:
+                    self.log_result("Approvals Hub Assets", False, "Invalid response structure")
+            else:
+                self.log_result("Approvals Hub Assets", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Approvals Hub Assets", False, f"Exception: {str(e)}")
+
     def test_environment_config(self):
         """Test environment and configuration"""
         print("\n=== ENVIRONMENT & CONFIGURATION TESTING ===")
