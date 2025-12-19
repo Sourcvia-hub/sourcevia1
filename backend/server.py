@@ -109,6 +109,14 @@ try:
 except Exception as exc:
     print(f"[Reports] Failed to mount router: {exc}")
 
+# Include Bulk Import Routes
+try:
+    from routes.bulk_import_routes import router as bulk_import_router
+    api_router.include_router(bulk_import_router)
+    print("[Bulk Import] Router mounted at /api/bulk-import")
+except Exception as exc:
+    print(f"[Bulk Import] Failed to mount router: {exc}")
+
 
 # ==================== HELPER FUNCTIONS ====================
 def calculate_vendor_registration_score(vendor_data: dict) -> dict:
