@@ -61,6 +61,14 @@ except Exception as exc:
     # Fail gracefully if ProcureFlix package is not initialised correctly
     print(f"[ProcureFlix] Failed to mount router: {exc}")
 
+# Include Vendor DD Routes
+try:
+    from routes.vendor_dd_routes import router as vendor_dd_router
+    api_router.include_router(vendor_dd_router)
+    print("[Vendor DD] Router mounted at /api/vendor-dd")
+except Exception as exc:
+    print(f"[Vendor DD] Failed to mount router: {exc}")
+
 
 # ==================== HELPER FUNCTIONS ====================
 def calculate_vendor_registration_score(vendor_data: dict) -> dict:
