@@ -153,7 +153,7 @@ const MyApprovals = () => {
             {pendingApprovals.length === 0 ? (
               <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
                 <p className="text-lg">🎉 No pending approvals!</p>
-                <p className="text-sm mt-2">You're all caught up.</p>
+                <p className="text-sm mt-2">You are all caught up.</p>
               </div>
             ) : (
               pendingApprovals.map((notification) => (
