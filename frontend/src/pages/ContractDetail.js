@@ -645,8 +645,8 @@ const ContractDetail = () => {
           </div>
         )}
 
-        {/* Contract Governance Panel */}
-        {!isEditing && (
+        {/* Contract Governance Panel - Only visible to Officers and HoP */}
+        {!isEditing && canAccessGovernance && (
           <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
