@@ -181,14 +181,14 @@ const ReportsAnalytics = () => {
                     </div>
                   </div>
 
-                  {/* Invoices */}
+                  {/* Deliverables */}
                   <div className="bg-white rounded-xl shadow p-6">
-                    <h3 className="font-semibold text-lg mb-4">🧾 Invoices</h3>
+                    <h3 className="font-semibold text-lg mb-4">📦 Deliverables</h3>
                     <div className="space-y-3">
-                      <div className="flex justify-between"><span className="text-gray-600">Total</span><span className="font-medium">{overview.invoices.total}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-600">Pending</span><span className="font-medium text-yellow-600">{overview.invoices.pending}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-600">Approved</span><span className="font-medium text-green-600">{overview.invoices.approved}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-600">Total Value</span><span className="font-medium">{formatCurrency(overview.invoices.total_value)}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Total</span><span className="font-medium">{overview.deliverables?.total || 0}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Pending</span><span className="font-medium text-yellow-600">{overview.deliverables?.pending || 0}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Approved</span><span className="font-medium text-green-600">{overview.deliverables?.approved || 0}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-600">Total Value</span><span className="font-medium">{formatCurrency(overview.deliverables?.total_value)}</span></div>
                     </div>
                   </div>
 
