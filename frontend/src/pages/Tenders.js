@@ -350,28 +350,30 @@ const Tenders = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Business Need *</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   required
                   rows={4}
+                  placeholder="Describe the business need this request addresses..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Requirements *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Scope & Key Requirements *</label>
                 <textarea
                   value={formData.requirements}
                   onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
                   required
                   rows={4}
+                  placeholder="Define the scope and key requirements for this request..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Budget *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Budget (Indicative) *</label>
                   <input
                     type="number"
                     value={formData.budget}
@@ -381,9 +383,10 @@ const Tenders = () => {
                     step="0.01"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+                  <p className="text-xs text-gray-500 mt-1">This is an estimate for planning purposes and does not represent the final contract value.</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Deadline *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Expected Delivery Date *</label>
                   <input
                     type="datetime-local"
                     value={formData.deadline}
