@@ -1011,8 +1011,7 @@ async def update_vendor(vendor_id: str, vendor_update: Vendor, request: Request)
         entity_id=vendor_id,
         action="updated",
         user_id=user.id,
-        user_name=user.name,
-        changes=changes
+        details=f"Vendor updated by {user.name}. Changes: {json.dumps(changes) if changes else 'No tracked changes'}"
     )
     audit_doc = audit_log.model_dump()
     audit_doc["timestamp"] = audit_doc["timestamp"].isoformat()
