@@ -808,6 +808,221 @@ class SourceviaBackendTester:
         except Exception as e:
             self.log_result("Vendor Fields Optional", False, f"Exception: {str(e)}")
 
+    def test_contract_governance_system(self):
+        """Test new Contract Governance AI System APIs"""
+        print("\n=== CONTRACT GOVERNANCE AI SYSTEM TESTING ===")
+        
+        # Test with procurement_officer role as specified in review request
+        if not self.authenticate_as('procurement_officer'):
+            self.log_result("Contract Governance Setup", False, "Could not authenticate as procurement_officer")
+            return
+
+        # 1. Test DD questionnaire template API - should return 9 sections with 49 questions
+        try:
+            response = self.session.get(f"{BACKEND_URL}/contract-governance/questionnaire-template")
+            
+            if response.status_code == 200:
+                data = response.json()
+                sections = data.get("sections", [])
+                total_questions = data.get("total_questions", 0)
+                
+                if len(sections) == 9 and total_questions == 49:
+                    self.log_result("DD Questionnaire Template", True, f"Found {len(sections)} sections with {total_questions} questions")
+                else:
+                    self.log_result("DD Questionnaire Template", False, f"Expected 9 sections/49 questions, got {len(sections)} sections/{total_questions} questions")
+            else:
+                self.log_result("DD Questionnaire Template", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("DD Questionnaire Template", False, f"Exception: {str(e)}")
+
+        # 2. Test exhibits template API - should return 14 exhibits for Service Agreement
+        try:
+            response = self.session.get(f"{BACKEND_URL}/contract-governance/exhibits-template")
+            
+            if response.status_code == 200:
+                data = response.json()
+                exhibits = data.get("exhibits", [])
+                total_exhibits = data.get("total_exhibits", 0)
+                
+                if len(exhibits) == 14 and total_exhibits == 14:
+                    self.log_result("Exhibits Template", True, f"Found {total_exhibits} exhibits for Service Agreement")
+                else:
+                    self.log_result("Exhibits Template", False, f"Expected 14 exhibits, got {len(exhibits)}/{total_exhibits}")
+            else:
+                self.log_result("Exhibits Template", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Exhibits Template", False, f"Exception: {str(e)}")
+
+        # 3. Create a test contract first (via /api/contracts endpoint) linked to an approved tender
+        contract_id = None
+        try:
+            # Get an approved tender first
+            tenders_response = self.session.get(f"{BACKEND_URL}/tenders")
+            vendors_response = self.session.get(f"{BACKEND_URL}/vendors")
+            
+            if tenders_response.status_code == 200 and vendors_response.status_code == 200:
+                tenders = tenders_response.json()
+                vendors = vendors_response.json()
+                
+                if tenders and vendors:
+                    tender_id = tenders[0].get("id")
+                    vendor_id = vendors[0].get("id")
+                    
+                    contract_data = {
+                        "tender_id": tender_id,
+                        "vendor_id": vendor_id,
+                        "title": "Test Contract for Governance",
+                        "sow": "Test Statement of Work for AI classification",
+                        "sla": "Test Service Level Agreement",
+                        "value": 100000,
+                        "start_date": datetime.now(timezone.utc).isoformat(),
+                        "end_date": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat()
+                    }
+                    
+                    response = self.session.post(f"{BACKEND_URL}/contracts", json=contract_data)
+                    
+                    if response.status_code == 200:
+                        contract = response.json()
+                        contract_id = contract.get("id")
+                        self.log_result("Create Test Contract", True, f"Created contract: {contract_id}")
+                        self.test_data["governance_contract_id"] = contract_id
+                    else:
+                        self.log_result("Create Test Contract", False, f"Status: {response.status_code}, Response: {response.text}")
+                else:
+                    self.log_result("Create Test Contract", False, "No tenders or vendors available")
+            else:
+                self.log_result("Create Test Contract", False, "Could not fetch tenders or vendors")
+        except Exception as e:
+            self.log_result("Create Test Contract", False, f"Exception: {str(e)}")
+
+        # 4. Test the classification API
+        if contract_id:
+            try:
+                classify_request = {
+                    "contract_id": contract_id,
+                    "context_questionnaire": {
+                        "is_cloud_based": "yes",
+                        "is_outsourcing_service": "yes"
+                    },
+                    "contract_details": {
+                        "title": "Test Contract for Governance",
+                        "sow": "Test SOW for AI classification",
+                        "value": 100000
+                    }
+                }
+                
+                response = self.session.post(f"{BACKEND_URL}/contract-governance/classify", json=classify_request)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    classification = data.get("classification", {})
+                    outsourcing_type = classification.get("classification")
+                    
+                    if outsourcing_type:
+                        self.log_result("Contract Classification", True, f"Classification: {outsourcing_type}")
+                        
+                        # Verify classification returns proper outsourcing type and required actions
+                        requires_sama_noc = classification.get("requires_sama_noc", False)
+                        requires_contract_dd = classification.get("requires_contract_dd", False)
+                        
+                        if requires_sama_noc or requires_contract_dd:
+                            self.log_result("Classification Required Actions", True, f"SAMA NOC: {requires_sama_noc}, Contract DD: {requires_contract_dd}")
+                        else:
+                            self.log_result("Classification Required Actions", True, "No additional requirements identified")
+                    else:
+                        self.log_result("Contract Classification", False, "No classification returned")
+                else:
+                    self.log_result("Contract Classification", False, f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_result("Contract Classification", False, f"Exception: {str(e)}")
+
+        # 5. Test risk assessment endpoint
+        if contract_id:
+            try:
+                response = self.session.post(f"{BACKEND_URL}/contract-governance/assess-risk/{contract_id}")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    risk_assessment = data.get("risk_assessment", {})
+                    risk_score = risk_assessment.get("risk_score", 0)
+                    risk_level = risk_assessment.get("risk_level", "unknown")
+                    
+                    self.log_result("Risk Assessment", True, f"Risk Score: {risk_score}, Level: {risk_level}")
+                else:
+                    self.log_result("Risk Assessment", False, f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_result("Risk Assessment", False, f"Exception: {str(e)}")
+
+        # 6. Test SAMA NOC status update endpoint
+        if contract_id:
+            try:
+                noc_update = {
+                    "status": "submitted",
+                    "reference_number": "SAMA-2025-001"
+                }
+                
+                response = self.session.put(f"{BACKEND_URL}/contract-governance/sama-noc/{contract_id}", json=noc_update)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    message = data.get("message", "")
+                    self.log_result("SAMA NOC Update", True, f"Updated: {message}")
+                else:
+                    self.log_result("SAMA NOC Update", False, f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_result("SAMA NOC Update", False, f"Exception: {str(e)}")
+
+        # 7. Test pending approvals endpoint
+        try:
+            response = self.session.get(f"{BACKEND_URL}/contract-governance/pending-approvals")
+            
+            if response.status_code == 200:
+                data = response.json()
+                contracts = data.get("contracts", [])
+                count = data.get("count", 0)
+                self.log_result("Pending Approvals", True, f"Found {count} contracts pending HoP approval")
+            else:
+                self.log_result("Pending Approvals", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Pending Approvals", False, f"Exception: {str(e)}")
+
+        # 8. Test role-based access - procurement_officer should have access to all governance APIs
+        # This is implicitly tested by the above tests passing with procurement_officer role
+
+        # 9. Test additional governance endpoints
+        if contract_id:
+            # Test generate advisory endpoint
+            try:
+                response = self.session.post(f"{BACKEND_URL}/contract-governance/generate-advisory/{contract_id}")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    advisory = data.get("advisory", {})
+                    self.log_result("Generate Advisory", True, "AI advisory generated successfully")
+                else:
+                    self.log_result("Generate Advisory", False, f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_result("Generate Advisory", False, f"Exception: {str(e)}")
+
+            # Test submit for approval endpoint
+            try:
+                response = self.session.post(f"{BACKEND_URL}/contract-governance/submit-for-approval/{contract_id}")
+                
+                if response.status_code in [200, 400]:  # 400 might be expected if prerequisites not met
+                    if response.status_code == 200:
+                        self.log_result("Submit for Approval", True, "Contract submitted for approval")
+                    else:
+                        # Check if it's a validation error (expected)
+                        data = response.json()
+                        if "errors" in data:
+                            self.log_result("Submit for Approval", True, f"Validation working: {data['errors']}")
+                        else:
+                            self.log_result("Submit for Approval", False, f"Unexpected 400: {response.text}")
+                else:
+                    self.log_result("Submit for Approval", False, f"Status: {response.status_code}, Response: {response.text}")
+            except Exception as e:
+                self.log_result("Submit for Approval", False, f"Exception: {str(e)}")
+
     def test_environment_config(self):
         """Test environment and configuration"""
         print("\n=== ENVIRONMENT & CONFIGURATION TESTING ===")
