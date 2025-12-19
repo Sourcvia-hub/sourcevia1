@@ -413,7 +413,7 @@ const TenderDetail = () => {
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Tender</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Business Request</h2>
             <form onSubmit={handleUpdateTender} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
@@ -438,30 +438,32 @@ const TenderDetail = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Business Need *</label>
                 <textarea
                   value={editFormData.description}
                   onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
                   required
                   rows={4}
+                  placeholder="Describe the business need this request addresses..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Requirements *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Scope & Key Requirements *</label>
                 <textarea
                   value={editFormData.requirements}
                   onChange={(e) => setEditFormData({ ...editFormData, requirements: e.target.value })}
                   required
                   rows={6}
+                  placeholder="Define the scope and key requirements for this request..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Budget *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Budget (Indicative) *</label>
                   <input
                     type="number"
                     value={editFormData.budget}
@@ -471,9 +473,10 @@ const TenderDetail = () => {
                     step="0.01"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+                  <p className="text-xs text-gray-500 mt-1">This is an estimate for planning purposes and does not represent the final contract value.</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Deadline *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Expected Delivery Date *</label>
                   <input
                     type="date"
                     value={editFormData.deadline}
