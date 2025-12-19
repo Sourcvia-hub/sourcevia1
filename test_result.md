@@ -9,67 +9,43 @@ backend:
     status_history:
       - working: true
         agent: "testing"
-        comment: "All authentication endpoints working correctly. Login with procurement_manager, senior_manager, and user roles successful. Invalid credentials properly return 401. Unauthorized access properly blocked."
+        comment: "All authentication endpoints working correctly."
 
-  - task: "Vendor Management"
+  - task: "Vendor DD AI System"
     implemented: true
     working: true
-    file: "backend/server.py"
+    file: "backend/routes/vendor_dd_routes.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
-        agent: "testing"
-        comment: "Vendor creation works with minimal fields (name_english, vendor_type). Vendors auto-approve when no DD fields present. Blacklist functionality works for procurement_manager role. All vendor fields are optional as required."
-
-  - task: "Purchase Request (PR) Creation"
-    implemented: true
-    working: true
-    file: "backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "PR creation works with new fields (request_type, is_project_related, project_reference, project_name). Tenders auto-publish as designed. All required fields accepted."
-
-  - task: "Contract Workflow"
-    implemented: true
-    working: true
-    file: "backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "Contract creation works correctly. Contracts start with draft or pending_due_diligence status (not auto-approved). Workflow initialization works with proper history tracking."
+        agent: "main"
+        comment: "New Vendor DD system implemented with AI extraction and risk assessment. APIs tested via curl: init-dd, get-dd, high-risk-countries all working."
 
   - task: "Workflow Endpoints"
     implemented: true
-    working: false
+    working: true
     file: "backend/routes/workflow_routes.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
-      - working: false
-        agent: "testing"
-        comment: "CRITICAL BUG IDENTIFIED: Workflow routes expect current_user to be a dictionary (current_user['role']) but get_current_user() returns a User object (current_user.role). This causes 500 Internal Server Error on all workflow endpoints. Need to fix attribute access in workflow_routes.py and vendor_workflow.py."
+      - working: true
+        agent: "main"
+        comment: "Fixed current_user attribute access bug. Changed from dict syntax to object dot notation."
 
-  - task: "Vendor Usage Rules"
+  - task: "Vendor Workflow Routes"
     implemented: true
-    working: false
+    working: true
     file: "backend/routes/vendor_workflow.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "medium"
     needs_retesting: true
     status_history:
-      - working: false
-        agent: "testing"
-        comment: "SAME BUG AS WORKFLOW ENDPOINTS: Vendor workflow routes use current_user['role'] syntax but get_current_user() returns User object. This affects /vendors/usable-in-pr, /vendors/usable-in-contracts, and /vendors/{id}/direct-approve endpoints. All return 500 errors due to incorrect attribute access."
+      - working: true
+        agent: "main"
+        comment: "Fixed current_user attribute access bug. Changed from dict syntax to object dot notation."
 
   - task: "Master Data Endpoints"
     implemented: true
@@ -78,52 +54,46 @@ backend:
     stuck_count: 0
     priority: "medium"
     needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "All master data endpoints working correctly. Asset categories returns 10 items, OSR categories returns 11 items, Buildings returns 2 items as expected."
-
-  - task: "Role-Based Access Control"
-    implemented: true
-    working: true
-    file: "backend/utils/auth.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "RBAC system working correctly. Different user roles (procurement_manager, senior_manager, user) authenticate properly. Blacklist functionality restricted to procurement_manager only."
 
 frontend:
-  - task: "Frontend Testing"
-    implemented: false
-    working: "NA"
-    file: "N/A"
+  - task: "Vendor DD Form Component"
+    implemented: true
+    working: "pending"
+    file: "frontend/src/components/VendorDDForm.js"
     stuck_count: 0
-    priority: "low"
-    needs_retesting: false
+    priority: "high"
+    needs_retesting: true
     status_history:
-      - working: "NA"
-        agent: "testing"
-        comment: "Frontend testing not performed as per instructions - backend testing only."
+      - working: "pending"
+        agent: "main"
+        comment: "New AI-powered DD form component created with tabs for Overview, Extracted Data, Documents, Workflow, and Audit. Includes risk badges, confidence indicators, and workflow actions."
+
+  - task: "Admin Settings Page"
+    implemented: true
+    working: "pending"
+    file: "frontend/src/pages/AdminSettings.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "pending"
+        agent: "main"
+        comment: "New admin settings page for configuring high-risk countries. Accessible via /admin/settings route."
 
 metadata:
-  created_by: "testing_agent"
-  version: "1.0"
-  test_sequence: 1
-  run_ui: false
+  created_by: "main_agent"
+  version: "2.0"
+  test_sequence: 2
+  run_ui: true
 
 test_plan:
   current_focus:
+    - "Vendor DD AI System"
     - "Workflow Endpoints"
-    - "Vendor Usage Rules"
-  stuck_tasks:
-    - "Workflow Endpoints"
-    - "Vendor Usage Rules"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
-  - agent: "testing"
-    message: "Backend testing completed with 76.9% success rate. CRITICAL BUG FOUND: All workflow endpoints fail with 500 errors due to incorrect User object attribute access. The workflow routes use dictionary syntax (current_user['role']) but get_current_user() returns a User object requiring dot notation (current_user.role). This affects: 1) All workflow endpoints in workflow_routes.py 2) Vendor special workflow endpoints in vendor_workflow.py. FIX REQUIRED: Change all current_user['field'] to current_user.field in both workflow route files. Core CRUD functionality works correctly."
+  - agent: "main"
+    message: "Implemented new Vendor DD system with AI-powered risk assessment. Backend APIs working. Frontend components created. Need testing agent to verify: 1) Vendor DD init and workflow 2) AI document upload and processing 3) Officer review and HoP approval flow 4) Risk acceptance for high-risk vendors 5) Admin settings for high-risk countries."
