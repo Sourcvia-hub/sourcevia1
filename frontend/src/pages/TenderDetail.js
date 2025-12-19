@@ -706,6 +706,145 @@ const TenderDetail = () => {
             </div>
           </div>
         )}
+
+        {/* Edit Evaluation Modal */}
+        {showEvaluationModal && selectedProposalForEdit && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl my-8">
+              <h2 className="text-xl font-bold mb-2">
+                {selectedProposalForEdit.evaluated ? 'Amend' : 'Submit'} Evaluation
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Vendor: <span className="font-semibold">{selectedProposalForEdit.vendor_name}</span> | 
+                Financial: <span className="font-semibold">{selectedProposalForEdit.financial_proposal?.toLocaleString()} SAR</span>
+              </p>
+              
+              <form onSubmit={handleSubmitEvaluation} className="space-y-4">
+                {/* Vendor Reliability & Stability (20%) */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Vendor Reliability & Stability <span className="text-blue-600">(20%)</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      value={evaluationForm.vendor_reliability_stability}
+                      onChange={(e) => setEvaluationForm({ ...evaluationForm, vendor_reliability_stability: parseInt(e.target.value) })}
+                      className="flex-1"
+                    />
+                    <span className="w-12 text-center font-bold text-lg">{evaluationForm.vendor_reliability_stability}</span>
+                  </div>
+                  <p className="text-xs text-gray-500">1=Poor, 5=Excellent</p>
+                </div>
+
+                {/* Delivery, Warranty & Backup (20%) */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Delivery, Warranty & Backup <span className="text-blue-600">(20%)</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      value={evaluationForm.delivery_warranty_backup}
+                      onChange={(e) => setEvaluationForm({ ...evaluationForm, delivery_warranty_backup: parseInt(e.target.value) })}
+                      className="flex-1"
+                    />
+                    <span className="w-12 text-center font-bold text-lg">{evaluationForm.delivery_warranty_backup}</span>
+                  </div>
+                </div>
+
+                {/* Technical Experience (10%) */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Technical Experience <span className="text-blue-600">(10%)</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      value={evaluationForm.technical_experience}
+                      onChange={(e) => setEvaluationForm({ ...evaluationForm, technical_experience: parseInt(e.target.value) })}
+                      className="flex-1"
+                    />
+                    <span className="w-12 text-center font-bold text-lg">{evaluationForm.technical_experience}</span>
+                  </div>
+                </div>
+
+                {/* Cost Score (10%) */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Cost Score <span className="text-blue-600">(10%)</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      (Suggested: {selectedProposalForEdit.suggested_cost_score?.toFixed(2) || 'N/A'})
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      step="0.1"
+                      value={evaluationForm.cost_score}
+                      onChange={(e) => setEvaluationForm({ ...evaluationForm, cost_score: parseFloat(e.target.value) })}
+                      className="flex-1"
+                    />
+                    <span className="w-12 text-center font-bold text-lg">{evaluationForm.cost_score?.toFixed(1)}</span>
+                  </div>
+                </div>
+
+                {/* Meets Requirements (40%) */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Meets Requirements <span className="text-purple-600 font-semibold">(40%)</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      value={evaluationForm.meets_requirements}
+                      onChange={(e) => setEvaluationForm({ ...evaluationForm, meets_requirements: parseInt(e.target.value) })}
+                      className="flex-1"
+                    />
+                    <span className="w-12 text-center font-bold text-lg">{evaluationForm.meets_requirements}</span>
+                  </div>
+                </div>
+
+                {/* Calculated Score Preview */}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Calculated Total Score:</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {(
+                      evaluationForm.vendor_reliability_stability * 0.2 +
+                      evaluationForm.delivery_warranty_backup * 0.2 +
+                      evaluationForm.technical_experience * 0.1 +
+                      evaluationForm.cost_score * 0.1 +
+                      evaluationForm.meets_requirements * 0.4
+                    ).toFixed(2)}
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <button 
+                    type="button" 
+                    onClick={() => { setShowEvaluationModal(false); setSelectedProposalForEdit(null); }} 
+                    className="px-4 py-2 border rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    {selectedProposalForEdit.evaluated ? 'Update Evaluation' : 'Submit Evaluation'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
