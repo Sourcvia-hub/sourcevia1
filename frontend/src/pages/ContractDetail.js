@@ -180,6 +180,84 @@ const ContractDetail = () => {
     return { total, paid, pending };
   };
 
+  // Contract Governance Functions
+  const runAIClassification = async () => {
+    setAiLoading(true);
+    try {
+      // Build context from tender/contract
+      const contextQuestionnaire = {
+        requires_system_data_access: tender?.ctx_requires_system_data_access || contract?.ctx_requires_system_data_access,
+        is_cloud_based: tender?.ctx_is_cloud_based || (contract?.a5_cloud_hosted ? 'yes' : 'no'),
+        is_outsourcing_service: tender?.ctx_is_outsourcing_service,
+        expected_data_location: tender?.ctx_expected_data_location || (contract?.b4_outside_ksa ? 'outside_ksa' : 'inside_ksa'),
+        requires_onsite_presence: tender?.ctx_requires_onsite_presence,
+        expected_duration: tender?.ctx_expected_duration,
+      };
+
+      const response = await axios.post(`${API}/contract-governance/classify`, {
+        contract_id: id,
+        context_questionnaire: contextQuestionnaire,
+        contract_details: {
+          title: contract.title,
+          sow: contract.sow,
+          value: contract.value,
+        },
+        vendor_id: contract.vendor_id,
+      }, { withCredentials: true });
+
+      setClassificationResult(response.data.classification);
+      fetchContract(); // Refresh contract data
+    } catch (error) {
+      console.error('Error running AI classification:', error);
+      alert('Failed to classify contract: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const generateAIAdvisory = async () => {
+    setAiLoading(true);
+    try {
+      await axios.post(`${API}/contract-governance/generate-advisory/${id}`, {}, { withCredentials: true });
+      fetchContract(); // Refresh to get advisory
+    } catch (error) {
+      console.error('Error generating advisory:', error);
+      alert('Failed to generate advisory: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const assessContractRisk = async () => {
+    setAiLoading(true);
+    try {
+      await axios.post(`${API}/contract-governance/assess-risk/${id}`, {}, { withCredentials: true });
+      fetchContract(); // Refresh to get risk assessment
+    } catch (error) {
+      console.error('Error assessing risk:', error);
+      alert('Failed to assess risk: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const submitForHOPApproval = async () => {
+    if (!window.confirm('Submit this contract for Head of Procurement approval?')) return;
+    try {
+      await axios.post(`${API}/contract-governance/submit-for-approval/${id}`, {}, { withCredentials: true });
+      alert('Contract submitted for approval');
+      fetchContract();
+    } catch (error) {
+      console.error('Error submitting for approval:', error);
+      const errors = error.response?.data?.detail?.errors;
+      if (errors) {
+        alert('Cannot submit:\n' + errors.join('\n'));
+      } else {
+        alert('Failed to submit: ' + (error.response?.data?.detail || error.message));
+      }
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
