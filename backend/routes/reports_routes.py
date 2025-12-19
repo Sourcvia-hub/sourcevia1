@@ -161,8 +161,8 @@ async def get_spend_analysis(
     
     po_spend = await db.purchase_orders.aggregate(po_spend_pipeline).to_list(100)
     
-    # Aggregate invoice spend by period
-    inv_spend_pipeline = [
+    # Aggregate deliverables spend by period (replaced invoices)
+    del_spend_pipeline = [
         {"$match": {"created_at": {"$gte": start_date.isoformat()}}},
         {"$addFields": {
             "date_parsed": {"$dateFromString": {"dateString": "$created_at"}}
@@ -175,7 +175,7 @@ async def get_spend_analysis(
         {"$sort": {"_id": 1}}
     ]
     
-    inv_spend = await db.invoices.aggregate(inv_spend_pipeline).to_list(100)
+    del_spend = await db.deliverables.aggregate(del_spend_pipeline).to_list(100)
     
     # Spend by vendor (top 10)
     vendor_spend_pipeline = [
@@ -198,7 +198,7 @@ async def get_spend_analysis(
     return {
         "period": period,
         "po_spend_trend": [{"period": s["_id"], "amount": s["total"], "count": s["count"]} for s in po_spend],
-        "invoice_spend_trend": [{"period": s["_id"], "amount": s["total"], "count": s["count"]} for s in inv_spend],
+        "deliverable_spend_trend": [{"period": s["_id"], "amount": s["total"], "count": s["count"]} for s in del_spend],
         "top_vendors_by_spend": [
             {"vendor_id": vs["_id"], "vendor_name": vs["vendor_name"], "total_spend": vs["total_spend"], "order_count": vs["order_count"]}
             for vs in vendor_spend
