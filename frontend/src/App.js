@@ -135,8 +135,7 @@ import TenderDetail from './pages/TenderDetail';
 import TenderEvaluation from './pages/TenderEvaluation';
 import Contracts from './pages/Contracts';
 import ContractDetail from './pages/ContractDetail';
-import Invoices from './pages/Invoices';
-import InvoiceDetail from './pages/InvoiceDetail';
+// Invoice pages removed - functionality merged into Deliverables
 import PurchaseOrders from './pages/PurchaseOrders';
 import PurchaseOrderDetail from './pages/PurchaseOrderDetail';
 import Resources from './pages/Resources';
@@ -153,7 +152,7 @@ import AdminSettings from './pages/AdminSettings';
 import ContractApprovals from './pages/ContractApprovals';
 import ApprovalsHub from './pages/ApprovalsHub';
 import Deliverables from './pages/Deliverables';
-import PaymentAuthorizations from './pages/PaymentAuthorizations';
+// PaymentAuthorizations page removed - functionality merged into Deliverables
 
 // ProcureFlix components
 import ProcureFlixLayout from './procureflix/Layout';
