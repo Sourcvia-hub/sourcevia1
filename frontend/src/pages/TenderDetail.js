@@ -132,6 +132,42 @@ const TenderDetail = () => {
   const isOfficer = user?.role && ['procurement_officer', 'procurement_manager', 'admin'].includes(user.role);
   const isHoP = user?.role && ['procurement_manager', 'admin'].includes(user.role);
   const isCreator = tender?.created_by === user?.id;
+  const isAdditionalApprover = tender?.additional_approver_id === user?.id;
+  const canViewEvaluation = isOfficer || isAdditionalApprover || isHoP;
+  const canAmendEvaluation = (isOfficer || isAdditionalApprover) && 
+    ['evaluation_complete', 'pending_additional_approval'].includes(tender?.status);
+
+  // Open evaluation edit modal
+  const handleEditEvaluation = (proposal) => {
+    setSelectedProposalForEdit(proposal);
+    const evaluation = proposal.evaluation || {};
+    setEvaluationForm({
+      vendor_reliability_stability: evaluation.vendor_reliability_stability || 3,
+      delivery_warranty_backup: evaluation.delivery_warranty_backup || 3,
+      technical_experience: evaluation.technical_experience || 3,
+      cost_score: evaluation.cost_score || proposal.suggested_cost_score || 3,
+      meets_requirements: evaluation.meets_requirements || 3,
+    });
+    setShowEvaluationModal(true);
+  };
+
+  // Submit amended evaluation
+  const handleSubmitEvaluation = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/tenders/${id}/proposals/${selectedProposalForEdit.proposal_id}/evaluate`, 
+        evaluationForm, 
+        { withCredentials: true }
+      );
+      toast({ title: "✅ Evaluation Updated", description: "Proposal evaluation has been amended", variant: "success" });
+      setShowEvaluationModal(false);
+      setSelectedProposalForEdit(null);
+      fetchProposalsForUser();
+      fetchEvaluationData();
+    } catch (error) {
+      toast({ title: "❌ Error", description: getErrorMessage(error, "Failed to update evaluation"), variant: "destructive" });
+    }
+  };
 
   // Submit new proposal (officer only)
   const handleSubmitProposal = async (e) => {
