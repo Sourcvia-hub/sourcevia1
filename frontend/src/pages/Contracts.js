@@ -148,7 +148,33 @@ const Contracts = () => {
     const tender = tenders.find(t => t.id === tenderId);
     setSelectedTender(tender);
     
-    // Fetch tender evaluation to get #1 ranked vendor
+    // Check if tender has a selected/recommended proposal
+    if (tender?.selected_proposal_id) {
+      // Use the recommended proposal's vendor
+      try {
+        const proposalRes = await axios.get(`${API}/tenders/${tenderId}/proposals`, { withCredentials: true });
+        const recommendedProposal = proposalRes.data.find(p => p.id === tender.selected_proposal_id);
+        
+        if (recommendedProposal) {
+          const winningVendor = vendors.find(v => v.id === recommendedProposal.vendor_id);
+          setSelectedVendor(winningVendor);
+          
+          setFormData({
+            ...formData,
+            tender_id: tenderId,
+            vendor_id: recommendedProposal.vendor_id,
+            title: tender ? `Contract for ${tender.title}` : '',
+            sow: tender ? tender.requirements : '',
+            value: recommendedProposal.financial_proposal || tender?.budget || ''
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error fetching recommended proposal:', error);
+      }
+    }
+    
+    // Fallback: Fetch tender evaluation to get #1 ranked vendor
     try {
       const evalResponse = await axios.post(`${API}/tenders/${tenderId}/evaluate`, {}, { withCredentials: true });
       
@@ -168,7 +194,7 @@ const Contracts = () => {
           vendor_id: topProposal.vendor_id,
           title: tender ? `Contract for ${tender.title}` : '',
           sow: tender ? tender.requirements : '',
-          value: tender ? tender.budget : ''
+          value: topProposal.financial_proposal || tender?.budget || ''
         });
       } else {
         // No evaluated proposals yet
