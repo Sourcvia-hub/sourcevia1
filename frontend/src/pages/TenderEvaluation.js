@@ -3,6 +3,8 @@ import axios from 'axios';
 import Layout from '../components/Layout';
 import { useParams, useNavigate } from 'react-router-dom';
 import AITenderEvaluator from '../components/AITenderEvaluator';
+import { useAuth } from '../App';
+import { useToast } from '../hooks/use-toast';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -10,11 +12,14 @@ const API = `${BACKEND_URL}/api`;
 const TenderEvaluation = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [tender, setTender] = useState(null);
   const [evaluationData, setEvaluationData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedProposal, setSelectedProposal] = useState(null);
   const [showEvaluateModal, setShowEvaluateModal] = useState(false);
+  const [submittingEvaluation, setSubmittingEvaluation] = useState(false);
   const [evaluationForm, setEvaluationForm] = useState({
     vendor_reliability_stability: 3,
     delivery_warranty_backup: 3,
