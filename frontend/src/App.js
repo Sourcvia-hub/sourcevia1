@@ -148,6 +148,7 @@ import OSRDetail from './pages/OSRDetail';
 import OSRForm from './pages/OSRForm';
 import CCTVLiveView from './pages/CCTVLiveView';
 import AccessManagement from './pages/AccessManagement';
+import AdminSettings from './pages/AdminSettings';
 
 // ProcureFlix components
 import ProcureFlixLayout from './procureflix/Layout';
