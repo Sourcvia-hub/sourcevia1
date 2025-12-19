@@ -7,6 +7,34 @@ import { Toaster } from './components/ui/toaster';
 
 const API = API_URL;
 
+// Setup global axios interceptor for token-based auth
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('session_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Handle 401 responses globally
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
+      // Don't clear localStorage on 401 for auth/me calls (initial check)
+      if (!error.config?.url?.includes('/auth/me')) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('session_token');
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // ==================== AUTH CONTEXT ====================
 const AuthContext = React.createContext(null);
 
