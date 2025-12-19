@@ -232,14 +232,20 @@ async def get_pending_contracts(request: Request, status: str = "pending"):
 
 
 @router.get("/purchase-orders")
-async def get_pending_purchase_orders(request: Request):
-    """Get purchase orders pending approval"""
+async def get_pending_purchase_orders(request: Request, status: str = "pending"):
+    """Get purchase orders by status (pending or approved)"""
     user = await require_auth(request)
     
-    pos = await db.purchase_orders.find(
-        {"status": {"$in": ["draft", "pending_approval"]}},
-        {"_id": 0}
-    ).sort("updated_at", -1).to_list(100)
+    if status == "approved":
+        pos = await db.purchase_orders.find(
+            {"status": {"$in": ["issued", "approved", "completed"]}},
+            {"_id": 0}
+        ).sort("updated_at", -1).to_list(50)
+    else:
+        pos = await db.purchase_orders.find(
+            {"status": {"$in": ["draft", "pending_approval"]}},
+            {"_id": 0}
+        ).sort("updated_at", -1).to_list(50)
     
     # Enrich with vendor info
     enriched = []
