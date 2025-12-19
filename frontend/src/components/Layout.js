@@ -28,6 +28,7 @@ const Layout = ({ children }) => {
 
   // Special links for Procurement Manager and Admin only
   const specialLinks = [
+    { name: 'Contract Approvals', path: '/contract-approvals', icon: '✅', roles: ['procurement_manager', 'admin', 'procurement_officer'] },
     { name: 'CCTV Live View', path: '/cctv', icon: '📹', roles: ['procurement_manager', 'admin'] },
     { name: 'Access Management', path: '/access-management', icon: '🚪', roles: ['procurement_manager', 'admin'] },
     { name: 'Admin Settings', path: '/admin/settings', icon: '⚙️', roles: ['procurement_manager', 'system_admin'] },
