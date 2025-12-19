@@ -1253,6 +1253,275 @@ class SourceviaBackendTester:
         except Exception as e:
             self.log_result("API Endpoints", False, f"Exception: {str(e)}")
 
+    def test_deliverables_and_payment_authorization_system(self):
+        """Test new Deliverables and Payment Authorization System for Sourcevia"""
+        print("\n=== DELIVERABLES & PAYMENT AUTHORIZATION SYSTEM TESTING ===")
+        
+        # Test with procurement_officer role as specified in review request
+        if not self.authenticate_as('procurement_officer'):
+            self.log_result("Deliverables System Setup", False, "Could not authenticate as procurement_officer")
+            return
+
+        # Get a vendor ID for testing
+        vendor_id = None
+        try:
+            response = self.session.get(f"{BACKEND_URL}/vendors")
+            if response.status_code == 200:
+                vendors = response.json()
+                if vendors:
+                    vendor_id = vendors[0].get("id")
+                    self.log_result("Get Vendor for Testing", True, f"Using vendor: {vendor_id}")
+                else:
+                    self.log_result("Get Vendor for Testing", False, "No vendors available")
+                    return
+            else:
+                self.log_result("Get Vendor for Testing", False, f"Status: {response.status_code}")
+                return
+        except Exception as e:
+            self.log_result("Get Vendor for Testing", False, f"Exception: {str(e)}")
+            return
+
+        # 1. Create a Deliverable
+        deliverable_id = None
+        try:
+            deliverable_data = {
+                "vendor_id": vendor_id,
+                "title": "Phase 1 Delivery",
+                "description": "Initial project phase completion",
+                "deliverable_type": "milestone",
+                "amount": 50000,
+                "currency": "SAR"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/deliverables", json=deliverable_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                deliverable = data.get("deliverable", {})
+                deliverable_id = deliverable.get("id")
+                status = deliverable.get("status")
+                
+                if status == "draft":
+                    self.log_result("Create Deliverable", True, f"Created deliverable with status: {status}")
+                    self.test_data["deliverable_id"] = deliverable_id
+                else:
+                    self.log_result("Create Deliverable", False, f"Expected draft status, got: {status}")
+            else:
+                self.log_result("Create Deliverable", False, f"Status: {response.status_code}, Response: {response.text}")
+                return
+        except Exception as e:
+            self.log_result("Create Deliverable", False, f"Exception: {str(e)}")
+            return
+
+        if not deliverable_id:
+            return
+
+        # 2. Submit Deliverable for Review
+        try:
+            response = self.session.post(f"{BACKEND_URL}/deliverables/{deliverable_id}/submit")
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                if "submitted" in message.lower():
+                    self.log_result("Submit Deliverable", True, f"Deliverable submitted: {message}")
+                else:
+                    self.log_result("Submit Deliverable", False, f"Unexpected message: {message}")
+            else:
+                self.log_result("Submit Deliverable", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Submit Deliverable", False, f"Exception: {str(e)}")
+
+        # 3. Review & Accept Deliverable
+        try:
+            review_data = {
+                "status": "accepted",
+                "review_notes": "Deliverable meets requirements"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/deliverables/{deliverable_id}/review", json=review_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                if "accepted" in message.lower():
+                    self.log_result("Review & Accept Deliverable", True, f"Deliverable accepted: {message}")
+                else:
+                    self.log_result("Review & Accept Deliverable", False, f"Unexpected message: {message}")
+            else:
+                self.log_result("Review & Accept Deliverable", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Review & Accept Deliverable", False, f"Exception: {str(e)}")
+
+        # 4. Generate Payment Authorization (KEY TEST)
+        paf_id = None
+        try:
+            response = self.session.post(f"{BACKEND_URL}/deliverables/{deliverable_id}/generate-paf")
+            
+            if response.status_code == 200:
+                data = response.json()
+                paf = data.get("payment_authorization", {})
+                paf_id = paf.get("id")
+                paf_number = paf.get("paf_number")
+                ai_payment_readiness = paf.get("ai_payment_readiness")
+                ai_key_observations = paf.get("ai_key_observations", [])
+                ai_advisory_summary = paf.get("ai_advisory_summary")
+                status = paf.get("status")
+                audit_trail = paf.get("audit_trail", [])
+                
+                # Verify PAF structure
+                checks = []
+                checks.append(("PAF Number", paf_number and paf_number.startswith("PAF-")))
+                checks.append(("AI Payment Readiness", ai_payment_readiness in ["Ready", "Ready with Clarifications", "Not Ready"]))
+                checks.append(("AI Key Observations", isinstance(ai_key_observations, list)))
+                checks.append(("AI Advisory Summary", isinstance(ai_advisory_summary, str)))
+                checks.append(("Status", status == "generated"))
+                checks.append(("Audit Trail", len(audit_trail) > 0 and any(entry.get("action") == "generated" for entry in audit_trail)))
+                
+                all_checks_passed = all(check[1] for check in checks)
+                
+                if all_checks_passed:
+                    self.log_result("Generate Payment Authorization", True, f"PAF {paf_number} generated with readiness: {ai_payment_readiness}")
+                    self.test_data["paf_id"] = paf_id
+                else:
+                    failed_checks = [check[0] for check in checks if not check[1]]
+                    self.log_result("Generate Payment Authorization", False, f"Failed checks: {failed_checks}")
+            else:
+                self.log_result("Generate Payment Authorization", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Generate Payment Authorization", False, f"Exception: {str(e)}")
+
+        if not paf_id:
+            return
+
+        # 5. Approve Payment Authorization
+        try:
+            approval_data = {
+                "decision": "approved",
+                "notes": "Approved for payment"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/deliverables/paf/{paf_id}/approve", json=approval_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                if "approved" in message.lower():
+                    self.log_result("Approve Payment Authorization", True, f"PAF approved: {message}")
+                else:
+                    self.log_result("Approve Payment Authorization", False, f"Unexpected message: {message}")
+            else:
+                self.log_result("Approve Payment Authorization", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Approve Payment Authorization", False, f"Exception: {str(e)}")
+
+        # 6. Export Payment Authorization
+        try:
+            response = self.session.post(f"{BACKEND_URL}/deliverables/paf/{paf_id}/export")
+            
+            if response.status_code == 200:
+                data = response.json()
+                export_reference = data.get("export_reference")
+                message = data.get("message", "")
+                
+                if export_reference and export_reference.startswith("EXP-"):
+                    self.log_result("Export Payment Authorization", True, f"PAF exported with reference: {export_reference}")
+                else:
+                    self.log_result("Export Payment Authorization", False, f"Invalid export reference: {export_reference}")
+            else:
+                self.log_result("Export Payment Authorization", False, f"Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            self.log_result("Export Payment Authorization", False, f"Exception: {str(e)}")
+
+        # 7. Negative Test - Try generating PAF for non-accepted deliverable
+        try:
+            # Create another deliverable
+            non_accepted_deliverable_data = {
+                "vendor_id": vendor_id,
+                "title": "Test Non-Accepted Deliverable",
+                "description": "This deliverable should not be accepted",
+                "deliverable_type": "milestone",
+                "amount": 25000,
+                "currency": "SAR"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/deliverables", json=non_accepted_deliverable_data)
+            
+            if response.status_code == 200:
+                data = response.json()
+                deliverable = data.get("deliverable", {})
+                non_accepted_id = deliverable.get("id")
+                
+                # Try to generate PAF without accepting (should fail)
+                paf_response = self.session.post(f"{BACKEND_URL}/deliverables/{non_accepted_id}/generate-paf")
+                
+                if paf_response.status_code == 400:
+                    error_data = paf_response.json()
+                    detail = error_data.get("detail", "")
+                    if "accepted" in detail.lower():
+                        self.log_result("Negative Test - PAF for Non-Accepted", True, f"Correctly rejected: {detail}")
+                    else:
+                        self.log_result("Negative Test - PAF for Non-Accepted", False, f"Wrong error message: {detail}")
+                else:
+                    self.log_result("Negative Test - PAF for Non-Accepted", False, f"Expected 400, got: {paf_response.status_code}")
+            else:
+                self.log_result("Negative Test - PAF for Non-Accepted", False, f"Could not create test deliverable: {response.status_code}")
+        except Exception as e:
+            self.log_result("Negative Test - PAF for Non-Accepted", False, f"Exception: {str(e)}")
+
+        # 8. Test additional endpoints
+        try:
+            # List deliverables
+            response = self.session.get(f"{BACKEND_URL}/deliverables")
+            if response.status_code == 200:
+                data = response.json()
+                deliverables = data.get("deliverables", [])
+                count = data.get("count", 0)
+                self.log_result("List Deliverables", True, f"Found {count} deliverables")
+            else:
+                self.log_result("List Deliverables", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("List Deliverables", False, f"Exception: {str(e)}")
+
+        try:
+            # List PAFs
+            response = self.session.get(f"{BACKEND_URL}/deliverables/paf/list")
+            if response.status_code == 200:
+                data = response.json()
+                pafs = data.get("payment_authorizations", [])
+                count = data.get("count", 0)
+                self.log_result("List Payment Authorizations", True, f"Found {count} PAFs")
+            else:
+                self.log_result("List Payment Authorizations", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("List Payment Authorizations", False, f"Exception: {str(e)}")
+
+        try:
+            # Get single deliverable with enriched data
+            if deliverable_id:
+                response = self.session.get(f"{BACKEND_URL}/deliverables/{deliverable_id}")
+                if response.status_code == 200:
+                    deliverable = response.json()
+                    has_paf_link = "payment_authorization_id" in deliverable
+                    self.log_result("Get Deliverable with Enriched Data", True, f"PAF linked: {has_paf_link}")
+                else:
+                    self.log_result("Get Deliverable with Enriched Data", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("Get Deliverable with Enriched Data", False, f"Exception: {str(e)}")
+
+        try:
+            # Get single PAF
+            if paf_id:
+                response = self.session.get(f"{BACKEND_URL}/deliverables/paf/{paf_id}")
+                if response.status_code == 200:
+                    paf = response.json()
+                    has_audit_trail = len(paf.get("audit_trail", [])) > 0
+                    self.log_result("Get Payment Authorization", True, f"Audit trail present: {has_audit_trail}")
+                else:
+                    self.log_result("Get Payment Authorization", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_result("Get Payment Authorization", False, f"Exception: {str(e)}")
+
     def run_all_tests(self):
         """Run all tests in sequence"""
         print("🚀 Starting Sourcevia Backend Comprehensive Testing")
