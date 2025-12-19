@@ -169,14 +169,20 @@ async def get_pending_vendors(request: Request, status: str = "pending"):
 
 
 @router.get("/business-requests")
-async def get_pending_business_requests(request: Request):
-    """Get business requests (tenders) pending evaluation/award"""
+async def get_pending_business_requests(request: Request, status: str = "pending"):
+    """Get business requests (tenders) by status (pending or approved)"""
     user = await require_auth(request)
     
-    tenders = await db.tenders.find(
-        {"status": {"$in": ["draft", "published", "closed"]}},
-        {"_id": 0}
-    ).sort("updated_at", -1).to_list(100)
+    if status == "approved":
+        tenders = await db.tenders.find(
+            {"status": {"$in": ["awarded", "completed"]}},
+            {"_id": 0}
+        ).sort("updated_at", -1).to_list(50)
+    else:
+        tenders = await db.tenders.find(
+            {"status": {"$in": ["draft", "published", "closed"]}},
+            {"_id": 0}
+        ).sort("updated_at", -1).to_list(50)
     
     # Enrich with proposal counts
     enriched = []
