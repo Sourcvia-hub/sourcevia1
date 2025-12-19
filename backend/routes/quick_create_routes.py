@@ -222,7 +222,7 @@ class BulkPOItems(BaseModel):
 async def bulk_add_po_items(po_id: str, data: BulkPOItems, request: Request):
     """Add multiple items to an existing PO in one call"""
     from utils.auth import require_edit_permission
-    user = await require_edit_permission(request, "purchase_orders")
+    await require_edit_permission(request, "purchase_orders")
     
     po = await db.purchase_orders.find_one({"id": po_id})
     if not po:

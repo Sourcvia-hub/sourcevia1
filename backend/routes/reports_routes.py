@@ -25,7 +25,7 @@ async def get_procurement_overview(request: Request):
     
     now = datetime.now(timezone.utc)
     thirty_days_ago = now - timedelta(days=30)
-    ninety_days_ago = now - timedelta(days=90)
+    # ninety_days_ago reserved for future trend analysis
     
     # Vendor stats
     total_vendors = await db.vendors.count_documents({})
