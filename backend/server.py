@@ -117,6 +117,14 @@ try:
 except Exception as exc:
     print(f"[Bulk Import] Failed to mount router: {exc}")
 
+# Include Business Request Workflow Routes
+try:
+    from routes.business_request_workflow import router as br_workflow_router
+    api_router.include_router(br_workflow_router)
+    print("[BR Workflow] Router mounted at /api/business-requests")
+except Exception as exc:
+    print(f"[BR Workflow] Failed to mount router: {exc}")
+
 
 # ==================== HELPER FUNCTIONS ====================
 def calculate_vendor_registration_score(vendor_data: dict) -> dict:
