@@ -1570,7 +1570,21 @@ async def evaluate_proposal(tender_id: str, proposal_id: str, evaluation: Propos
 @api_router.post("/tenders/{tender_id}/evaluate")
 async def evaluate_all_proposals(tender_id: str, request: Request):
     """Get evaluation summary for all proposals in a tender"""
-    await require_role(request, [UserRole.PROCUREMENT_OFFICER, UserRole.PROCUREMENT_MANAGER, UserRole.PROJECT_MANAGER, UserRole.SENIOR_MANAGER, UserRole.ADMIN])
+    user = await require_auth(request)
+    
+    # Get the tender to check if user is the creator
+    tender = await db.tenders.find_one({"id": tender_id})
+    if not tender:
+        raise HTTPException(status_code=404, detail="Tender not found")
+    
+    # Allow access if user is:
+    # 1. The creator of the tender
+    # 2. A procurement officer, manager, or admin
+    is_creator = tender.get("created_by") == user.id
+    is_officer = user.role in [UserRole.PROCUREMENT_OFFICER, UserRole.PROCUREMENT_MANAGER, UserRole.PROJECT_MANAGER, UserRole.SENIOR_MANAGER, UserRole.ADMIN]
+    
+    if not is_creator and not is_officer:
+        raise HTTPException(status_code=403, detail="Only the creator or procurement officers can evaluate proposals")
     
     # Find proposals without _id field
     proposals = await db.proposals.find({"tender_id": tender_id}, {"_id": 0}).to_list(1000)
