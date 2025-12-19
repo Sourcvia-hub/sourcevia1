@@ -62,17 +62,17 @@ async def get_procurement_overview(request: Request):
     po_value = await db.purchase_orders.aggregate(po_value_pipeline).to_list(1)
     total_po_value = po_value[0]["total_value"] if po_value else 0
     
-    # Invoice stats
-    total_invoices = await db.invoices.count_documents({})
-    pending_invoices = await db.invoices.count_documents({"status": "pending"})
-    approved_invoices = await db.invoices.count_documents({"status": "approved"})
+    # Deliverables stats (replaced invoices)
+    total_deliverables = await db.deliverables.count_documents({})
+    pending_deliverables = await db.deliverables.count_documents({"status": {"$in": ["submitted", "under_review", "validated", "pending_hop_approval"]}})
+    approved_deliverables = await db.deliverables.count_documents({"status": {"$in": ["approved", "paid"]}})
     
-    invoice_value_pipeline = [
+    deliverable_value_pipeline = [
         {"$match": {"status": {"$in": ["approved", "paid"]}}},
         {"$group": {"_id": None, "total_value": {"$sum": "$amount"}}}
     ]
-    invoice_value = await db.invoices.aggregate(invoice_value_pipeline).to_list(1)
-    total_invoice_value = invoice_value[0]["total_value"] if invoice_value else 0
+    deliverable_value = await db.deliverables.aggregate(deliverable_value_pipeline).to_list(1)
+    total_deliverable_value = deliverable_value[0]["total_value"] if deliverable_value else 0
     
     # Business Request stats
     total_brs = await db.tenders.count_documents({})
@@ -81,7 +81,7 @@ async def get_procurement_overview(request: Request):
     return {
         "summary": {
             "total_spend": total_contract_value + total_po_value,
-            "pending_payments": await db.invoices.count_documents({"status": {"$in": ["pending", "verified"]}}),
+            "pending_payments": await db.deliverables.count_documents({"status": {"$in": ["submitted", "validated", "pending_hop_approval"]}}),
             "active_contracts": active_contracts,
             "approved_vendors": approved_vendors
         },
@@ -102,11 +102,11 @@ async def get_procurement_overview(request: Request):
             "issued": issued_pos,
             "total_value": total_po_value
         },
-        "invoices": {
-            "total": total_invoices,
-            "pending": pending_invoices,
-            "approved": approved_invoices,
-            "total_value": total_invoice_value
+        "deliverables": {
+            "total": total_deliverables,
+            "pending": pending_deliverables,
+            "approved": approved_deliverables,
+            "total_value": total_deliverable_value
         },
         "business_requests": {
             "total": total_brs,
