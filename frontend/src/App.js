@@ -203,6 +203,7 @@ const AppRoutes = () => {
       <Route path="/osr/:id/edit" element={<ProtectedRoute><OSRForm /></ProtectedRoute>} />
       <Route path="/cctv" element={<ProtectedRoute><CCTVLiveView /></ProtectedRoute>} />
       <Route path="/access-management" element={<ProtectedRoute><AccessManagement /></ProtectedRoute>} />
+      <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
 
       {/* ProcureFlix routes */}
       <Route
