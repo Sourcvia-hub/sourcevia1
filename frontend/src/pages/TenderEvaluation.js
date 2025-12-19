@@ -115,6 +115,62 @@ const TenderEvaluation = () => {
     }
   };
 
+  // Submit complete evaluation to workflow
+  const handleCompleteEvaluation = async () => {
+    // Check if all proposals are evaluated
+    const unevaluatedCount = evaluationData?.proposals?.filter(p => !p.evaluated).length || 0;
+    if (unevaluatedCount > 0) {
+      toast({
+        title: "⚠️ Incomplete Evaluation",
+        description: `Please evaluate all ${unevaluatedCount} remaining proposals before submitting.`,
+        variant: "warning"
+      });
+      return;
+    }
+
+    // Find the highest scored proposal
+    const evaluatedProposals = evaluationData?.proposals?.filter(p => p.evaluated) || [];
+    if (evaluatedProposals.length === 0) {
+      toast({
+        title: "⚠️ No Evaluations",
+        description: "Please evaluate at least one proposal.",
+        variant: "warning"
+      });
+      return;
+    }
+
+    const highestScored = evaluatedProposals.reduce((prev, current) => 
+      (prev.final_score > current.final_score) ? prev : current
+    );
+
+    setSubmittingEvaluation(true);
+    try {
+      await axios.post(
+        `${API}/business-requests/${id}/submit-evaluation`,
+        {
+          selected_proposal_id: highestScored.proposal_id,
+          evaluation_notes: `AI-assisted evaluation completed. Highest scored proposal: ${highestScored.vendor_name} with ${highestScored.final_score.toFixed(2)} points.`
+        },
+        { withCredentials: true }
+      );
+      toast({
+        title: "✅ Evaluation Submitted",
+        description: `Evaluation complete. Recommended: ${highestScored.vendor_name}`,
+        variant: "success"
+      });
+      navigate(`/tenders/${id}`);
+    } catch (error) {
+      console.error('Error submitting evaluation:', error);
+      toast({
+        title: "❌ Error",
+        description: error.response?.data?.detail || "Failed to submit evaluation",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmittingEvaluation(false);
+    }
+  };
+
   const getCriteriaColor = (score) => {
     if (score >= 4.5) return 'text-green-600';
     if (score >= 3.5) return 'text-blue-600';
