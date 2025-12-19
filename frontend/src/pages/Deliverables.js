@@ -384,12 +384,13 @@ const CreateDeliverableModal = ({ contracts, purchaseOrders, vendors, onClose, o
   const [selectedContract, setSelectedContract] = useState(null);
   const [selectedPO, setSelectedPO] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
+  const [vendorLocked, setVendorLocked] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.vendor_id || !formData.title || (!formData.contract_id && !formData.po_id)) {
-      toast({ title: "⚠️ Validation", description: "Please fill required fields and link to Contract or PO", variant: "warning" });
+      toast({ title: "⚠️ Validation", description: "Please fill required fields and link to an approved Contract or PO", variant: "warning" });
       return;
     }
 
@@ -411,51 +412,91 @@ const CreateDeliverableModal = ({ contracts, purchaseOrders, vendors, onClose, o
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-bold mb-4">New Deliverable</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          📋 Create deliverables based on approved contracts or purchase orders. The vendor will be auto-selected from the linked document.
+        </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Contract</label>
+              <label className="block text-sm font-medium mb-1">Approved Contract *</label>
               <SearchableSelect
                 options={contracts.map(c => ({ value: c.id, label: `${c.contract_number || ''} - ${c.title}` }))}
                 value={selectedContract}
                 onChange={(option) => {
                   setSelectedContract(option);
+                  setSelectedPO(null); // Clear PO when contract is selected
                   const contract = contracts.find(c => c.id === option?.value);
-                  setFormData({ ...formData, contract_id: option?.value || '', vendor_id: contract?.vendor_id || formData.vendor_id });
-                  if (contract?.vendor_id) {
-                    setSelectedVendor({ value: contract.vendor_id, label: vendors.find(v => v.id === contract.vendor_id)?.name_english || '' });
+                  const vendorId = contract?.vendor_id || '';
+                  const vendor = vendors.find(v => v.id === vendorId);
+                  setFormData({ 
+                    ...formData, 
+                    contract_id: option?.value || '', 
+                    po_id: '',
+                    vendor_id: vendorId 
+                  });
+                  if (vendorId) {
+                    setSelectedVendor({ value: vendorId, label: vendor?.name_english || vendor?.commercial_name || 'Unknown Vendor' });
+                    setVendorLocked(true);
+                  } else {
+                    setSelectedVendor(null);
+                    setVendorLocked(false);
                   }
                 }}
-                placeholder="Select contract..."
+                placeholder="Select approved contract..."
               />
+              {contracts.length === 0 && (
+                <p className="text-xs text-orange-600 mt-1">No approved contracts available</p>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Purchase Order</label>
+              <label className="block text-sm font-medium mb-1">Or Purchase Order</label>
               <SearchableSelect
-                options={purchaseOrders.map(po => ({ value: po.id, label: po.po_number }))}
+                options={purchaseOrders.map(po => ({ value: po.id, label: `${po.po_number} - ${po.vendor_name || 'Unknown'}` }))}
                 value={selectedPO}
                 onChange={(option) => {
                   setSelectedPO(option);
+                  setSelectedContract(null); // Clear contract when PO is selected
                   const po = purchaseOrders.find(p => p.id === option?.value);
-                  setFormData({ ...formData, po_id: option?.value || '', vendor_id: po?.vendor_id || formData.vendor_id });
-                  if (po?.vendor_id) {
-                    setSelectedVendor({ value: po.vendor_id, label: vendors.find(v => v.id === po.vendor_id)?.name_english || '' });
+                  const vendorId = po?.vendor_id || '';
+                  const vendor = vendors.find(v => v.id === vendorId);
+                  setFormData({ 
+                    ...formData, 
+                    po_id: option?.value || '', 
+                    contract_id: '',
+                    vendor_id: vendorId 
+                  });
+                  if (vendorId) {
+                    setSelectedVendor({ value: vendorId, label: vendor?.name_english || vendor?.commercial_name || 'Unknown Vendor' });
+                    setVendorLocked(true);
+                  } else {
+                    setSelectedVendor(null);
+                    setVendorLocked(false);
                   }
                 }}
-                placeholder="Select PO..."
+                placeholder="Select issued PO..."
               />
+              {purchaseOrders.length === 0 && (
+                <p className="text-xs text-orange-600 mt-1">No issued POs available</p>
+              )}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Vendor *</label>
-            <SearchableSelect
-              options={vendors.map(v => ({ value: v.id, label: v.name_english || v.commercial_name || 'Unknown' }))}
-              value={selectedVendor}
-              onChange={(option) => {
-                setSelectedVendor(option);
-                setFormData({ ...formData, vendor_id: option?.value || '' });
-              }}
-              placeholder="Select vendor..."
+            <label className="block text-sm font-medium mb-1">Vendor * {vendorLocked && <span className="text-blue-600">(Auto-selected)</span>}</label>
+            {vendorLocked ? (
+              <div className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-700">
+                🏪 {selectedVendor?.label || 'Unknown Vendor'}
+              </div>
+            ) : (
+              <SearchableSelect
+                options={vendors.map(v => ({ value: v.id, label: v.name_english || v.commercial_name || 'Unknown' }))}
+                value={selectedVendor}
+                onChange={(option) => {
+                  setSelectedVendor(option);
+                  setFormData({ ...formData, vendor_id: option?.value || '' });
+                }}
+                placeholder="Select vendor..."
+              />
+            )}
             />
           </div>
           <div>
