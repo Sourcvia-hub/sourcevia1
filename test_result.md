@@ -161,10 +161,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "E2E Frontend Testing Complete"
+    - "New Features: Toast Notifications, Quick Create API, Reports API, Bulk Import API"
   stuck_tasks: []
-  test_all: true
-  test_priority: "completed"
+  test_all: false
+  test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
