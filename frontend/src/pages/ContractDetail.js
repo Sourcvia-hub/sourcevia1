@@ -94,9 +94,13 @@ const ContractDetail = () => {
     const colors = {
       draft: 'bg-gray-100 text-gray-800',
       under_review: 'bg-yellow-100 text-yellow-800',
+      pending_due_diligence: 'bg-purple-100 text-purple-800',
+      pending_sama_noc: 'bg-orange-100 text-orange-800',
+      pending_hop_approval: 'bg-blue-100 text-blue-800',
       approved: 'bg-green-100 text-green-800',
-      active: 'bg-blue-100 text-blue-800',
+      active: 'bg-emerald-100 text-emerald-800',
       expired: 'bg-red-100 text-red-800',
+      rejected: 'bg-red-100 text-red-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
