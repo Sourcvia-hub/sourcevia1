@@ -471,7 +471,7 @@ const TenderEvaluation = () => {
                     {evaluationForm.vendor_reliability_stability}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Assess vendor's dependability, track record, and financial stability</p>
+                <p className="text-xs text-gray-500 mt-1">Assess vendor dependability, track record, and financial stability</p>
               </div>
 
               {/* Delivery Warranty & Response */}
