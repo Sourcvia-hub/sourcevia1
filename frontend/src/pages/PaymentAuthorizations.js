@@ -3,12 +3,14 @@ import axios from 'axios';
 import Layout from '../components/Layout';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
+import { useToast } from '../hooks/use-toast';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const PaymentAuthorizations = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [pafs, setPafs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,23 +72,39 @@ const PaymentAuthorizations = () => {
         decision,
         notes
       }, { withCredentials: true });
-      alert(`Payment Authorization ${decision}`);
+      toast({
+        title: decision === 'approved' ? "✅ PAF Approved" : "❌ PAF Rejected",
+        description: `Payment Authorization has been ${decision}`,
+        variant: decision === 'approved' ? "success" : "warning"
+      });
       fetchPAFs();
       setShowDetailModal(false);
     } catch (error) {
       console.error('Error approving PAF:', error);
-      alert('Failed: ' + (error.response?.data?.detail || error.message));
+      toast({
+        title: "❌ Action Failed",
+        description: error.response?.data?.detail || error.message,
+        variant: "destructive"
+      });
     }
   };
 
   const handleExport = async (pafId) => {
     try {
       const response = await axios.post(`${API}/deliverables/paf/${pafId}/export`, {}, { withCredentials: true });
-      alert(`Exported with reference: ${response.data.export_reference}`);
+      toast({
+        title: "📤 PAF Exported",
+        description: `Exported with reference: ${response.data.export_reference}`,
+        variant: "success"
+      });
       fetchPAFs();
     } catch (error) {
       console.error('Error exporting PAF:', error);
-      alert('Failed: ' + (error.response?.data?.detail || error.message));
+      toast({
+        title: "❌ Export Failed",
+        description: error.response?.data?.detail || error.message,
+        variant: "destructive"
+      });
     }
   };
 
