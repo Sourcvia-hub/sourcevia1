@@ -20,6 +20,11 @@ TEST_USERS = {
         "password": "admin123",
         "expected_role": "procurement_manager"
     },
+    "procurement_officer": {
+        "email": "test_officer@sourcevia.com",
+        "password": "Password123!",
+        "expected_role": "procurement_officer"
+    },
     "senior_manager": {
         "email": "approver@test.com", 
         "password": "test123",
