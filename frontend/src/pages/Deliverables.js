@@ -185,6 +185,7 @@ const Deliverables = () => {
                 getPAFStatusBadge={getPAFStatusBadge}
                 navigate={navigate}
                 onRefresh={fetchDeliverables}
+                toast={toast}
               />
             ))}
           </div>
@@ -199,7 +200,13 @@ const Deliverables = () => {
             onCreated={() => {
               setShowCreateModal(false);
               fetchDeliverables();
+              toast({
+                title: "✅ Deliverable Created",
+                description: "New deliverable has been created successfully",
+                variant: "success"
+              });
             }}
+            toast={toast}
           />
         )}
       </div>
