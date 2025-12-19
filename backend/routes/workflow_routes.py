@@ -87,18 +87,19 @@ class WorkflowRoutes:
         async def submit_for_review(
             item_id: str,
             request: Request,
-            current_user: dict = Depends(get_current_user)
+            current_user = Depends(get_current_user)
         ):
             """Submit request for review (User role)"""
-            # Check permissions
-            if current_user["role"] != "user":
+            # Check permissions - get role as string
+            user_role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+            if user_role != "user":
                 raise HTTPException(status_code=403, detail="Only users can submit requests")
             
             # Get item
             item = await self.get_item(item_id)
             
             # Check if user owns this request
-            if item.get("created_by") != current_user["id"]:
+            if item.get("created_by") != current_user.id:
                 raise HTTPException(status_code=403, detail="You can only submit your own requests")
             
             # Check current status
@@ -109,8 +110,8 @@ class WorkflowRoutes:
             workflow = item.get("workflow", {})
             workflow = WorkflowManager.submit_for_review(
                 workflow,
-                current_user["id"],
-                current_user["name"]
+                current_user.id,
+                current_user.name
             )
             
             # Update status
@@ -133,11 +134,12 @@ class WorkflowRoutes:
             item_id: str,
             review_req: ReviewRequest,
             request: Request,
-            current_user: dict = Depends(get_current_user)
+            current_user = Depends(get_current_user)
         ):
             """Review request and assign approvers (Procurement Officer)"""
-            # Check permissions
-            if current_user["role"] not in ["procurement_officer", "procurement_manager"]:
+            # Check permissions - get role as string
+            user_role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+            if user_role not in ["procurement_officer", "procurement_manager"]:
                 raise HTTPException(status_code=403, detail="Only procurement officers can review requests")
             
             # Get item
@@ -161,8 +163,8 @@ class WorkflowRoutes:
             workflow = item.get("workflow", {})
             workflow = WorkflowManager.review_and_assign(
                 workflow,
-                current_user["id"],
-                current_user["name"],
+                current_user.id,
+                current_user.name,
                 review_req.assigned_approvers,
                 approver_names,
                 review_req.comment
@@ -188,11 +190,12 @@ class WorkflowRoutes:
             item_id: str,
             approval_req: ApprovalRequest,
             request: Request,
-            current_user: dict = Depends(get_current_user)
+            current_user = Depends(get_current_user)
         ):
             """Approve request (Approver role)"""
-            # Check permissions
-            if current_user["role"] != "senior_manager":
+            # Check permissions - get role as string
+            user_role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+            if user_role != "senior_manager":
                 raise HTTPException(status_code=403, detail="Only approvers can approve requests")
             
             # Get item
@@ -204,14 +207,14 @@ class WorkflowRoutes:
             
             # Check if user is assigned as approver
             workflow = item.get("workflow", {})
-            if current_user["id"] not in workflow.get("assigned_approvers", []):
+            if current_user.id not in workflow.get("assigned_approvers", []):
                 raise HTTPException(status_code=403, detail="You are not assigned as an approver for this request")
             
             # Update workflow
             workflow, all_approved = WorkflowManager.approve(
                 workflow,
-                current_user["id"],
-                current_user["name"],
+                current_user.id,
+                current_user.name,
                 approval_req.comment
             )
             
@@ -238,11 +241,12 @@ class WorkflowRoutes:
             item_id: str,
             rejection_req: RejectionRequest,
             request: Request,
-            current_user: dict = Depends(get_current_user)
+            current_user = Depends(get_current_user)
         ):
             """Reject request (Approver or Procurement Manager)"""
-            # Check permissions
-            if current_user["role"] not in ["senior_manager", "procurement_manager"]:
+            # Check permissions - get role as string
+            user_role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
+            if user_role not in ["senior_manager", "procurement_manager"]:
                 raise HTTPException(status_code=403, detail="Only approvers or procurement managers can reject")
             
             # Get item
@@ -252,13 +256,13 @@ class WorkflowRoutes:
             workflow = item.get("workflow", {})
             workflow = WorkflowManager.reject(
                 workflow,
-                current_user["id"],
-                current_user["name"],
+                current_user.id,
+                current_user.name,
                 rejection_req.reason
             )
             
             # Only procurement manager can change status to rejected
-            if current_user["role"] == "procurement_manager":
+            if user_role == "procurement_manager":
                 new_status = WorkflowStatus.REJECTED
             else:
                 # Approver rejection is just recorded, status unchanged
