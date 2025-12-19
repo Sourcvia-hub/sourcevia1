@@ -3978,6 +3978,190 @@ async def delete_asset(asset_id: str, request: Request):
     await db.assets.delete_one({"id": asset_id})
     return {"message": "Asset deleted successfully"}
 
+
+# ==================== ASSET APPROVAL WORKFLOW ====================
+
+@api_router.post("/assets/{asset_id}/submit-for-approval")
+async def submit_asset_for_approval(asset_id: str, request: Request):
+    """Submit asset registration for officer review"""
+    from utils.auth import require_auth
+    user = await require_auth(request)
+    
+    asset = await db.assets.find_one({"id": asset_id}, {"_id": 0})
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    
+    # Validate asset is in draft or returned status
+    if asset.get("approval_status") not in [None, "draft", "returned"]:
+        raise HTTPException(status_code=400, detail=f"Asset cannot be submitted. Current status: {asset.get('approval_status')}")
+    
+    # Update asset status
+    await db.assets.update_one(
+        {"id": asset_id},
+        {"$set": {
+            "approval_status": "pending_officer_review",
+            "submitted_for_approval_at": datetime.now(timezone.utc).isoformat(),
+            "submitted_for_approval_by": user.id,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"success": True, "message": "Asset submitted for officer review"}
+
+
+@api_router.post("/assets/{asset_id}/officer-review")
+async def officer_review_asset(asset_id: str, request: Request):
+    """Officer reviews and forwards asset to HoP for approval"""
+    from utils.auth import require_auth
+    from pydantic import BaseModel
+    
+    class ReviewData(BaseModel):
+        decision: str  # "approved", "rejected"
+        notes: Optional[str] = None
+    
+    user = await require_auth(request)
+    user_role = user.role.value.lower() if hasattr(user.role, 'value') else str(user.role).lower()
+    
+    # Only officers can review
+    if user_role not in ["procurement_officer", "procurement_manager", "admin"]:
+        raise HTTPException(status_code=403, detail="Only officers can review assets")
+    
+    body = await request.json()
+    decision = body.get("decision")
+    notes = body.get("notes", "")
+    
+    asset = await db.assets.find_one({"id": asset_id}, {"_id": 0})
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    
+    if asset.get("approval_status") != "pending_officer_review":
+        raise HTTPException(status_code=400, detail="Asset is not pending officer review")
+    
+    if decision == "approved":
+        # Forward to HoP
+        await db.assets.update_one(
+            {"id": asset_id},
+            {"$set": {
+                "approval_status": "pending_hop_approval",
+                "officer_review_status": "approved",
+                "officer_reviewed_by": user.id,
+                "officer_reviewed_at": datetime.now(timezone.utc).isoformat(),
+                "officer_review_notes": notes,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return {"success": True, "message": "Asset forwarded to HoP for approval"}
+    else:
+        # Reject
+        await db.assets.update_one(
+            {"id": asset_id},
+            {"$set": {
+                "approval_status": "rejected",
+                "officer_review_status": "rejected",
+                "officer_reviewed_by": user.id,
+                "officer_reviewed_at": datetime.now(timezone.utc).isoformat(),
+                "officer_review_notes": notes,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return {"success": True, "message": "Asset registration rejected"}
+
+
+@api_router.post("/assets/{asset_id}/hop-decision")
+async def hop_decision_asset(asset_id: str, request: Request):
+    """Head of Procurement decision on asset registration"""
+    from utils.auth import require_auth
+    
+    user = await require_auth(request)
+    user_role = user.role.value.lower() if hasattr(user.role, 'value') else str(user.role).lower()
+    
+    # Only HoP can decide
+    if user_role not in ["procurement_manager", "admin", "hop"]:
+        raise HTTPException(status_code=403, detail="Only Head of Procurement can approve assets")
+    
+    body = await request.json()
+    decision = body.get("decision")
+    notes = body.get("notes", "")
+    
+    asset = await db.assets.find_one({"id": asset_id}, {"_id": 0})
+    if not asset:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    
+    if asset.get("approval_status") != "pending_hop_approval":
+        raise HTTPException(status_code=400, detail="Asset is not pending HoP approval")
+    
+    if decision == "approved":
+        await db.assets.update_one(
+            {"id": asset_id},
+            {"$set": {
+                "approval_status": "approved",
+                "hop_decision": "approved",
+                "hop_decision_by": user.id,
+                "hop_decision_at": datetime.now(timezone.utc).isoformat(),
+                "hop_decision_notes": notes,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return {"success": True, "message": "Asset registration approved"}
+    elif decision == "returned":
+        await db.assets.update_one(
+            {"id": asset_id},
+            {"$set": {
+                "approval_status": "returned",
+                "hop_decision": "returned",
+                "hop_decision_by": user.id,
+                "hop_decision_at": datetime.now(timezone.utc).isoformat(),
+                "hop_decision_notes": notes,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return {"success": True, "message": "Asset returned for corrections"}
+    else:
+        await db.assets.update_one(
+            {"id": asset_id},
+            {"$set": {
+                "approval_status": "rejected",
+                "hop_decision": "rejected",
+                "hop_decision_by": user.id,
+                "hop_decision_at": datetime.now(timezone.utc).isoformat(),
+                "hop_decision_notes": notes,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        return {"success": True, "message": "Asset registration rejected"}
+
+
+@api_router.get("/assets/pending-approvals")
+async def get_pending_asset_approvals(request: Request):
+    """Get all assets pending approval (for officers and HoP)"""
+    from utils.auth import require_auth
+    user = await require_auth(request)
+    user_role = user.role.value.lower() if hasattr(user.role, 'value') else str(user.role).lower()
+    
+    is_hop = user_role in ["procurement_manager", "admin", "hop"]
+    is_officer = user_role in ["procurement_officer", "procurement_manager", "admin"]
+    
+    assets = []
+    
+    if is_officer:
+        # Officers see assets pending their review
+        officer_pending = await db.assets.find(
+            {"approval_status": "pending_officer_review"},
+            {"_id": 0}
+        ).to_list(100)
+        assets.extend(officer_pending)
+    
+    if is_hop:
+        # HoP sees assets pending their approval
+        hop_pending = await db.assets.find(
+            {"approval_status": "pending_hop_approval"},
+            {"_id": 0}
+        ).to_list(100)
+        assets.extend(hop_pending)
+    
+    return {"assets": assets, "count": len(assets)}
+
+
 # OSR (Operating Service Requests)
 @api_router.get("/osrs")
 async def get_osrs(request: Request):
