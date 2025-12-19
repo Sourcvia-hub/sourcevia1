@@ -100,11 +100,20 @@ const Tenders = () => {
         deadline: '',
         invited_vendors: [],
       });
+      toast({
+        title: "✅ Business Request Created",
+        description: "New business request has been created successfully",
+        variant: "success"
+      });
       fetchTenders();
     } catch (error) {
       console.error('Error creating tender:', error);
       const errorMsg = error.response?.data?.detail || error.response?.data?.message || error.message || 'Unknown error occurred';
-      alert('Failed to create tender: ' + errorMsg);
+      toast({
+        title: "❌ Creation Failed",
+        description: errorMsg,
+        variant: "destructive"
+      });
     }
   };
 

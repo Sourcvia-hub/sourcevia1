@@ -134,7 +134,11 @@ const PurchaseOrders = () => {
 
   const handleAddItem = () => {
     if (!currentItem.name || currentItem.price <= 0) {
-      alert('Please fill in item name and price');
+      toast({
+        title: "⚠️ Validation Error",
+        description: "Please fill in item name and price",
+        variant: "warning"
+      });
       return;
     }
 
@@ -167,7 +171,11 @@ const PurchaseOrders = () => {
     e.preventDefault();
     
     if (formData.items.length === 0) {
-      alert('Please add at least one item');
+      toast({
+        title: "⚠️ Validation Error",
+        description: "Please add at least one item",
+        variant: "warning"
+      });
       return;
     }
 
@@ -184,16 +192,19 @@ const PurchaseOrders = () => {
     );
 
     if (requiresContract) {
-      alert(
-        'Based on the provided answers, this request requires a contract.\n\n' +
-        'Please update your PO or create a contract instead.\n\n' +
-        'Reasons:\n' +
-        (formData.has_data_access ? '- Vendor requires data access\n' : '') +
-        (formData.has_onsite_presence ? '- Vendor requires onsite presence\n' : '') +
-        (formData.has_implementation ? '- Implementation services needed\n' : '') +
-        (formData.duration_more_than_year ? '- Duration more than one year\n' : '') +
-        (amountOverMillion ? '- Amount exceeds 1,000,000 SAR\n' : '')
-      );
+      const reasons = [
+        formData.has_data_access && 'Vendor requires data access',
+        formData.has_onsite_presence && 'Vendor requires onsite presence',
+        formData.has_implementation && 'Implementation services needed',
+        formData.duration_more_than_year && 'Duration more than one year',
+        amountOverMillion && 'Amount exceeds 1,000,000 SAR'
+      ].filter(Boolean).join(', ');
+      
+      toast({
+        title: "⚠️ Contract Required",
+        description: `This request requires a contract. Reasons: ${reasons}`,
+        variant: "warning"
+      });
       return; // Don't create PO, let user update the form
     }
 
@@ -207,7 +218,11 @@ const PurchaseOrders = () => {
     try {
       const response = await axios.post(`${API}/purchase-orders`, poData, { withCredentials: true });
       
-      alert('Purchase order issued successfully!');
+      toast({
+        title: "✅ Purchase Order Created",
+        description: "Purchase order has been issued successfully",
+        variant: "success"
+      });
       setShowCreateModal(false);
       fetchPOs();
       
@@ -226,7 +241,11 @@ const PurchaseOrders = () => {
       setSelectedTender(null);
     } catch (error) {
       console.error('Error creating PO:', error);
-      alert('Failed to create purchase order: ' + (error.response?.data?.detail || error.message));
+      toast({
+        title: "❌ Creation Failed",
+        description: error.response?.data?.detail || error.message,
+        variant: "destructive"
+      });
     }
   };
 
