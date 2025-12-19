@@ -233,11 +233,11 @@ const Tenders = () => {
 
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center text-sm">
-                    <span className="text-gray-600 w-24">Budget:</span>
+                    <span className="text-gray-600 w-24">Est. Budget:</span>
                     <span className="text-gray-900 font-medium">${tender.budget.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center text-sm">
-                    <span className="text-gray-600 w-24">Deadline:</span>
+                    <span className="text-gray-600 w-24">Delivery:</span>
                     <span className="text-gray-900 font-medium">{new Date(tender.deadline).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center text-sm">
