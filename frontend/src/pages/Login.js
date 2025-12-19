@@ -64,6 +64,10 @@ const Login = () => {
       
       if (res.data.user) {
         localStorage.setItem('user', JSON.stringify(res.data.user));
+        // Store session token for cross-origin auth
+        if (res.data.session_token) {
+          localStorage.setItem('session_token', res.data.session_token);
+        }
         window.location.href = '/dashboard';
       }
     } catch (err) {
