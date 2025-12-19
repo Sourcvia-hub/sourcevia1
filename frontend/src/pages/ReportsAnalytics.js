@@ -426,8 +426,8 @@ const ReportsAnalytics = () => {
                     <p className="text-3xl font-bold text-green-600">{approvalMetrics.pending_approvals?.contracts || 0}</p>
                   </div>
                   <div className="bg-white rounded-xl shadow p-6">
-                    <p className="text-gray-600 text-sm">Invoices</p>
-                    <p className="text-3xl font-bold text-orange-600">{approvalMetrics.pending_approvals?.invoices || 0}</p>
+                    <p className="text-gray-600 text-sm">Deliverables</p>
+                    <p className="text-3xl font-bold text-orange-600">{approvalMetrics.pending_approvals?.deliverables || 0}</p>
                   </div>
                   <div className="bg-white rounded-xl shadow p-6">
                     <p className="text-gray-600 text-sm">Business Requests</p>
