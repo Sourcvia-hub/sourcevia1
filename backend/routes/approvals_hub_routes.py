@@ -46,9 +46,9 @@ async def get_approvals_summary(request: Request):
             "pending_approval": 0,
             "total_pending": 0
         },
-        "invoices": {
-            "pending_verification": 0,
-            "pending_approval": 0,
+        "deliverables": {
+            "pending_review": 0,
+            "pending_hop": 0,
             "total_pending": 0
         },
         "resources": {
@@ -106,13 +106,13 @@ async def get_approvals_summary(request: Request):
             "total_pending": po_draft + po_pending
         }
         
-        # Invoices
-        inv_pending_verification = await db.invoices.count_documents({"status": "pending"})
-        inv_pending_approval = await db.invoices.count_documents({"status": "verified"})
-        summary["invoices"] = {
-            "pending_verification": inv_pending_verification,
-            "pending_approval": inv_pending_approval,
-            "total_pending": inv_pending_verification + inv_pending_approval
+        # Deliverables
+        del_pending_review = await db.deliverables.count_documents({"status": {"$in": ["submitted", "under_review"]}})
+        del_pending_hop = await db.deliverables.count_documents({"status": "pending_hop_approval"})
+        summary["deliverables"] = {
+            "pending_review": del_pending_review,
+            "pending_hop": del_pending_hop,
+            "total_pending": del_pending_review + del_pending_hop
         }
         
         # Resources - check for expiring soon (within 30 days)
@@ -238,34 +238,39 @@ async def get_pending_purchase_orders(request: Request):
     return {"purchase_orders": enriched, "count": len(enriched)}
 
 
-@router.get("/invoices")
-async def get_pending_invoices(request: Request):
-    """Get invoices pending verification/approval"""
+@router.get("/deliverables")
+async def get_pending_deliverables(request: Request):
+    """Get deliverables pending review/HoP approval"""
     user = await require_auth(request)
     
-    invoices = await db.invoices.find(
-        {"status": {"$in": ["pending", "verified"]}},
+    deliverables = await db.deliverables.find(
+        {"status": {"$in": ["submitted", "under_review", "validated", "pending_hop_approval"]}},
         {"_id": 0}
     ).sort("submitted_at", -1).to_list(100)
     
     # Enrich with vendor and contract info
     enriched = []
-    for invoice in invoices:
+    for deliverable in deliverables:
         vendor = await db.vendors.find_one(
-            {"id": invoice.get("vendor_id")},
+            {"id": deliverable.get("vendor_id")},
             {"_id": 0, "name_english": 1, "commercial_name": 1}
         )
         contract = await db.contracts.find_one(
-            {"id": invoice.get("contract_id")},
+            {"id": deliverable.get("contract_id")},
             {"_id": 0, "title": 1, "contract_number": 1}
         )
+        po = await db.purchase_orders.find_one(
+            {"id": deliverable.get("po_id")},
+            {"_id": 0, "po_number": 1}
+        ) if deliverable.get("po_id") else None
         enriched.append({
-            **invoice,
+            **deliverable,
             "vendor_info": vendor,
-            "contract_info": contract
+            "contract_info": contract,
+            "po_info": po
         })
     
-    return {"invoices": enriched, "count": len(enriched)}
+    return {"deliverables": enriched, "count": len(enriched)}
 
 
 @router.get("/resources")
