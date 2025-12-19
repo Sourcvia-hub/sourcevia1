@@ -161,7 +161,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Approvals Hub APIs"
+    - "Deliverables and Payment Authorization System"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
