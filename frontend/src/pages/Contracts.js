@@ -233,6 +233,66 @@ const Contracts = () => {
     });
   };
 
+  // Handle contract file upload and AI analysis
+  const handleContractUpload = async (file) => {
+    setUploadedContractFile(file);
+    setAnalyzing(true);
+    setAnalysisResult(null);
+
+    try {
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+
+      const response = await axios.post(`${API}/ai/analyze-contract-document`, uploadData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (response.data.success) {
+        const extracted = response.data.extracted_fields;
+        
+        // Auto-fill form fields with extracted data
+        setFormData(prev => ({
+          ...prev,
+          title: extracted.title || extracted.sow_summary || prev.title,
+          sow: extracted.sow_details || extracted.sow_summary || prev.sow,
+          sla: extracted.sla_summary || prev.sla,
+          value: extracted.value || prev.value,
+          start_date: extracted.start_date || prev.start_date,
+          end_date: extracted.end_date || prev.end_date,
+          milestones: extracted.milestones?.map((m, idx) => ({
+            id: `milestone-${idx}`,
+            name: m.name || m,
+            amount: m.amount || 0,
+            due_date: m.due_date || ''
+          })) || prev.milestones
+        }));
+
+        setAnalysisResult(response.data);
+        toast({
+          title: "✅ Contract Analyzed",
+          description: "AI has extracted contract details and generated advisory",
+          variant: "success"
+        });
+      } else {
+        toast({
+          title: "⚠️ Analysis Issue",
+          description: response.data.error || "Could not analyze contract",
+          variant: "warning"
+        });
+      }
+    } catch (error) {
+      console.error('Contract analysis error:', error);
+      toast({
+        title: "❌ Analysis Failed",
+        description: error.response?.data?.error || "Failed to analyze contract",
+        variant: "destructive"
+      });
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   const handleCreateContract = async (e) => {
     e.preventDefault();
     try {
@@ -258,10 +318,11 @@ const Contracts = () => {
         value: '',
         start_date: '',
         end_date: '',
-        is_outsourcing: false,
       });
       setSelectedTender(null);
       setSelectedVendor(null);
+      setUploadedContractFile(null);
+      setAnalysisResult(null);
       toast({
         title: "✅ Contract Created",
         description: "New contract has been created successfully",
