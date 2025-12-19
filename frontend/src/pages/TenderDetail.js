@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
-import FileUpload from '../components/FileUpload';
-import { canCreate, canEdit, Module } from '../utils/permissions';
+import { useToast } from '../hooks/use-toast';
+import SearchableSelect from '../components/SearchableSelect';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -13,23 +13,31 @@ const TenderDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [tender, setTender] = useState(null);
   const [loading, setLoading] = useState(true);
   const [vendors, setVendors] = useState([]);
   const [proposals, setProposals] = useState([]);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editFormData, setEditFormData] = useState(null);
+  const [workflowStatus, setWorkflowStatus] = useState(null);
+  const [approvers, setApprovers] = useState([]);
+  
+  // Modals
   const [showProposalModal, setShowProposalModal] = useState(false);
-  const [proposalForm, setProposalForm] = useState({
-    vendor_id: '',
-    technical_proposal: '',
-    financial_proposal: ''
-  });
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false);
+  const [showForwardModal, setShowForwardModal] = useState(false);
+  
+  // Form states
+  const [proposalForm, setProposalForm] = useState({ vendor_id: '', technical_proposal: '', financial_proposal: '' });
+  const [selectedProposalId, setSelectedProposalId] = useState(null);
+  const [evaluationNotes, setEvaluationNotes] = useState('');
+  const [selectedApproverId, setSelectedApproverId] = useState(null);
+  const [forwardNotes, setForwardNotes] = useState('');
 
   useEffect(() => {
     fetchTender();
     fetchVendors();
-    fetchProposals();
+    fetchProposalsForUser();
+    fetchWorkflowStatus();
   }, [id]);
 
   const fetchTender = async () => {
@@ -46,90 +54,180 @@ const TenderDetail = () => {
   const fetchVendors = async () => {
     try {
       const response = await axios.get(`${API}/vendors?status=approved`, { withCredentials: true });
-      setVendors(response.data);
+      setVendors(response.data || []);
     } catch (error) {
       console.error('Error fetching vendors:', error);
     }
   };
 
-  const fetchProposals = async () => {
+  const fetchProposalsForUser = async () => {
     try {
-      const response = await axios.get(`${API}/tenders/${id}/proposals`, { withCredentials: true });
-      setProposals(response.data);
+      const response = await axios.get(`${API}/business-requests/${id}/proposals-for-user`, { withCredentials: true });
+      setProposals(response.data.proposals || []);
     } catch (error) {
-      console.error('Error fetching proposals:', error);
+      // Fallback to regular proposals endpoint
+      try {
+        const response = await axios.get(`${API}/tenders/${id}/proposals`, { withCredentials: true });
+        setProposals(response.data || []);
+      } catch (e) {
+        console.error('Error fetching proposals:', e);
+      }
     }
   };
 
-  const handleEdit = () => {
-    setEditFormData({ 
-      title: tender.title,
-      description: tender.description,
-      project_name: tender.project_name,
-      requirements: tender.requirements,
-      budget: tender.budget,
-      deadline: new Date(tender.deadline).toISOString().split('T')[0],
-      invited_vendors: tender.invited_vendors || []
-    });
-    setShowEditModal(true);
-  };
-
-  const handleUpdateTender = async (e) => {
-    e.preventDefault();
+  const fetchWorkflowStatus = async () => {
     try {
-      await axios.put(
-        `${API}/tenders/${id}`,
-        {
-          ...editFormData,
-          budget: parseFloat(editFormData.budget),
-          deadline: new Date(editFormData.deadline).toISOString()
-        },
-        { withCredentials: true }
-      );
-      setShowEditModal(false);
-      fetchTender();
-      alert('Tender updated successfully!');
+      const response = await axios.get(`${API}/business-requests/${id}/workflow-status`, { withCredentials: true });
+      setWorkflowStatus(response.data);
     } catch (error) {
-      console.error('Error updating tender:', error);
-      alert('Failed to update tender: ' + (error.response?.data?.detail || error.message));
+      console.error('Error fetching workflow status:', error);
     }
   };
 
+  const fetchApprovers = async () => {
+    try {
+      const response = await axios.get(`${API}/business-requests/approvers-list`, { withCredentials: true });
+      setApprovers(response.data.approvers || []);
+    } catch (error) {
+      console.error('Error fetching approvers:', error);
+    }
+  };
+
+  const isOfficer = user?.role && ['procurement_officer', 'procurement_manager', 'admin'].includes(user.role);
+  const isHoP = user?.role && ['procurement_manager', 'admin'].includes(user.role);
+  const isCreator = tender?.created_by === user?.id;
+
+  // Submit new proposal (officer only)
   const handleSubmitProposal = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(
-        `${API}/tenders/${id}/proposals`,
-        {
-          vendor_id: proposalForm.vendor_id,
-          technical_proposal: proposalForm.technical_proposal,
-          financial_proposal: parseFloat(proposalForm.financial_proposal),
-          documents: []
-        },
-        { withCredentials: true }
-      );
+      await axios.post(`${API}/tenders/${id}/proposals`, {
+        vendor_id: proposalForm.vendor_id,
+        technical_proposal: proposalForm.technical_proposal,
+        financial_proposal: parseFloat(proposalForm.financial_proposal),
+        documents: []
+      }, { withCredentials: true });
+      toast({ title: "✅ Proposal Added", description: "Proposal has been added successfully", variant: "success" });
       setShowProposalModal(false);
       setProposalForm({ vendor_id: '', technical_proposal: '', financial_proposal: '' });
-      fetchProposals();
-      alert('Proposal submitted successfully!');
+      fetchProposalsForUser();
     } catch (error) {
-      console.error('Error submitting proposal:', error);
-      const errorMessage = error.response?.data?.detail 
-        || (typeof error.response?.data === 'string' ? error.response?.data : null)
-        || error.message 
-        || 'Unknown error occurred';
-      alert('Failed to submit proposal: ' + errorMessage);
+      toast({ title: "❌ Error", description: error.response?.data?.detail || "Failed to add proposal", variant: "destructive" });
     }
   };
 
-  const getStatusBadgeColor = (status) => {
+  // Submit evaluation (user/creator only)
+  const handleSubmitEvaluation = async () => {
+    if (!selectedProposalId) {
+      toast({ title: "⚠️ Select Proposal", description: "Please select a proposal to recommend", variant: "warning" });
+      return;
+    }
+    try {
+      await axios.post(`${API}/business-requests/${id}/submit-evaluation`, {
+        selected_proposal_id: selectedProposalId,
+        evaluation_notes: evaluationNotes
+      }, { withCredentials: true });
+      toast({ title: "✅ Evaluation Submitted", description: "Your evaluation has been submitted for review", variant: "success" });
+      setShowEvaluationModal(false);
+      fetchTender();
+      fetchWorkflowStatus();
+    } catch (error) {
+      toast({ title: "❌ Error", description: error.response?.data?.detail || "Failed to submit evaluation", variant: "destructive" });
+    }
+  };
+
+  // Forward to additional approver
+  const handleForwardToApprover = async () => {
+    if (!selectedApproverId) {
+      toast({ title: "⚠️ Select Approver", description: "Please select an approver", variant: "warning" });
+      return;
+    }
+    try {
+      await axios.post(`${API}/business-requests/${id}/forward-to-approver`, {
+        approver_user_id: selectedApproverId.value,
+        notes: forwardNotes
+      }, { withCredentials: true });
+      toast({ title: "✅ Forwarded", description: "Request forwarded to approver", variant: "success" });
+      setShowForwardModal(false);
+      fetchTender();
+      fetchWorkflowStatus();
+    } catch (error) {
+      toast({ title: "❌ Error", description: error.response?.data?.detail || "Failed to forward", variant: "destructive" });
+    }
+  };
+
+  // Forward to HoP
+  const handleForwardToHoP = async () => {
+    try {
+      await axios.post(`${API}/business-requests/${id}/forward-to-hop`, {
+        notes: ''
+      }, { withCredentials: true });
+      toast({ title: "✅ Forwarded to HoP", description: "Request sent for final approval", variant: "success" });
+      fetchTender();
+      fetchWorkflowStatus();
+    } catch (error) {
+      toast({ title: "❌ Error", description: error.response?.data?.detail || "Failed to forward", variant: "destructive" });
+    }
+  };
+
+  // Additional approver decision
+  const handleAdditionalApproverDecision = async (decision) => {
+    try {
+      await axios.post(`${API}/business-requests/${id}/additional-approver-decision`, {
+        decision,
+        notes: ''
+      }, { withCredentials: true });
+      toast({ title: decision === 'approved' ? "✅ Approved" : "❌ Rejected", description: `Request ${decision}`, variant: decision === 'approved' ? "success" : "warning" });
+      fetchTender();
+      fetchWorkflowStatus();
+    } catch (error) {
+      toast({ title: "❌ Error", description: error.response?.data?.detail || "Failed to process", variant: "destructive" });
+    }
+  };
+
+  // HoP decision
+  const handleHoPDecision = async (decision) => {
+    try {
+      await axios.post(`${API}/business-requests/${id}/hop-decision`, {
+        decision,
+        notes: ''
+      }, { withCredentials: true });
+      toast({ title: decision === 'approved' ? "✅ Approved" : "❌ Rejected", description: `Business Request ${decision}. ${decision === 'approved' ? 'Contract created.' : ''}`, variant: decision === 'approved' ? "success" : "warning" });
+      fetchTender();
+      fetchWorkflowStatus();
+    } catch (error) {
+      toast({ title: "❌ Error", description: error.response?.data?.detail || "Failed to process", variant: "destructive" });
+    }
+  };
+
+  const getStatusBadge = (status) => {
     const colors = {
       draft: 'bg-gray-100 text-gray-800',
-      published: 'bg-green-100 text-green-800',
-      closed: 'bg-yellow-100 text-yellow-800',
-      awarded: 'bg-blue-100 text-blue-800',
+      published: 'bg-blue-100 text-blue-800',
+      pending_evaluation: 'bg-yellow-100 text-yellow-800',
+      evaluation_complete: 'bg-indigo-100 text-indigo-800',
+      pending_additional_approval: 'bg-purple-100 text-purple-800',
+      pending_hop_approval: 'bg-orange-100 text-orange-800',
+      awarded: 'bg-green-100 text-green-800',
+      rejected: 'bg-red-100 text-red-800',
+      closed: 'bg-gray-100 text-gray-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getStatusLabel = (status) => {
+    const labels = {
+      draft: 'Draft',
+      published: 'Published - Awaiting Evaluation',
+      pending_evaluation: 'Pending Evaluation',
+      evaluation_complete: 'Evaluation Complete',
+      pending_additional_approval: 'Pending Additional Approval',
+      pending_hop_approval: 'Pending HoP Approval',
+      awarded: 'Awarded',
+      rejected: 'Rejected',
+      closed: 'Closed',
+    };
+    return labels[status] || status;
   };
 
   if (loading) {
@@ -146,12 +244,9 @@ const TenderDetail = () => {
     return (
       <Layout>
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold text-gray-900">Tender not found</h2>
-          <button
-            onClick={() => navigate('/tenders')}
-            className="mt-4 text-blue-600 hover:text-blue-800"
-          >
-            ← Back to Tenders
+          <h2 className="text-2xl font-bold text-gray-900">Business Request not found</h2>
+          <button onClick={() => navigate('/tenders')} className="mt-4 text-blue-600 hover:text-blue-800">
+            ← Back to Business Requests
           </button>
         </div>
       </Layout>
@@ -160,367 +255,363 @@ const TenderDetail = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-start">
-          <button
-            onClick={() => navigate('/tenders')}
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            ← Back to Tenders
+          <button onClick={() => navigate('/tenders')} className="text-blue-600 hover:text-blue-800 font-medium">
+            ← Back to Business Requests
           </button>
-          <div className="flex gap-3">
-            {canCreate(user?.role, Module.TENDER_PROPOSALS) && tender?.status === 'published' && (
+        </div>
+
+        {/* Workflow Status Banner */}
+        {workflowStatus && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-blue-900">Workflow Status</h3>
+                <span className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(tender.status)}`}>
+                  {getStatusLabel(tender.status)}
+                </span>
+              </div>
+              <div className="text-right">
+                {workflowStatus.selected_proposal_id && (
+                  <p className="text-sm text-blue-700">Recommended Proposal Selected ✓</p>
+                )}
+                {workflowStatus.additional_approver && (
+                  <p className="text-sm text-purple-700">Approver: {workflowStatus.additional_approver}</p>
+                )}
+                {workflowStatus.auto_created_contract_id && (
+                  <p className="text-sm text-green-700">Contract Auto-Created ✓</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="font-semibold mb-3">Available Actions</h3>
+          <div className="flex flex-wrap gap-2">
+            {/* Officer: Add Proposal */}
+            {isOfficer && ['draft', 'published'].includes(tender.status) && (
+              <button
+                onClick={() => setShowProposalModal(true)}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                + Add Proposal
+              </button>
+            )}
+            
+            {/* User: Evaluate Proposals */}
+            {isCreator && ['published', 'pending_evaluation'].includes(tender.status) && proposals.length > 0 && (
+              <button
+                onClick={() => setShowEvaluationModal(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                📋 Evaluate Proposals
+              </button>
+            )}
+            
+            {/* Officer: Forward to Additional Approver */}
+            {isOfficer && tender.status === 'evaluation_complete' && (
+              <button
+                onClick={() => { fetchApprovers(); setShowForwardModal(true); }}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              >
+                👤 Forward to Approver
+              </button>
+            )}
+            
+            {/* Officer: Forward to HoP */}
+            {isOfficer && tender.status === 'evaluation_complete' && (
+              <button
+                onClick={handleForwardToHoP}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+              >
+                📤 Forward to HoP
+              </button>
+            )}
+            
+            {/* Additional Approver: Approve/Reject */}
+            {workflowStatus?.actions?.can_approve_as_additional && (
               <>
                 <button
-                  onClick={() => setShowProposalModal(true)}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  onClick={() => handleAdditionalApproverDecision('approved')}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 >
-                  Submit Proposal
+                  ✓ Approve
                 </button>
                 <button
-                  onClick={() => navigate(`/tenders/${id}/evaluate`)}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  onClick={() => handleAdditionalApproverDecision('rejected')}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                 >
-                  Go to Evaluation
+                  ✗ Reject
                 </button>
               </>
             )}
-            {canEdit(user?.role, Module.TENDERS) && (
-              <button
-                onClick={handleEdit}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Edit Tender
-              </button>
+            
+            {/* HoP: Final Decision */}
+            {isHoP && tender.status === 'pending_hop_approval' && (
+              <>
+                <button
+                  onClick={() => handleHoPDecision('approved')}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  ✓ Final Approve
+                </button>
+                <button
+                  onClick={() => handleHoPDecision('rejected')}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                >
+                  ✗ Final Reject
+                </button>
+              </>
             )}
           </div>
         </div>
 
-        {/* Main Info Card */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">{tender.title}</h1>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(tender.status)}`}>
-                  {tender.status.toUpperCase()}
-                </span>
-              </div>
-              {tender.tender_number && (
-                <p className="text-sm text-blue-600 font-medium">#{tender.tender_number}</p>
-              )}
-              <p className="text-gray-600 mt-1">{tender.project_name}</p>
+        {/* Main Info */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{tender.title}</h1>
+              <p className="text-blue-600 font-medium">#{tender.tender_number}</p>
+              <p className="text-gray-600">{tender.project_name}</p>
             </div>
           </div>
-
-          {/* Key Information Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-600">Estimated Budget (Indicative)</label>
-                <p className="text-lg font-semibold text-gray-900">${tender.budget?.toLocaleString()}</p>
-                <p className="text-xs text-gray-500">This is an estimate for planning purposes and does not represent the final contract value.</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-600">Expected Delivery Date</label>
-                <p className="text-lg font-semibold text-gray-900">
-                  {new Date(tender.deadline).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </p>
-              </div>
+          
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="text-sm text-gray-500">Estimated Budget</label>
+              <p className="text-lg font-semibold">{tender.budget?.toLocaleString()} SAR</p>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-600">Invited Vendors</label>
-                <p className="text-lg font-semibold text-gray-900">
-                  {tender.invited_vendors?.length || 0} vendors
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-600">Proposals Received</label>
-                <p className="text-lg font-semibold text-gray-900">
-                  {proposals.length} proposals
-                </p>
-              </div>
+            <div>
+              <label className="text-sm text-gray-500">Deadline</label>
+              <p className="text-lg font-semibold">{new Date(tender.deadline).toLocaleDateString()}</p>
             </div>
           </div>
-
-          {/* Business Need Section */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Business Need</h3>
-            <p className="text-gray-700 whitespace-pre-wrap">{tender.description}</p>
+          
+          <div className="border-t pt-4">
+            <h3 className="font-semibold mb-2">Business Need</h3>
+            <p className="text-gray-700">{tender.description}</p>
           </div>
-
-          {/* Scope & Key Requirements Section */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">Scope & Key Requirements</h3>
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <p className="text-gray-700 whitespace-pre-wrap">{tender.requirements}</p>
-            </div>
-          </div>
-
-          {/* Timestamps */}
-          <div className="border-t pt-4 mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-              <div>
-                <span className="font-medium">Created:</span> {new Date(tender.created_at).toLocaleString()}
-              </div>
-              <div>
-                <span className="font-medium">Last Updated:</span> {new Date(tender.updated_at).toLocaleString()}
-              </div>
-            </div>
+          
+          <div className="border-t pt-4 mt-4">
+            <h3 className="font-semibold mb-2">Requirements</h3>
+            <p className="text-gray-700 whitespace-pre-wrap">{tender.requirements}</p>
           </div>
         </div>
 
         {/* Proposals Section */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Proposals ({proposals.length})</h2>
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold mb-4">
+            Proposals ({proposals.length})
+            {!isOfficer && proposals.length === 0 && (
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                (Waiting for officer to add proposals)
+              </span>
+            )}
+          </h2>
           
           {proposals.length === 0 ? (
-            <div className="text-center py-8 text-gray-600">
-              <p>No proposals have been submitted yet.</p>
+            <div className="text-center py-8 text-gray-500">
+              <p>No proposals have been added yet.</p>
+              {isOfficer && (
+                <button
+                  onClick={() => setShowProposalModal(true)}
+                  className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg"
+                >
+                  + Add First Proposal
+                </button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
               {proposals.map((proposal) => {
-                const vendor = vendors.find(v => v.id === proposal.vendor_id);
+                const vendor = proposal.vendor_info || vendors.find(v => v.id === proposal.vendor_id);
+                const isSelected = tender.selected_proposal_id === proposal.id;
                 return (
-                  <div key={proposal.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {vendor?.name_english || vendor?.commercial_name || 'Unknown Vendor'}
-                        </h3>
-                        {vendor?.vendor_number && (
-                          <p className="text-xs text-blue-600 font-medium">#{vendor.vendor_number}</p>
-                        )}
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        proposal.status === 'approved' ? 'bg-green-100 text-green-800' :
-                        proposal.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {proposal.status.toUpperCase()}
-                      </span>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                      <div>
-                        <p className="text-sm text-gray-600">Financial Proposal</p>
-                        <p className="text-lg font-semibold text-gray-900">${proposal.financial_proposal?.toLocaleString()}</p>
+                  <div
+                    key={proposal.id}
+                    className={`border rounded-lg p-4 ${isSelected ? 'border-green-500 bg-green-50' : 'hover:border-blue-300'}`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-semibold">
+                            {vendor?.name_english || vendor?.commercial_name || 'Unknown Vendor'}
+                          </h3>
+                          {isSelected && (
+                            <span className="px-2 py-0.5 bg-green-500 text-white text-xs rounded-full">
+                              Recommended
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500">#{proposal.proposal_number}</p>
+                        <p className="text-sm mt-2">{proposal.technical_proposal}</p>
+                        <p className="text-lg font-bold text-blue-600 mt-2">
+                          {proposal.financial_proposal?.toLocaleString()} SAR
+                        </p>
                       </div>
                       {proposal.evaluation?.total_score > 0 && (
-                        <div>
-                          <p className="text-sm text-gray-600">Total Score</p>
-                          <p className="text-lg font-semibold text-gray-900">{proposal.evaluation.total_score.toFixed(2)}</p>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">Evaluation Score</p>
+                          <p className="text-2xl font-bold text-green-600">{proposal.evaluation.total_score.toFixed(1)}%</p>
                         </div>
                       )}
                     </div>
-                    
-                    <Link
-                      to={`/tenders/${id}/evaluate`}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                    >
-                      View Details & Evaluate →
-                    </Link>
                   </div>
                 );
               })}
             </div>
           )}
         </div>
-      </div>
 
-      {/* Submit Proposal Modal */}
-      {showProposalModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Submit Proposal (on behalf of vendor)</h2>
-            <form onSubmit={handleSubmitProposal} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select Vendor *</label>
-                <select
-                  value={proposalForm.vendor_id}
-                  onChange={(e) => setProposalForm({ ...proposalForm, vendor_id: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select an invited vendor</option>
-                  {vendors
-                    .filter(vendor => tender?.invited_vendors?.includes(vendor.id))
-                    .map((vendor) => (
-                      <option key={vendor.id} value={vendor.id}>
-                        {vendor.vendor_number ? `${vendor.vendor_number} - ` : ''}{vendor.name_english || vendor.commercial_name}
-                      </option>
-                    ))}
-                </select>
-                {vendors.filter(vendor => tender?.invited_vendors?.includes(vendor.id)).length === 0 && (
-                  <p className="text-sm text-red-600 mt-1">No vendors have been invited to this tender yet.</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Technical Proposal *</label>
-                <textarea
-                  value={proposalForm.technical_proposal}
-                  onChange={(e) => setProposalForm({ ...proposalForm, technical_proposal: e.target.value })}
-                  required
-                  rows={6}
-                  placeholder="Describe the technical approach, methodology, and implementation plan..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Financial Proposal (Amount) *</label>
-                <input
-                  type="number"
-                  value={proposalForm.financial_proposal}
-                  onChange={(e) => setProposalForm({ ...proposalForm, financial_proposal: e.target.value })}
-                  required
-                  min="0"
-                  step="0.01"
-                  placeholder="Enter proposal amount"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="flex gap-4 justify-end mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowProposalModal(false)}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  Submit Proposal
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Business Request</h2>
-            <form onSubmit={handleUpdateTender} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                <input
-                  type="text"
-                  value={editFormData.title}
-                  onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Project Name *</label>
-                <input
-                  type="text"
-                  value={editFormData.project_name}
-                  onChange={(e) => setEditFormData({ ...editFormData, project_name: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Business Need *</label>
-                <textarea
-                  value={editFormData.description}
-                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                  required
-                  rows={4}
-                  placeholder="Describe the business need this request addresses..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Scope & Key Requirements *</label>
-                <textarea
-                  value={editFormData.requirements}
-                  onChange={(e) => setEditFormData({ ...editFormData, requirements: e.target.value })}
-                  required
-                  rows={6}
-                  placeholder="Define the scope and key requirements for this request..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Add Proposal Modal */}
+        {showProposalModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+              <h2 className="text-xl font-bold mb-4">Add Proposal</h2>
+              <form onSubmit={handleSubmitProposal} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Estimated Budget (Indicative) *</label>
+                  <label className="block text-sm font-medium mb-1">Vendor</label>
+                  <select
+                    value={proposalForm.vendor_id}
+                    onChange={(e) => setProposalForm({ ...proposalForm, vendor_id: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    required
+                  >
+                    <option value="">Select vendor...</option>
+                    {vendors.map(v => (
+                      <option key={v.id} value={v.id}>{v.name_english || v.commercial_name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Technical Proposal</label>
+                  <textarea
+                    value={proposalForm.technical_proposal}
+                    onChange={(e) => setProposalForm({ ...proposalForm, technical_proposal: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    rows={3}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Financial Proposal (SAR)</label>
                   <input
                     type="number"
-                    value={editFormData.budget}
-                    onChange={(e) => setEditFormData({ ...editFormData, budget: e.target.value })}
+                    value={proposalForm.financial_proposal}
+                    onChange={(e) => setProposalForm({ ...proposalForm, financial_proposal: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-lg"
                     required
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">This is an estimate for planning purposes and does not represent the final contract value.</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Expected Delivery Date *</label>
-                  <input
-                    type="date"
-                    value={editFormData.deadline}
-                    onChange={(e) => setEditFormData({ ...editFormData, deadline: e.target.value })}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-              </div>
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={() => setShowProposalModal(false)} className="px-4 py-2 border rounded-lg">Cancel</button>
+                  <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded-lg">Add Proposal</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
-              {/* File Attachments */}
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Supporting Documents</h3>
-                <FileUpload
-                  entityId={id}
-                  module="tenders"
-                  label="Attach Supporting Documents (PDF, DOCX, XLSX, Images)"
-                  accept=".pdf,.doc,.docx,.xlsx,.xls,.png,.jpg,.jpeg"
-                  multiple={true}
-                  onUploadComplete={(files) => {
-                    console.log('Files uploaded:', files);
-                  }}
+        {/* Evaluation Modal */}
+        {showEvaluationModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <h2 className="text-xl font-bold mb-4">Evaluate Proposals</h2>
+              <p className="text-gray-600 mb-4">Select the proposal you recommend for this Business Request.</p>
+              
+              <div className="space-y-3 mb-4">
+                {proposals.map((proposal) => {
+                  const vendor = proposal.vendor_info || vendors.find(v => v.id === proposal.vendor_id);
+                  return (
+                    <div
+                      key={proposal.id}
+                      onClick={() => setSelectedProposalId(proposal.id)}
+                      className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                        selectedProposalId === proposal.id
+                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-500'
+                          : 'hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          checked={selectedProposalId === proposal.id}
+                          onChange={() => setSelectedProposalId(proposal.id)}
+                          className="w-5 h-5 text-blue-600"
+                        />
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{vendor?.name_english || vendor?.commercial_name || 'Unknown'}</h3>
+                          <p className="text-sm text-gray-600">{proposal.technical_proposal?.substring(0, 100)}...</p>
+                          <p className="text-lg font-bold text-blue-600">{proposal.financial_proposal?.toLocaleString()} SAR</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Evaluation Notes (Optional)</label>
+                <textarea
+                  value={evaluationNotes}
+                  onChange={(e) => setEvaluationNotes(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  rows={3}
+                  placeholder="Add any notes about your evaluation..."
                 />
               </div>
-
-              <div className="flex gap-4 justify-end mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Save Changes
+              
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowEvaluationModal(false)} className="px-4 py-2 border rounded-lg">Cancel</button>
+                <button onClick={handleSubmitEvaluation} className="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                  Submit Evaluation
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Forward to Approver Modal */}
+        {showForwardModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+              <h2 className="text-xl font-bold mb-4">Forward to Additional Approver</h2>
+              <p className="text-gray-600 mb-4">Select a user to approve this request before sending to HoP.</p>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Select Approver</label>
+                <SearchableSelect
+                  options={approvers.map(a => ({ value: a.id, label: `${a.name || a.email} (${a.role})` }))}
+                  value={selectedApproverId}
+                  onChange={setSelectedApproverId}
+                  placeholder="Search for approver..."
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Notes (Optional)</label>
+                <textarea
+                  value={forwardNotes}
+                  onChange={(e) => setForwardNotes(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                  rows={2}
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowForwardModal(false)} className="px-4 py-2 border rounded-lg">Cancel</button>
+                <button onClick={handleForwardToApprover} className="px-4 py-2 bg-indigo-600 text-white rounded-lg">
+                  Forward
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </Layout>
   );
 };
