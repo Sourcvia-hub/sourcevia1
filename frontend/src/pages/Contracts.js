@@ -233,11 +233,20 @@ const Contracts = () => {
       });
       setSelectedTender(null);
       setSelectedVendor(null);
+      toast({
+        title: "✅ Contract Created",
+        description: "New contract has been created successfully",
+        variant: "success"
+      });
       fetchContracts();
     } catch (error) {
       console.error('Error creating contract:', error);
       const errorMsg = error.response?.data?.detail || error.response?.data?.message || error.message || 'Unknown error occurred';
-      alert('Failed to create contract: ' + errorMsg);
+      toast({
+        title: "❌ Creation Failed",
+        description: errorMsg,
+        variant: "destructive"
+      });
     }
   };
 
