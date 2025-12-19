@@ -23,13 +23,10 @@ const TenderDetail = () => {
   
   // Modals
   const [showProposalModal, setShowProposalModal] = useState(false);
-  const [showEvaluationModal, setShowEvaluationModal] = useState(false);
   const [showForwardModal, setShowForwardModal] = useState(false);
   
   // Form states
   const [proposalForm, setProposalForm] = useState({ vendor_id: '', technical_proposal: '', financial_proposal: '' });
-  const [selectedProposalId, setSelectedProposalId] = useState(null);
-  const [evaluationNotes, setEvaluationNotes] = useState('');
   const [selectedApproverId, setSelectedApproverId] = useState(null);
   const [forwardNotes, setForwardNotes] = useState('');
 
