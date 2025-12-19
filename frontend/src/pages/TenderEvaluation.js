@@ -192,22 +192,48 @@ const TenderEvaluation = () => {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <button
-            onClick={() => navigate('/tenders')}
-            className="text-blue-600 hover:text-blue-800 mb-2 flex items-center"
-          >
-            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Tenders
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">Tender Evaluation</h1>
-          <p className="text-gray-600 mt-1">{tender?.title}</p>
-          <div className="mt-2 flex items-center space-x-4 text-sm">
-            <span className="text-gray-600">Total Proposals: <strong>{evaluationData?.total_proposals || 0}</strong></span>
-            <span className="text-gray-600">Evaluated: <strong>{evaluationData?.evaluated_count || 0}</strong></span>
+        <div className="flex justify-between items-start">
+          <div>
+            <button
+              onClick={() => navigate(`/tenders/${id}`)}
+              className="text-blue-600 hover:text-blue-800 mb-2 flex items-center"
+            >
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Business Request
+            </button>
+            <h1 className="text-3xl font-bold text-gray-900">Proposal Evaluation</h1>
+            <p className="text-gray-600 mt-1">{tender?.title}</p>
+            <div className="mt-2 flex items-center space-x-4 text-sm">
+              <span className="text-gray-600">Total Proposals: <strong>{evaluationData?.total_proposals || 0}</strong></span>
+              <span className="text-gray-600">Evaluated: <strong>{evaluationData?.evaluated_count || 0}</strong></span>
+            </div>
           </div>
+          
+          {/* Complete Evaluation Button */}
+          {evaluationData?.evaluated_count > 0 && (
+            <button
+              onClick={handleCompleteEvaluation}
+              disabled={submittingEvaluation || evaluationData?.evaluated_count < evaluationData?.total_proposals}
+              className={`px-6 py-3 rounded-lg font-semibold shadow-md transition-all ${
+                submittingEvaluation || evaluationData?.evaluated_count < evaluationData?.total_proposals
+                  ? 'bg-gray-400 cursor-not-allowed text-white'
+                  : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white'
+              }`}
+            >
+              {submittingEvaluation ? (
+                <>
+                  <span className="animate-spin inline-block mr-2">⏳</span>
+                  Submitting...
+                </>
+              ) : evaluationData?.evaluated_count < evaluationData?.total_proposals ? (
+                <>⚠️ Evaluate All Proposals First</>
+              ) : (
+                <>✅ Complete Evaluation & Submit</>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Evaluation Criteria Info */}
