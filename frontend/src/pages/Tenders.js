@@ -417,25 +417,21 @@ const Tenders = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Invited Vendors</label>
-                <select
-                  multiple
+                <MultiSelect
+                  options={vendors.map((vendor) => ({
+                    value: vendor.id,
+                    label: vendor.name_english || vendor.commercial_name || vendor.company_name || 'Unknown Vendor'
+                  }))}
                   value={formData.invited_vendors}
-                  onChange={(e) =>
+                  onChange={(selected) =>
                     setFormData({
                       ...formData,
-                      invited_vendors: Array.from(e.target.selectedOptions, (option) => option.value),
+                      invited_vendors: selected,
                     })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  size={5}
-                >
-                  {vendors.map((vendor) => (
-                    <option key={vendor.id} value={vendor.id}>
-                      {vendor.name_english || vendor.commercial_name || vendor.company_name || 'Unknown Vendor'}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple vendors</p>
+                  placeholder="Search and select vendors..."
+                />
+                <p className="text-xs text-gray-500 mt-1">Search by name and click to select multiple vendors</p>
               </div>
 
               {/* Contract Context Questionnaire */}
