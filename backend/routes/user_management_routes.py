@@ -11,7 +11,7 @@ import hashlib
 import os
 import logging
 
-from database import db
+from utils.database import db
 from models.user import User, UserRole, UserStatus, AccessChangeLog
 from utils.auth import require_auth, hash_password, verify_password
 
