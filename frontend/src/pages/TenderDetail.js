@@ -633,6 +633,13 @@ const TenderDetail = () => {
           )}
         </div>
 
+        {/* Audit Trail */}
+        <AuditTrail 
+          auditTrail={auditTrail} 
+          entityType="tender" 
+          userRole={user?.role} 
+        />
+
         {/* Add Proposal Modal */}
         {showProposalModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
