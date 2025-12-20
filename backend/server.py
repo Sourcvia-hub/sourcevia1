@@ -418,9 +418,17 @@ async def login(login_data: LoginRequest, response: Response):
     """Login with email and password"""
     try:
         # Find user (exclude _id to avoid serialization issues)
-        user_doc = await db.users.find_one({"email": login_data.email}, {"_id": 0})
+        user_doc = await db.users.find_one({"email": login_data.email.lower()}, {"_id": 0})
         if not user_doc:
             raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Check if user is disabled
+        if user_doc.get('status') == 'disabled':
+            raise HTTPException(status_code=403, detail="Your account has been disabled. Please contact administrator.")
+        
+        # Domain restriction check for login (if enabled)
+        if AUTH_DOMAIN_RESTRICTION_ENABLED and not validate_email_domain(login_data.email):
+            raise HTTPException(status_code=403, detail="Access restricted. Please contact administrator.")
         
         # Verify password
         if not verify_password(login_data.password, user_doc.get("password", "")):
@@ -431,6 +439,10 @@ async def login(login_data: LoginRequest, response: Response):
             user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
         
         user = User(**user_doc)
+        
+        # Check if force password reset is required
+        force_reset = user_doc.get('force_password_reset', False)
+        
     except HTTPException:
         raise
     except Exception as e:
@@ -451,6 +463,12 @@ async def login(login_data: LoginRequest, response: Response):
     session_doc["expires_at"] = session_doc["expires_at"].isoformat()
     session_doc["created_at"] = session_doc["created_at"].isoformat()
     await db.user_sessions.insert_one(session_doc)
+    
+    # Update last login
+    await db.users.update_one(
+        {"id": user.id},
+        {"$set": {"last_login": datetime.now(timezone.utc).isoformat()}}
+    )
     
     # Set cookie
     # Use secure=False for HTTP, secure=True for HTTPS
