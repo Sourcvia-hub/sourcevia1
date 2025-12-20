@@ -254,10 +254,10 @@ const AppRoutes = () => {
       <Route path="/purchase-orders/:id" element={<ProtectedRoute><PurchaseOrderDetail /></ProtectedRoute>} />
       <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
       <Route path="/resources/:id" element={<ProtectedRoute><ResourceDetail /></ProtectedRoute>} />
-      <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
-      <Route path="/assets/:id" element={<ProtectedRoute><AssetDetail /></ProtectedRoute>} />
-      <Route path="/assets/new" element={<ProtectedRoute><AssetForm /></ProtectedRoute>} />
-      <Route path="/assets/:id/edit" element={<ProtectedRoute><AssetForm /></ProtectedRoute>} />
+      <Route path="/assets" element={<RestrictedRoute blockedRoles={['user']}><Assets /></RestrictedRoute>} />
+      <Route path="/assets/:id" element={<RestrictedRoute blockedRoles={['user']}><AssetDetail /></RestrictedRoute>} />
+      <Route path="/assets/new" element={<RestrictedRoute blockedRoles={['user']}><AssetForm /></RestrictedRoute>} />
+      <Route path="/assets/:id/edit" element={<RestrictedRoute blockedRoles={['user']}><AssetForm /></RestrictedRoute>} />
       <Route path="/osr" element={<ProtectedRoute><OSRList /></ProtectedRoute>} />
       <Route path="/osr/:id" element={<ProtectedRoute><OSRDetail /></ProtectedRoute>} />
       <Route path="/osr/new" element={<ProtectedRoute><OSRForm /></ProtectedRoute>} />
