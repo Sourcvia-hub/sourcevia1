@@ -316,10 +316,11 @@ const OSRForm = () => {
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">Select Category</option>
-                  {masterData.osr_categories.map((cat) => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                  ))}
+                  <option value="maintenance">🔧 Maintenance</option>
+                  <option value="cleaning">🧹 Cleaning</option>
+                  <option value="relocation">📦 Relocation</option>
+                  <option value="safety">⚠️ Safety</option>
+                  <option value="other">📋 Other</option>
                 </select>
               </div>
               <div>
