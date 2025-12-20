@@ -41,7 +41,7 @@ const ContractDetail = () => {
   const [showDDQuestionnaire, setShowDDQuestionnaire] = useState(false);
 
   // Role-based access control
-  const isOfficerOrHoP = user?.role && ['procurement_officer', 'procurement_manager', 'admin'].includes(user.role);
+  const isOfficerOrHoP = user?.role && ['procurement_officer', 'procurement_manager', 'admin', 'hop'].includes(user.role);
   const canAccessGovernance = isOfficerOrHoP;
 
   useEffect(() => {
