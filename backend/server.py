@@ -547,13 +547,15 @@ async def get_dashboard_stats(request: Request):
     from utils.permissions import should_filter_by_user, should_filter_by_domain
     
     user = await require_auth(request)
-    user_role_str = user.role.value.lower()
+    user_role_str = user.role.value.lower() if hasattr(user.role, 'value') else str(user.role).lower()
     
     # Determine if data should be filtered
     filter_by_user = should_filter_by_user(user_role_str, "dashboard")
-    filter_by_domain = should_filter_by_domain(user_role_str, "dashboard")
     
-    # Vendor Statistics
+    # Build base query for user-filtered data
+    user_query = {"created_by": user.id} if filter_by_user else {}
+    
+    # Vendor Statistics (not filtered for users - vendors are global)
     all_vendors = await db.vendors.count_documents({})
     active_vendors = await db.vendors.count_documents({"status": VendorStatus.APPROVED.value})
     high_risk_vendors = await db.vendors.count_documents({"risk_category": "high"})
@@ -561,12 +563,14 @@ async def get_dashboard_stats(request: Request):
     inactive_vendors = await db.vendors.count_documents({"status": VendorStatus.REJECTED.value})
     blacklisted_vendors = await db.vendors.count_documents({"status": VendorStatus.BLACKLISTED.value})
     
-    # Tender Statistics
-    all_tenders = await db.tenders.count_documents({})
-    active_tenders = await db.tenders.count_documents({"status": TenderStatus.PUBLISHED.value})
+    # Tender Statistics (filtered for regular users)
+    tender_query = user_query.copy()
+    all_tenders = await db.tenders.count_documents(tender_query)
+    active_tenders = await db.tenders.count_documents({**tender_query, "status": TenderStatus.PUBLISHED.value})
     
     # Waiting for proposals - published tenders with no proposals or few proposals
-    published_tenders = await db.tenders.find({"status": TenderStatus.PUBLISHED.value}).to_list(1000)
+    published_query = {**tender_query, "status": TenderStatus.PUBLISHED.value}
+    published_tenders = await db.tenders.find(published_query).to_list(1000)
     waiting_proposals_count = 0
     waiting_evaluation_count = 0
     
