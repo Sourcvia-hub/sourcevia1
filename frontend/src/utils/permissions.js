@@ -141,8 +141,8 @@ const ROLE_PERMISSIONS = {
 export const hasPermission = (userRole, module, requiredPermission) => {
   if (!userRole) return false;
   
-  // Admin has all permissions
-  if (userRole === 'admin') return true;
+  // Admin and HoP have all permissions
+  if (userRole === 'admin' || userRole === 'hop') return true;
   
   const rolePerms = ROLE_PERMISSIONS[userRole] || {};
   const modulePerms = rolePerms[module] || [Permission.NO_ACCESS];
