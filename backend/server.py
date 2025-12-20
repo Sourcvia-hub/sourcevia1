@@ -486,9 +486,15 @@ async def login(login_data: LoginRequest, response: Response):
     # Remove password from response
     user_dict = user.model_dump()
     user_dict.pop('password', None)
+    user_dict.pop('password_reset_token', None)
+    user_dict.pop('password_reset_expires', None)
     
     # Return session token in response body for cross-origin token-based auth
-    return {"user": user_dict, "session_token": session_token}
+    return {
+        "user": user_dict, 
+        "session_token": session_token,
+        "force_password_reset": force_reset
+    }
 
 @api_router.post("/auth/auto-login")
 async def auto_login(response: Response):
