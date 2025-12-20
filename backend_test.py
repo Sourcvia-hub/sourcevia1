@@ -3291,6 +3291,9 @@ class SourceviaBackendTester:
         self.test_health_check()
         self.test_authentication()
         
+        # PRIORITY: User Data Filtering Testing (PRIMARY FOCUS from review request)
+        self.test_user_data_filtering()
+        
         # NEW: Token-Based Authentication Fix Testing (PRIORITY TEST from review request)
         self.test_token_based_auth_fix()
         
