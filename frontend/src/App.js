@@ -258,10 +258,10 @@ const AppRoutes = () => {
       <Route path="/purchase-orders/:id" element={<ProtectedRoute><PurchaseOrderDetail /></ProtectedRoute>} />
       <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
       <Route path="/resources/:id" element={<ProtectedRoute><ResourceDetail /></ProtectedRoute>} />
-      <Route path="/assets" element={<RestrictedRoute blockedRoles={['user']}><Assets /></RestrictedRoute>} />
-      <Route path="/assets/:id" element={<RestrictedRoute blockedRoles={['user']}><AssetDetail /></RestrictedRoute>} />
-      <Route path="/assets/new" element={<RestrictedRoute blockedRoles={['user']}><AssetForm /></RestrictedRoute>} />
-      <Route path="/assets/:id/edit" element={<RestrictedRoute blockedRoles={['user']}><AssetForm /></RestrictedRoute>} />
+      <Route path="/assets" element={<RestrictedRoute blockedRoles={['user', 'business_user']}><Assets /></RestrictedRoute>} />
+      <Route path="/assets/:id" element={<RestrictedRoute blockedRoles={['user', 'business_user']}><AssetDetail /></RestrictedRoute>} />
+      <Route path="/assets/new" element={<RestrictedRoute blockedRoles={['user', 'business_user']}><AssetForm /></RestrictedRoute>} />
+      <Route path="/assets/:id/edit" element={<RestrictedRoute blockedRoles={['user', 'business_user']}><AssetForm /></RestrictedRoute>} />
       <Route path="/osr" element={<ProtectedRoute><OSRList /></ProtectedRoute>} />
       <Route path="/osr/:id" element={<ProtectedRoute><OSRDetail /></ProtectedRoute>} />
       <Route path="/osr/new" element={<ProtectedRoute><OSRForm /></ProtectedRoute>} />
@@ -276,6 +276,11 @@ const AppRoutes = () => {
       <Route path="/my-approvals" element={<ProtectedRoute><MyApprovals /></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute><ReportsAnalytics /></ProtectedRoute>} />
       <Route path="/bulk-import" element={<ProtectedRoute><BulkImport /></ProtectedRoute>} />
+      {/* Password & User Management Routes */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+      <Route path="/user-management" element={<ProtectedRoute><UserAccessManagement /></ProtectedRoute>} />
       {/* Payment authorizations route removed - functionality merged into Deliverables */}
 
       {/* ProcureFlix routes */}
