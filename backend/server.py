@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import os
+import json
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
