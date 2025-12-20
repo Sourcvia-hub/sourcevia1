@@ -30,6 +30,7 @@ const TenderDetail = () => {
   const [workflowStatus, setWorkflowStatus] = useState(null);
   const [approvers, setApprovers] = useState([]);
   const [evaluationData, setEvaluationData] = useState(null);
+  const [auditTrail, setAuditTrail] = useState([]);
   
   // Modals
   const [showProposalModal, setShowProposalModal] = useState(false);
@@ -54,6 +55,7 @@ const TenderDetail = () => {
     fetchVendors();
     fetchProposalsForUser();
     fetchWorkflowStatus();
+    fetchAuditTrail();
   }, [id]);
 
   // Fetch evaluation data for officers/approvers
@@ -62,6 +64,15 @@ const TenderDetail = () => {
       fetchEvaluationData();
     }
   }, [tender?.status]);
+
+  const fetchAuditTrail = async () => {
+    try {
+      const res = await axios.get(`${API}/tenders/${id}/audit-trail`, { withCredentials: true });
+      setAuditTrail(res.data);
+    } catch (error) {
+      console.log('Audit trail not available or access denied');
+    }
+  };
 
   const fetchEvaluationData = async () => {
     try {
