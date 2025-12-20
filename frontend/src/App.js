@@ -153,6 +153,33 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Role-restricted route - blocks business users from certain pages
+const RestrictedRoute = ({ children, blockedRoles = ['user'] }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Block access for restricted roles
+  if (blockedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 // ==================== COMPONENTS ====================
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
