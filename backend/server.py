@@ -649,13 +649,14 @@ async def get_dashboard_stats(request: Request):
                 if days_to_expiry <= 90:  # Expiring in 90 days
                     warranty_expiring_assets += 1
     
-    # OSR Statistics
-    all_osr = await db.osr.count_documents({})
-    open_osr = await db.osr.count_documents({"status": "open"})
-    assigned_osr = await db.osr.count_documents({"status": "assigned"})
-    in_progress_osr = await db.osr.count_documents({"status": "in_progress"})
-    completed_osr = await db.osr.count_documents({"status": "completed"})
-    high_priority_osr = await db.osr.count_documents({"priority": "high"})
+    # OSR Statistics (filtered for regular users)
+    osr_query = user_query.copy()
+    all_osr = await db.osr.count_documents(osr_query)
+    open_osr = await db.osr.count_documents({**osr_query, "status": "open"})
+    assigned_osr = await db.osr.count_documents({**osr_query, "status": "assigned"})
+    in_progress_osr = await db.osr.count_documents({**osr_query, "status": "in_progress"})
+    completed_osr = await db.osr.count_documents({**osr_query, "status": "completed"})
+    high_priority_osr = await db.osr.count_documents({**osr_query, "priority": "high"})
     
     return {
         "vendors": {
