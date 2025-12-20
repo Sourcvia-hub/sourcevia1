@@ -372,7 +372,7 @@ class UserDataFilteringTester:
                 "description": "Testing user data filtering functionality",
                 "category": "maintenance",  # Valid category
                 "priority": "normal",       # Valid priority
-                "request_type": "service_request",  # Required field
+                "request_type": "general_request",  # Valid request_type
                 "building_id": "building-1"  # Required field
             }
             
