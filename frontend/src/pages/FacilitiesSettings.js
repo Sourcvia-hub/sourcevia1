@@ -24,7 +24,7 @@ const FacilitiesSettings = () => {
 
   useEffect(() => {
     // Check if user is admin
-    if (user && user.role !== 'admin' && user.role !== 'system_admin') {
+    if (user && user.role !== 'admin' && user.role !== 'system_admin' && user.role !== 'hop' && user.role !== 'procurement_manager') {
       alert('Access denied. Admin privileges required.');
       window.location.href = '/dashboard';
       return;
