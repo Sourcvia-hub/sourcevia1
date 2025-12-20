@@ -11,6 +11,7 @@ import {
   SAMANOCTracking,
 } from '../components/ContractGovernance';
 import ContractDDQuestionnaire from '../components/ContractDDQuestionnaire';
+import AuditTrail from '../components/AuditTrail';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -24,6 +25,7 @@ const ContractDetail = () => {
   const [tender, setTender] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [auditTrail, setAuditTrail] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({
     title: '',
@@ -46,7 +48,17 @@ const ContractDetail = () => {
 
   useEffect(() => {
     fetchContract();
+    fetchAuditTrail();
   }, [id]);
+
+  const fetchAuditTrail = async () => {
+    try {
+      const res = await axios.get(`${API}/contracts/${id}/audit-trail`, { withCredentials: true });
+      setAuditTrail(res.data);
+    } catch (error) {
+      console.log('Audit trail not available or access denied');
+    }
+  };
 
   const fetchContract = async () => {
     try {
