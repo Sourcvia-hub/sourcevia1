@@ -297,7 +297,7 @@ const Deliverables = () => {
 
 // Deliverable Card Component
 const DeliverableCard = ({ deliverable, getStatusBadge, getStatusLabel, onSubmit, onValidate, onSubmitToHoP, onHoPDecision, onExport, onViewDetails, user }) => {
-  const isHoP = ['procurement_manager', 'admin'].includes(user?.role);
+  const isHoP = ['procurement_manager', 'admin', 'hop'].includes(user?.role);
   
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
