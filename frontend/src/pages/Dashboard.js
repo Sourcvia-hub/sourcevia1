@@ -71,7 +71,8 @@ const Dashboard = () => {
       });
     }
     
-    if (stats?.vendors?.high_risk > 0) {
+    // High risk vendors alert - only for officers/HoP
+    if (stats?.vendors?.high_risk > 0 && !isUser) {
       alerts.push({
         type: 'danger',
         icon: '⚠️',
@@ -91,6 +92,7 @@ const Dashboard = () => {
       });
     }
     
+    // DD pending alert - only for officers
     if (stats?.vendors?.waiting_due_diligence > 0 && isOfficer) {
       alerts.push({
         type: 'info',
