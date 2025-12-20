@@ -160,7 +160,7 @@ export const canAccessModule = (userRole, module) => {
 };
 
 export const getUserPermissions = (userRole, module) => {
-  if (userRole === 'admin') return [Permission.CONTROLLER];
+  if (userRole === 'admin' || userRole === 'hop') return [Permission.CONTROLLER];
   const rolePerms = ROLE_PERMISSIONS[userRole] || {};
   return rolePerms[module] || [Permission.NO_ACCESS];
 };
