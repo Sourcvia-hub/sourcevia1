@@ -233,20 +233,25 @@ const Dashboard = () => {
             color="blue"
             link="/tenders"
           />
-          <MetricCard
-            label="High Risk Vendors"
-            value={keyMetrics.highRiskVendors}
-            trend={keyMetrics.highRiskVendors > 0 ? 'up' : 'neutral'}
-            color="red"
-            link="/vendors?filter=high_risk"
-          />
-          <MetricCard
-            label="DD Pending"
-            value={keyMetrics.dueDiligencePending}
-            trend="neutral"
-            color="amber"
-            link="/vendors?filter=pending_dd"
-          />
+          {/* High Risk Vendors and DD Pending - Only for Officers/HoP */}
+          {!isUser && (
+            <>
+              <MetricCard
+                label="High Risk Vendors"
+                value={keyMetrics.highRiskVendors}
+                trend={keyMetrics.highRiskVendors > 0 ? 'up' : 'neutral'}
+                color="red"
+                link="/vendors?filter=high_risk"
+              />
+              <MetricCard
+                label="DD Pending"
+                value={keyMetrics.dueDiligencePending}
+                trend="neutral"
+                color="amber"
+                link="/vendors?filter=pending_dd"
+              />
+            </>
+          )}
           <MetricCard
             label="Open Requests"
             value={keyMetrics.openServiceRequests}
