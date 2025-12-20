@@ -114,6 +114,20 @@ ROLE_PERMISSIONS: Dict[str, Dict[str, List[str]]] = {
         Module.ASSETS: [Permission.CONTROLLER],
         Module.SERVICE_REQUESTS: [Permission.CONTROLLER],
     },
+    "hop": {
+        Module.DASHBOARD: [Permission.CONTROLLER],
+        Module.VENDORS: [Permission.CONTROLLER],
+        Module.VENDOR_DD: [Permission.CONTROLLER],
+        Module.TENDERS: [Permission.CONTROLLER],
+        Module.TENDER_EVALUATION: [Permission.CONTROLLER],
+        Module.TENDER_PROPOSALS: [Permission.CONTROLLER],
+        Module.CONTRACTS: [Permission.CONTROLLER],
+        Module.PURCHASE_ORDERS: [Permission.CONTROLLER],
+        Module.RESOURCES: [Permission.CONTROLLER],
+        Module.INVOICES: [Permission.CONTROLLER],
+        Module.ASSETS: [Permission.CONTROLLER],
+        Module.SERVICE_REQUESTS: [Permission.CONTROLLER],
+    },
 }
 
 
