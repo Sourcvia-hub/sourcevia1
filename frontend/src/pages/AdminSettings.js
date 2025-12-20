@@ -14,7 +14,7 @@ const AdminSettings = () => {
   const [newCountry, setNewCountry] = useState('');
   const [activeTab, setActiveTab] = useState('risk-countries');
 
-  const isAdmin = user?.role === 'procurement_manager' || user?.role === 'system_admin';
+  const isAdmin = user?.role === 'procurement_manager' || user?.role === 'system_admin' || user?.role === 'hop' || user?.role === 'admin';
 
   useEffect(() => {
     if (isAdmin) {
