@@ -50,9 +50,11 @@ const Layout = ({ children }) => {
 
   const getRoleBadgeColor = (role) => {
     const colors = {
+      hop: 'bg-amber-100 text-amber-800',
       procurement_officer: 'bg-blue-100 text-blue-800',
       project_manager: 'bg-green-100 text-green-800',
       system_admin: 'bg-purple-100 text-purple-800',
+      business_user: 'bg-teal-100 text-teal-800',
     };
     return colors[role] || 'bg-gray-100 text-gray-800';
   };
