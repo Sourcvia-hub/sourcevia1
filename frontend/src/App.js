@@ -210,6 +210,10 @@ import Deliverables from './pages/Deliverables';
 import MyApprovals from './pages/MyApprovals';
 import ReportsAnalytics from './pages/ReportsAnalytics';
 import BulkImport from './pages/BulkImport';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import ChangePassword from './pages/ChangePassword';
+import UserAccessManagement from './pages/UserAccessManagement';
 // PaymentAuthorizations page removed - functionality merged into Deliverables
 
 // ProcureFlix components
