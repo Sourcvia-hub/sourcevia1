@@ -19,11 +19,14 @@ const OSRForm = () => {
     vendors: []
   });
   
+  // Check if user is a regular business user (not officer/admin)
+  const isBusinessUser = user?.role === 'user' || user?.role === 'business_user';
+  
   const [formData, setFormData] = useState({
     title: '',
     request_type: 'general_request',
     general_request_type: '',  // New: cleaning, relocation, other_services, register_asset
-    category: '',
+    category: 'other',  // Default to 'other' to avoid validation error
     priority: 'normal',
     description: '',
     building_id: '',
