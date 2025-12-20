@@ -305,10 +305,11 @@ class LoginRequest(BaseModel):
     password: str
 
 class RegisterRequest(BaseModel):
+    """Registration request - role is NOT accepted from client"""
     email: EmailStr
     password: str
     name: str
-    role: Optional[UserRole] = UserRole.PROCUREMENT_OFFICER
+    # NOTE: role field intentionally removed - all users start as business_user
 
 class ProposalEvaluationRequest(BaseModel):
     """Request model for evaluating proposals"""
@@ -317,6 +318,26 @@ class ProposalEvaluationRequest(BaseModel):
     technical_experience: float
     cost_score: float
     meets_requirements: float
+
+# Domain restriction config
+import os
+AUTH_DOMAIN_RESTRICTION_ENABLED = os.environ.get("AUTH_DOMAIN_RESTRICTION_ENABLED", "false").lower() == "true"
+AUTH_ALLOWED_EMAIL_DOMAINS = os.environ.get("AUTH_ALLOWED_EMAIL_DOMAINS", "tamyuz.com.sa,sourcevia.com").split(",")
+AUTH_ALLOWLIST_EMAILS = os.environ.get("AUTH_ALLOWLIST_EMAILS", "").split(",") if os.environ.get("AUTH_ALLOWLIST_EMAILS") else []
+
+def validate_email_domain(email: str) -> bool:
+    """Check if email domain is allowed (only when restriction is enabled)"""
+    if not AUTH_DOMAIN_RESTRICTION_ENABLED:
+        return True
+    
+    # Check allowlist first
+    if email.lower() in [e.lower().strip() for e in AUTH_ALLOWLIST_EMAILS if e.strip()]:
+        return True
+    
+    # Check domain
+    domain = email.split('@')[-1].lower()
+    allowed_domains = [d.strip().lower() for d in AUTH_ALLOWED_EMAIL_DOMAINS if d.strip()]
+    return domain in allowed_domains
 
 # ==================== HEALTH & STATUS ENDPOINTS ====================
 @api_router.get("/health")
@@ -343,19 +364,36 @@ async def api_health_check():
 # ==================== AUTH ENDPOINTS ====================
 @api_router.post("/auth/register")
 async def register(register_data: RegisterRequest):
-    """Register a new user (admin only endpoint for creating users)"""
+    """
+    Register a new user.
+    - All new users are assigned 'business_user' role by default
+    - Role cannot be selected by user - only HoP can promote roles
+    - Domain restriction can be enabled via AUTH_DOMAIN_RESTRICTION_ENABLED env var
+    """
     try:
+        # Domain restriction check (if enabled)
+        if not validate_email_domain(register_data.email):
+            raise HTTPException(
+                status_code=400, 
+                detail="Registration is restricted to approved company emails."
+            )
+        
         # Check if user already exists
-        existing_user = await db.users.find_one({"email": register_data.email}, {"_id": 0})
+        existing_user = await db.users.find_one({"email": register_data.email.lower()}, {"_id": 0})
         if existing_user:
             raise HTTPException(status_code=400, detail="User already exists")
         
-        # Create new user
+        # Password validation (minimum 10 characters)
+        if len(register_data.password) < 10:
+            raise HTTPException(status_code=400, detail="Password must be at least 10 characters long")
+        
+        # Create new user - ALWAYS as business_user (ignore any role from client)
         user = User(
-            email=register_data.email,
+            email=register_data.email.lower(),
             name=register_data.name,
             password=hash_password(register_data.password),
-            role=register_data.role
+            role=UserRole.USER,  # Force business_user role - no self-selection allowed
+            status="active"
         )
         
         user_doc = user.model_dump()
@@ -365,6 +403,8 @@ async def register(register_data: RegisterRequest):
         # Remove password from response
         user_dict = user.model_dump()
         user_dict.pop('password', None)
+        
+        logger.info(f"New user registered: {register_data.email} as business_user")
         
         return {"message": "User created successfully", "user": user_dict}
     except HTTPException:
