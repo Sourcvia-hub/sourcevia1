@@ -166,7 +166,8 @@ class AuditTrailTester:
         try:
             deliverables_response = self.session.get(f"{BACKEND_URL}/deliverables")
             if deliverables_response.status_code == 200:
-                deliverables = deliverables_response.json()
+                deliverables_data = deliverables_response.json()
+                deliverables = deliverables_data.get("deliverables", [])
                 if deliverables:
                     test_entities["deliverable_id"] = deliverables[0].get("id")
                     self.log_result("Get Deliverable for Testing", True, f"Found deliverable: {test_entities['deliverable_id']}")
