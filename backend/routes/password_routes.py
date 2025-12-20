@@ -9,7 +9,7 @@ import hashlib
 import logging
 import os
 
-from database import db
+from utils.database import db
 from utils.auth import require_auth, hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["Password Management"])
