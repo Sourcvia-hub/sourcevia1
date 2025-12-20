@@ -1174,23 +1174,18 @@ async def update_vendor(vendor_id: str, vendor_update: Vendor, request: Request)
 
 @api_router.get("/vendors/{vendor_id}/audit-log")
 async def get_vendor_audit_log(vendor_id: str, request: Request):
-    """Get audit log for a vendor - RBAC: requires viewer permission"""
-    from utils.auth import require_permission
-    from utils.permissions import Permission
-    await require_permission(request, "vendors", Permission.VIEWER)
+    """Get audit log for a vendor - RBAC: officers and HoP only"""
+    from utils.auth import get_current_user
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     
-    logs = await db.audit_logs.find({"entity_type": "vendor", "entity_id": vendor_id}).sort("timestamp", -1).to_list(100)
+    # Check if user has permission (officer or HoP)
+    allowed_roles = ['procurement_officer', 'procurement_manager', 'admin', 'hop']
+    if user.role not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Access denied")
     
-    # Remove _id and convert timestamps
-    result = []
-    for log in logs:
-        if '_id' in log:
-            del log['_id']
-        if isinstance(log.get('timestamp'), str):
-            log['timestamp'] = datetime.fromisoformat(log['timestamp'])
-        result.append(log)
-    
-    return result
+    return await get_entity_audit_trail("vendor", vendor_id)
 
 # ==================== AUDIT TRAIL UTILITY ====================
 
