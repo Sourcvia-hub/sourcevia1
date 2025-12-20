@@ -30,7 +30,6 @@ const Layout = ({ children }) => {
   const specialLinks = [
     { name: 'My Approvals', path: '/my-approvals', icon: '🔔', roles: ['procurement_manager', 'admin', 'procurement_officer', 'viewer', 'requester', 'user', 'business_user', 'hop'] },
     { name: 'Approvals Hub', path: '/approvals-hub', icon: '📋', roles: ['procurement_manager', 'admin', 'procurement_officer', 'hop'] },
-    { name: 'Contract Approvals', path: '/contract-approvals', icon: '✅', roles: ['procurement_manager', 'admin', 'procurement_officer', 'hop'] },
     { name: 'Reports & Analytics', path: '/reports', icon: '📈', roles: ['procurement_manager', 'admin', 'procurement_officer', 'viewer', 'hop'] },
     { name: 'Bulk Import', path: '/bulk-import', icon: '📤', roles: ['procurement_manager', 'admin', 'procurement_officer', 'hop'] },
     { name: 'User Management', path: '/user-management', icon: '👥', roles: ['procurement_manager', 'admin', 'hop'] },
